@@ -8,6 +8,7 @@ Ships:
 - **`.claude/skills/`** — five project-agnostic skills (see "What's included" below).
 - **`.claude/hooks/session-start.sh`** — stub for installing dependencies in remote sessions; you implement it for your stack.
 - **`scripts/gates.sh`** — stub for "local gates" (fast pre-push checks); you implement it for your stack.
+- **`scripts/export-github-issue.py`** — ready-to-use exporter that downloads an issue (body + comments + timeline + attachments) into `docs/issue/<n>/`. Used by `/issue`. Python 3.9+ stdlib only; uses `$GH_TOKEN` or `gh auth token`.
 - **`.claude/settings.json`** — minimal Claude Code project settings wiring the SessionStart hook.
 
 ## Create a new project from this template
