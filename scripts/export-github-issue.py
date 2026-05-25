@@ -233,138 +233,73 @@ def download_asset(url: str, dest: Path, token: str) -> str | None:
     return f"./attachments/{write_path.name}"
 
 
-_TIMELINE_FORMATTERS: dict[str, Any] = {}
+_STATIC_TIMELINE_SUFFIXES = {
+    "reopened": "reopened this issue.",
+    "locked": "locked this issue.",
+    "unlocked": "unlocked this issue.",
+    "pinned": "pinned this issue.",
+    "unpinned": "unpinned this issue.",
+    "transferred": "transferred this issue.",
+    "connected": "connected this issue (integration).",
+    "disconnected": "disconnected this issue (integration).",
+    "head_ref_deleted": "deleted the head ref.",
+    "head_ref_restored": "restored the head ref.",
+}
+
+_TIMELINE_SKIP = frozenset({"committed", "commented"})
 
 
-def _fmt(kind: str):
-    def decorator(fn):
-        _TIMELINE_FORMATTERS[kind] = fn
-        return fn
+def _timeline_suffix(ev: dict[str, Any]) -> str:
+    """Return the phrase after `@{who} ` for a timeline event."""
+    kind = ev.get("event") or ""
+    if kind in _STATIC_TIMELINE_SUFFIXES:
+        return _STATIC_TIMELINE_SUFFIXES[kind]
 
-    return decorator
+    label = (ev.get("label") or {}).get("name", "?")
+    assignee = (ev.get("assignee") or {}).get("login", "?")
+    milestone = (ev.get("milestone") or {}).get("title", "?")
 
-
-@_fmt("closed")
-def _closed(ev, who, when):
-    reason = ev.get("state_reason")
-    suffix = f" ({reason})" if reason else ""
-    return f"- **{when}** @{who} closed this issue{suffix}."
-
-
-@_fmt("reopened")
-def _reopened(ev, who, when):
-    return f"- **{when}** @{who} reopened this issue."
-
-
-@_fmt("renamed")
-def _renamed(ev, who, when):
-    r = ev.get("rename") or {}
-    return f"- **{when}** @{who} renamed from «{r.get('from', '?')}» to «{r.get('to', '?')}»."
-
-
-@_fmt("labeled")
-def _labeled(ev, who, when):
-    return f"- **{when}** @{who} added label `{(ev.get('label') or {}).get('name', '?')}`."
-
-
-@_fmt("unlabeled")
-def _unlabeled(ev, who, when):
-    return f"- **{when}** @{who} removed label `{(ev.get('label') or {}).get('name', '?')}`."
-
-
-@_fmt("assigned")
-def _assigned(ev, who, when):
-    return f"- **{when}** @{who} assigned @{(ev.get('assignee') or {}).get('login', '?')}."
-
-
-@_fmt("unassigned")
-def _unassigned(ev, who, when):
-    return f"- **{when}** @{who} unassigned @{(ev.get('assignee') or {}).get('login', '?')}."
-
-
-@_fmt("milestoned")
-def _milestoned(ev, who, when):
-    return f"- **{when}** @{who} added milestone «{(ev.get('milestone') or {}).get('title', '?')}»."
-
-
-@_fmt("demilestoned")
-def _demilestoned(ev, who, when):
-    return f"- **{when}** @{who} removed milestone «{(ev.get('milestone') or {}).get('title', '?')}»."
-
-
-@_fmt("locked")
-def _locked(ev, who, when):
-    return f"- **{when}** @{who} locked this issue."
-
-
-@_fmt("unlocked")
-def _unlocked(ev, who, when):
-    return f"- **{when}** @{who} unlocked this issue."
-
-
-@_fmt("pinned")
-def _pinned(ev, who, when):
-    return f"- **{when}** @{who} pinned this issue."
-
-
-@_fmt("unpinned")
-def _unpinned(ev, who, when):
-    return f"- **{when}** @{who} unpinned this issue."
-
-
-@_fmt("referenced")
-def _referenced(ev, who, when):
-    commit = ev.get("commit_url") or ev.get("commit_id") or ""
-    note = f": {commit}" if commit else ""
-    return f"- **{when}** @{who} referenced this issue in a commit{note}."
-
-
-@_fmt("cross-referenced")
-def _crossref(ev, who, when):
-    src = (ev.get("source") or {}).get("issue") or {}
-    href = src.get("html_url")
-    if href:
-        link = f"[#{src.get('number', '?')} {src.get('title', '')}]({href})"
-    else:
-        link = "(source issue unavailable)"
-    return f"- **{when}** @{who} cross-referenced this issue from {link}."
-
-
-@_fmt("connected")
-def _connected(ev, who, when):
-    return f"- **{when}** @{who} connected this issue (integration)."
-
-
-@_fmt("disconnected")
-def _disconnected(ev, who, when):
-    return f"- **{when}** @{who} disconnected this issue (integration)."
-
-
-@_fmt("transferred")
-def _transferred(ev, who, when):
-    return f"- **{when}** @{who} transferred this issue."
-
-
-@_fmt("head_ref_deleted")
-def _head_deleted(ev, who, when):
-    return f"- **{when}** @{who} deleted the head ref."
-
-
-@_fmt("head_ref_restored")
-def _head_restored(ev, who, when):
-    return f"- **{when}** @{who} restored the head ref."
+    if kind == "closed":
+        reason = ev.get("state_reason")
+        return f"closed this issue ({reason})." if reason else "closed this issue."
+    if kind == "renamed":
+        r = ev.get("rename") or {}
+        return f"renamed from «{r.get('from', '?')}» to «{r.get('to', '?')}»."
+    if kind == "labeled":
+        return f"added label `{label}`."
+    if kind == "unlabeled":
+        return f"removed label `{label}`."
+    if kind == "assigned":
+        return f"assigned @{assignee}."
+    if kind == "unassigned":
+        return f"unassigned @{assignee}."
+    if kind == "milestoned":
+        return f"added milestone «{milestone}»."
+    if kind == "demilestoned":
+        return f"removed milestone «{milestone}»."
+    if kind == "referenced":
+        commit = ev.get("commit_url") or ev.get("commit_id") or ""
+        note = f": {commit}" if commit else ""
+        return f"referenced this issue in a commit{note}."
+    if kind == "cross-referenced":
+        src = (ev.get("source") or {}).get("issue") or {}
+        href = src.get("html_url")
+        link = (
+            f"[#{src.get('number', '?')} {src.get('title', '')}]({href})"
+            if href
+            else "(source issue unavailable)"
+        )
+        return f"cross-referenced this issue from {link}."
+    return f"— _{kind}_"
 
 
 def format_timeline_line(ev: dict[str, Any]) -> str:
     kind = ev.get("event") or ""
-    if kind in ("committed", "commented"):
+    if kind in _TIMELINE_SKIP:
         return ""
     who = ((ev.get("actor") or {}).get("login")) or "unknown"
     when = ev.get("created_at") or ""
-    fn = _TIMELINE_FORMATTERS.get(kind)
-    if fn:
-        return fn(ev, who, when)
-    return f"- **{when}** @{who} — _{kind}_"
+    return f"- **{when}** @{who} {_timeline_suffix(ev)}"
 
 
 def timeline_section(events: list[dict[str, Any]]) -> str:
