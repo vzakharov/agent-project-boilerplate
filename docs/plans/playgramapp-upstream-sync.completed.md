@@ -166,6 +166,14 @@ Struck-through targets become **stubs**, so those references stay valid but must
 
 **Already verified identical to upstream:** `dry`, `explore` — no action needed.
 
+## Deviations from the plan as written
+
+Recorded as they happened, so the plan matches what landed.
+
+1. **Four supporting scripts were needed that the plan never counted.** `/check-merge` and `/watch-ci` are thin wrappers over `scripts/check-merge.sh` and `scripts/ci-watch-tick.sh`, and `/qa-checklist` round-trips the PR body through a script. All were ported: the two shell scripts share `scripts/lib/watch-tick-common.sh` (upstream's own factoring, minus the `.claude/gh-repo.json` fallback — a boilerplate resolves `OWNER/REPO` from the git remote), and upstream's TypeScript `pr-body.ts` was rewritten as `scripts/pr-body.py`, since Python is the one interpreter this repo already assumes.
+2. **`/finalize` needed more genericizing than "drop the dispatch steps".** Upstream states as fact that a PR triggers no workflow at all — true of its CI, not of a boilerplate's. The skill now establishes which case it is up front and branches on it. `no attest` also lost its `pnpm format:fix` lane: with no doc-only equivalent to swap in, the mode skips the gates outright and the attestation says so.
+3. **A DRY finding was surfaced rather than applied.** `scripts/export-github-issue.py` and `scripts/pr-body.py` carry identical `die`, `gh_token` and `detect_origin_repo` helpers (~50 lines). Extracting them to `scripts/lib/gh_common.py` needs a `sys.path` insert before the import, which trips `E402` — and CLAUDE.md forbids adding a lint suppression without asking. Per `/dry`'s own contract that makes it an ambiguous call, not an obvious win, so it stays duplicated pending a decision.
+
 ## Execution order
 
 1. `docs/plans/` lifecycle flip; `.gitignore` `tmp/`.
