@@ -26,22 +26,15 @@ Upstream renamed `pnpm precommit` → `pnpm vet`. Two separate things happened i
 
 The flag is named after the one thing it does not skip. That is worth fixing regardless of what the script is called.
 
-## Decision: adopt `vet` wholesale
+## Part 1 — adopt `vet` wholesale
 
-Two coherent ways to fix the flag:
+`scripts/gates.sh` → `scripts/vet.sh`, "local gates" → "vetting", `/finalize no attest` → `/finalize no vet`.
 
-- **A — adopt upstream's vocabulary.** `scripts/gates.sh` → `scripts/vet.sh`, "local gates" → "vetting", `/finalize no attest` → `/finalize no vet`.
-- **B — keep ours and fix only the flag.** Stay on `gates.sh`, rename the flag to `no gates`.
-
-**A.** Not because "gates" is wrong — it isn't — but because vocabulary drift is precisely the tax the second half of this plan exists to reduce. Translating one renamed concept across 11 files cost real effort this session; every divergent term makes every future sync a translation exercise rather than a diff. And this repo is *itself* upstream for the projects generated from it, so the vocabulary it ships propagates. `vet` (the run) / `attest` (the record) is a genuinely better pair than `gates` / `attest`, which names the run after a metaphor and the record after a verb.
-
-The cost is churn in a template three commits old, with no known forks. Cheap now, expensive later.
+Not because "gates" is wrong — it isn't — but because vocabulary drift is precisely the tax Part 2 exists to reduce. Translating one renamed concept across 11 files cost real effort this session; every divergent term makes every future sync a translation exercise rather than a diff. And this repo is *itself* upstream for the projects generated from it, so the vocabulary it ships propagates. `vet` (the run) / `attest` (the record) is a better pair than `gates` / `attest`, which names the run after a metaphor and the record after a verb.
 
 `no ci` and `no attest` stay as **accepted spellings** of `no vet`, exactly as upstream keeps them — an operator who types the old flag gets the mode they meant, rather than a skill that doesn't recognize the argument.
 
-## Part 1 — the rename
-
-Mechanical, but two of the sites are load-bearing and easy to miss.
+The work is mechanical, but two of the sites are load-bearing and easy to miss.
 
 1. **`git mv scripts/gates.sh scripts/vet.sh`** — and rewrite its header comment and its `TODO:` stderr line. It stays a stub exiting `1`.
 2. **`.claude/skills/finalize/SKILL.md`** — the substantive edit:
@@ -54,18 +47,31 @@ Mechanical, but two of the sites are load-bearing and easy to miss.
 
 **Frontmatter `description:` lines are the trap.** They are what the operator sees in the skills list and what the agent matches an invocation against, so a description left saying `no attest` while the body says `no vet` mis-advertises the skill even though every prose site is correct. `finalize` is the one whose description carries the flag; check all 24 regardless.
 
-## Part 2 — `/sync-upstream`
+## Part 2 — `/sync-upstream`, a skill that does not travel
 
-A new working skill (not a stub — the mechanics are project-agnostic; only the pointer is project config).
+A new working skill (not a stub — the mechanics are complete; nothing about it awaits hydration).
 
-### `.claude/upstream.json` — the watermark
+### It is boilerplate maintenance, and it must say so
 
-The operator's question, answered: yes, and it cannot live in `docs/plans/`, because `/finalize` sweeps that whole tree before the PR goes ready. The last sync recorded upstream HEAD in a plan file *and* a commit message; the plan file survived to trunk only because that sweep never ran, which is luck, not a mechanism.
+Every other skill here exists to be inherited: that is what a template is for. This one is the exception, and it is the only file in the repo whose correct disposition on bootstrap is **delete**. A generated project cannot use it — it has no upstream in the sense the skill means, and the repo this copy points at is private, so an inherited `/sync-upstream` would resolve to a clone the operator cannot perform and a watermark that describes someone else's history.
+
+The deeper reason is that "Use this template" produces a *divorced* repo, not a dependency. A generated project hydrates stubs, writes its own `CLAUDE.md` sections, and diverges from the first commit. Pulling a moved template back into that is a genuinely harder problem than the one this skill solves — reconciling a fork, not tracking a vendored surface — and a skill that looks like it handles the second while being invoked for the first is worse than no skill.
+
+So the skill is marked the way the stubs are marked, and for the same reason: a file that reads as applicable when it isn't gets half-followed. The stubs' banner says *hydrate me before use*; this one's says *delete me on bootstrap*.
+
+- Frontmatter `description` opens by naming it boilerplate-maintenance-only, so it reads correctly in the skills list — the surface an operator actually scans.
+- A banner on line 1, mirroring the stub convention.
+- `README.md` lists it **outside** the four skill tables, under its own heading, so it is never read as part of the inherited set. The count stays **20 inherited skills**, plus this one.
+- The bootstrap checklist gains an explicit delete step.
+
+### The watermark
+
+Yes to storing the SHA in-repo, and it cannot live in `docs/plans/` — `/finalize` sweeps that whole tree before the PR goes ready. The last sync recorded upstream HEAD in a plan file *and* a commit message; the plan file survived to trunk only because that sweep never ran, which is luck, not a mechanism.
 
 ```json
 {
   "repo": "Playgramai/playgramapp",
-  "lastSyncedSha": "ed118a9c...",
+  "lastSyncedSha": "ed118a9c…",
   "lastSyncedAt": "2026-08-08",
   "vendoredPaths": ["CLAUDE.md", "README.md", ".claude/", "scripts/"]
 }
@@ -75,11 +81,11 @@ The operator's question, answered: yes, and it cannot live in `docs/plans/`, bec
 
 **The watermark is upstream HEAD at sync time, not the last commit taken.** Commits triaged and skipped are *done* — the watermark advances past them, and the sync's PR body is where the reasoning lives. A watermark that only advanced to the last-taken commit would re-surface every skipped commit forever.
 
-**Bootstrapping caveat.** A project generated from this template inherits a pointer to a private repo it cannot read. That is a bootstrap-checklist item in `README.md`: repoint `repo` at `vzakharov/agent-project-boilerplate`, or delete the file and the skill if the project intends to diverge.
+**It lives at `.claude/skills/sync-upstream/upstream.json`, not `.claude/upstream.json`.** This deviates from the location picked in review, and the "does not travel" requirement is what changes the answer: colocating puts the procedure and its state in one directory, so `rm -rf .claude/skills/sync-upstream/` is the entire bootstrap deletion. A top-level `.claude/upstream.json` is a second thing to remember, and forgetting it leaves a generated repo carrying a pointer to a private repo it can't read — exactly the confusion the requirement is meant to prevent. The JSON-over-prose decision is unaffected; only the path moves. Easily reverted if the top-level path is wanted for discoverability.
 
 ### What the skill does
 
-1. Read `.claude/upstream.json`; stop if it is missing or still the template value.
+1. Read the watermark file; stop if it is missing or still the template value.
 2. Clone upstream into the scratchpad over git transport with `$GH_TOKEN`; verify `lastSyncedSha` is in the clone and deepen if not.
 3. `git log <lastSyncedSha>..HEAD -- <vendoredPaths>` — the candidate set. Record upstream HEAD as the next watermark now, before triage.
 4. **Triage each candidate from its commit message first.** Upstream writes long ones that state the rationale; the message usually settles relevant-vs-stack-bound before any diff is opened. Verdicts: take / translate / skip (stack-bound) / skip (already have).
@@ -103,9 +109,10 @@ Each of these cost time in this session or the last one:
 
 ## DRY notes
 
-- **`.claude/upstream.json` is genuinely new state**, not a duplicate. The upstream repo cannot be derived from `git remote` (that is `origin`, the downstream), and the previous sync's SHA exists today only in prose that `/finalize` is contractually obliged to delete. This is the file that stops the fact from being re-derived by hand every time.
+- **The watermark file is genuinely new state**, not a duplicate. The upstream repo cannot be derived from `git remote` (that is `origin`, the downstream), and the previous sync's SHA exists today only in prose that `/finalize` is contractually obliged to delete. This is the file that stops the fact from being re-derived by hand every time.
 - **`vendoredPaths` is not a second copy of "what this repo contains."** No existing declaration lists the upstream-tracked surface — `README.md`'s "Ships:" list is a reader-facing inventory of features, not a path filter, and it deliberately omits `docs/`. Deriving one from the other would couple a prose section to a tool input.
 - **`/sync-upstream` delegates rather than restates**: `/dry`, `/tighten-docs` and `/draft-pr` are invoked by `@.claude/skills/<name>/SKILL.md` reference, the same discipline every other skill here uses. It contains no PR-opening, branch-renaming or squash-message logic of its own.
+- **The "does not travel" marking reuses the stub convention rather than inventing a second one** — banner on line 1, disposition stated in the frontmatter description, one paragraph in the README. Same mechanism, opposite instruction (`delete me` vs `hydrate me`), so a reader who has met one recognizes the other.
 - **The rename is a mechanical substitution across ~12 files with no shared abstraction to extract.** Introducing an indirection (a `$VET_CMD` variable, a "the project's local check" euphemism) so the string appears once would make every skill vaguer at the point where it most needs to name a concrete command. The previous sync reached the same conclusion about `./scripts/gates.sh` and it still holds.
 - **The sharp-corners list is not a duplicate of `/override-gh`.** That skill's whole content is "gh exists"; `/sync-upstream` needs the cross-owner 403 and the credential-helper clone line, which live nowhere else.
 
@@ -113,6 +120,7 @@ Each of these cost time in this session or the last one:
 
 - **The rename is wide and shallow** — ~12 files, one string. A missed site is silent: an agent reads `./scripts/gates.sh` from a stale skill, the file is gone, and the failure surfaces as a confusing "no such file" mid-`/finalize`. The grep sweep in Part 1 step 5 is the mitigation, and it must cover frontmatter.
 - **`vet` collides with `go vet`** in the CLAUDE.md example block. Harmless but readable-as-confusing; the prose has to make clear that `vet` here names the local run, and Go's `vet` is one of the things it might call.
+- **The delete-on-bootstrap instruction is advisory.** Nothing enforces it, and a generated repo that keeps `/sync-upstream` gets an agent that may try to clone a private repo it has no access to. The banner and the checklist item are what make it likely to be seen; the failure mode is loud (a 403 on clone) rather than silent, which is the right shape for an unenforceable rule.
 - **The watermark can lie if a sync is abandoned mid-way.** If the branch is dropped after the JSON is updated but before the port lands, nothing is wrong on trunk (the update never merged) — but a *partial* merge would silently skip commits. Mitigation: the watermark bump is the **last** commit of a sync, never the first.
 - **`/sync-upstream` is written from a sample of two syncs**, one of which is this one. It will be wrong about something; it says so, and asks the next session to add what it learns.
 
@@ -120,9 +128,8 @@ Each of these cost time in this session or the last one:
 
 1. Plan-file lifecycle flip.
 2. Part 1 rename: `git mv`, then `finalize`, `CLAUDE.md`, `README.md`, then the remaining call sites; grep sweep including frontmatter.
-3. `.claude/upstream.json`.
-4. `.claude/skills/sync-upstream/SKILL.md`.
-5. `CLAUDE.md` + `README.md`: register the new skill (20 → 21), add the bootstrap-checklist item for repointing the upstream pointer.
-6. `/dry`, `/tighten-docs`.
-7. Watermark commit last.
-8. `./scripts/vet.sh` is a stub that exits `1` by design — it cannot gate this PR. Say so in the PR body rather than implying a green run.
+3. `.claude/skills/sync-upstream/SKILL.md` + its `upstream.json`.
+4. `CLAUDE.md` + `README.md`: register the new skill outside the inherited set, add the bootstrap-checklist delete step.
+5. `/dry`, `/tighten-docs`.
+6. Watermark commit last.
+7. `./scripts/vet.sh` is a stub that exits `1` by design — it cannot gate this PR. Say so in the PR body rather than implying a green run.
