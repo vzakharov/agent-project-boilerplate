@@ -42,7 +42,7 @@ No setup is needed before this — there's no baseline to establish. The check c
 
 Do **not** decide here, and do **not** name a specific flow. State plainly what the check reported (`origin/<target>` advanced `base..new`) and **hand control back to the enclosing flow**, which decides per _its own_ target-advanced rules:
 
-- When the enclosing flow is `/finalize`, follow the deliberation in its Step 6 (read the incoming diff; re-run the gates and re-attest only when the commits plausibly interact with this branch; otherwise merge-and-resume). Once the new target tip is merged into the branch, a later `/check-merge` reports "contained" again, so the cycle continues until the PR lands.
+- When the enclosing flow is `/finalize`, follow the deliberation in its Step 6 (read the incoming diff; re-run the vet suite and re-attest only when the commits plausibly interact with this branch; otherwise merge-and-resume). Once the new target tip is merged into the branch, a later `/check-merge` reports "contained" again, so the cycle continues until the PR lands.
 - If invoked standalone with no enclosing flow to hand back to, deliberate per the same criteria (load `@.claude/skills/finalize/SKILL.md` Step 6) before acting — don't reflexively skip re-verification. On the demonstrably-independent path just merge and push.
 
 The cycle always terminates: merging the advance in makes the next check "contained", and the merge (exit 20) / close (exit 21) outcome is always reachable on a later `/check-merge`.

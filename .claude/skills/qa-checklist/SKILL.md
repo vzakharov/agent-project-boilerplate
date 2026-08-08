@@ -2,7 +2,7 @@
 description: Generate a QA checklist from the current branch's change and write it into the current PR's body as a `## QA Checklist` section, followed by a table classifying each step's automatability and test coverage. Single source of truth for the PR verification checklist — `/draft-pr` and `/issue` delegate to it by reference. Invoke as `/qa-checklist [optional focus guidance]`. Use when the user says "manual qa", "qa checklist", "/qa-checklist", or when those skills need to produce the checklist.
 ---
 
-End state of this skill: the current branch's open PR has a `## QA Checklist` section in its body — a markdown checklist of concrete, user-visible steps a human clicks through to verify the change end-to-end. This skill edits an existing PR body; it does not create PRs, run the gates, or push commits.
+End state of this skill: the current branch's open PR has a `## QA Checklist` section in its body — a markdown checklist of concrete, user-visible steps a human clicks through to verify the change end-to-end. This skill edits an existing PR body; it does not create PRs, run the vet suite, or push commits.
 
 **Two ways this skill is used:**
 
@@ -50,7 +50,7 @@ Columns:
 - **Item** — the checklist item's slug (the `` `slug` `` it leads with).
 - **Automatable** — the cheapest test layer that could cover it, from the project's layered stack (see CLAUDE.md "Testing", and any `.claude/rules/` file covering tests): `unit` (pure logic or app-owned component behavior), `integration` (multiple units, or the HTTP boundary, or a handler's effects), `e2e` (a full flow against a built artifact), or `manual-only` (genuinely needs human judgment and can't be meaningfully asserted: pixel/visual match against a reference, live third-party behavior, subjective UX feel).
 - **Covered?** — whether a backing test already exists: `✅` yes / `❌` no / `—` for `manual-only`. Outside an implementation flow (see below) leave this `—`/unknown; it gets filled in there.
-  - **A `✅` does not imply "protected at merge".** Which bucket the backing test lives in decides when it actually runs. If the project splits its test buckets — some in the fast local gates, some only on a CI dispatch or a nightly — mark the deferred ones `✅ (nightly)` so the operator can see which rows the merge itself does not protect. Treat a cluster of them as a reason to dispatch the expensive bucket before landing (`/test-on-gh`, if the project has hydrated it).
+  - **A `✅` does not imply "protected at merge".** Which bucket the backing test lives in decides when it actually runs. If the project splits its test buckets — some in the fast vet run, some only on a CI dispatch or a nightly — mark the deferred ones `✅ (nightly)` so the operator can see which rows the merge itself does not protect. Treat a cluster of them as a reason to dispatch the expensive bucket before landing (`/test-on-gh`, if the project has hydrated it).
 - **Notes** — a one-line test sketch for uncovered automatable rows, or why a row is `manual-only`.
 
 The table is a durable, refreshable property of the change, so it lives in the PR body alongside the checklist.
@@ -87,4 +87,4 @@ python3 scripts/pr-body.py push <n>
 
 Print the PR URL on its own line and a one-sentence summary of what changed (added / refreshed / left unchanged). In an implementation flow, also list the automatable-but-uncovered rows (**Covered? = ❌**) so the enclosing flow / user can close those test gaps before merge. Stop.
 
-Do **not** mark the PR ready for review, run the gates, or push commits — those belong to other skills (`/finalize`).
+Do **not** mark the PR ready for review, run the vet suite, or push commits — those belong to other skills (`/finalize`).

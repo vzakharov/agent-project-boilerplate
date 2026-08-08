@@ -110,14 +110,14 @@ one commit).
 
 ```bash
 git grep -nE '^(<<<<<<<|>>>>>>>) ' || echo clean     # no conflict markers survived
-./scripts/gates.sh                                   # the project's local gates
+./scripts/vet.sh                                     # the project's vet run
 ```
 
 Fix real errors before pushing. **Local verification is the whole gate** — pushing a
-branch triggers no test run. That is why the gates run here and not just a type-check:
-a merge can type-check cleanly and still behave differently. If the merge pulled in
-changes on a surface the gates don't cover (a bucket that only runs in CI), dispatch
-that bucket too — `/test-on-gh`, if the project has hydrated it.
+branch triggers no test run. That is why the full vet run happens here and not just a
+type-check: a merge can type-check cleanly and still behave differently. If the merge
+pulled in changes on a surface the vet run doesn't cover (a bucket that only runs in
+CI), dispatch that bucket too — `/test-on-gh`, if the project has hydrated it.
 
 ### Step 5 — Push, then report for after-the-fact review
 
@@ -134,7 +134,7 @@ and redo the merge from the new tip (Step 3); never force here. Then report:
 - the **merge commit SHA** — _review with `git show <sha>`; the combined diff
   isolates the actual resolution_,
 - a per-file conflict/resolution table (or "clean merge, no resolution needed"),
-- the gates result,
+- the vet result,
 - the **pre-merge branch tip** (the revert target for the recourse below),
 - the recourse below.
 

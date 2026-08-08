@@ -1,10 +1,10 @@
 ---
-description: Finalize (a.k.a. "prep merge") — land prep: verify there's a draft PR, run the local gates, merge the base branch, mark ready for review, propose a squash title/body, and post the attestation comment. Pass an optional branch/PR target first (`/finalize <branch|#PR|PR-url>`) to attach to that existing branch before finalizing. `/finalize no attest` is the docs-only mode.
+description: Finalize (a.k.a. "prep merge") — land prep: verify there's a draft PR, run the vet suite, merge the base branch, mark ready for review, propose a squash title/body, and post the attestation comment. Pass an optional branch/PR target first (`/finalize <branch|#PR|PR-url>`) to attach to that existing branch before finalizing. `/finalize no vet` is the docs-only mode.
 ---
 
 **Optional branch/PR target**: if the first token of the argument is a branch name, `#NNN` PR number, or PR URL, then `/finalize <target>` is shorthand for attaching to that branch first and then finalizing — equivalent to `/from-branch <target> /finalize`. Load `@.claude/skills/from-branch/SKILL.md` and follow it to attach to `<target>`, then run the finalize steps below. If the argument has no target token, skip this and finalize the current branch as usual.
 
-**`no attest` is the docs-only mode.** Pass it when the diff has nothing to verify — markdown, top-level docs, read-only reference data. It skips the gates (there is nothing for them to check) and skips any bucket dispatch. It does **not** skip step 7: the comment still goes up, stating that verification was a deliberate no-op and why. Everything else below still applies. (`no ci` is an accepted spelling of this flag.)
+**`no vet` is the docs-only mode.** Pass it when the diff has nothing to verify — markdown, top-level docs, read-only reference data. It skips the vet run (there is nothing for it to check) and skips any bucket dispatch. It does **not** skip step 7: the attestation still goes up, stating that verification was a deliberate no-op and why. Everything else below still applies. (`no ci` and `no attest` are accepted spellings of this flag.)
 
 **Pre-check**:
 
@@ -19,14 +19,14 @@ description: Finalize (a.k.a. "prep merge") — land prep: verify there's a draf
 
 **What actually gates this PR.** Establish this once, at the top, because everything below depends on it: check whether any workflow runs on a PR in this repo (`.github/workflows/` triggers, or `gh pr checks` on an existing PR).
 
-- **If nothing runs on a PR**, *you* are the entire gate — nothing downstream will report on this branch before someone merges it. Step 1's `./scripts/gates.sh` is the only thing that runs the project's checks before the merge, which is why the gates are not optional on this path even though ordinary development skips them. An empty Checks tab after step 4 is then the expected end state; do **not** push an empty commit to "relaunch CI".
-- **If a workflow does run on PRs**, the gates still run here — they're faster and they catch things before a reviewer sees red — but step 4 also means watching that run to green (`@.claude/skills/watch-ci/SKILL.md`), and step 7 attests to both.
+- **If nothing runs on a PR**, *you* are the entire gate — nothing downstream will report on this branch before someone merges it. Step 1's `./scripts/vet.sh` is the only thing that runs the project's checks before the merge, which is why vetting is not optional on this path even though ordinary development skips it. An empty Checks tab after step 4 is then the expected end state; do **not** push an empty commit to "relaunch CI".
+- **If a workflow does run on PRs**, the vet run still happens here — it's faster and it catches things before a reviewer sees red — but step 4 also means watching that run to green (`@.claude/skills/watch-ci/SKILL.md`), and step 7 attests to both.
 
 Either way, **step 7's attestation comment is the record.** A reviewer cannot see from the diff what was run; if it isn't written down it did not happen as far as anyone else is concerned.
 
 Steps (stop on first unresolved failure):
 
-1. **Gates**: `./scripts/gates.sh`. Fix and rerun until green.
+1. **Vet**: `./scripts/vet.sh`. Fix and rerun until green.
 2. **Merge the base branch**: `git fetch origin && git merge origin/<base>` (`<base>` from the Pre-check). Resolve conflicts; if you can't, ask. A clean merge (no conflicts) is not the end of the thought: review what the base brought in and consider whether it **overlaps** with this branch's change or opens an **optimization**. Git only flags textual conflicts — it won't tell you the base added a helper/util/component that now duplicates something you wrote, introduced a shared abstraction you should route through instead of your local one, renamed or moved a symbol you still reference the old way, or changed a pattern this branch should now follow for consistency. Skim the merged-in diff (`git log --oneline ORIG_HEAD..origin/<base>`, `git diff ORIG_HEAD origin/<base> -- <areas you touched>`) for these. If you spot a clear, low-risk dedup/simplification, apply it and commit; if it's ambiguous or large, surface it to the user rather than silently shipping the redundancy.
 3. **Working-artifact cleanup**: some directories ride the branch for in-flight review but must never land on the base. Sweep the two below **now**, deleting each **entire** tree (not just the current session's subfolder) and including the deletions in the **last** pushed commit before step 4. (`docs/remove-before-merging/` is the exception — it is swept at the **end** of step 6, after the merge check; see there for why.)
    - **`docs/issue/`** and **`docs/pr/`** — issue/PR exports from `scripts/export-github-issue.py` and `scripts/pr-body.py`. If **any** `docs/issue/<n>/` or `docs/pr/<n>/` tree exists, `git rm -r` it. The export was committed earlier by `@.claude/skills/issue/SKILL.md` on purpose — while the branch is in flight, any agent that resumes it (post-compaction handoff, parallel session) reads the full thread from there instead of re-exporting. Paired with the earlier add, the deletion cancels out in the squash.
@@ -37,7 +37,7 @@ Steps (stop on first unresolved failure):
 5. **Reconcile the squash message**: invoke `@.claude/skills/squash-message/SKILL.md` — load and follow it, passing `<base>` as the diff base. A proposal normally already exists, posted when the PR opened and still tracked on the branch, so this is an **edit** to a live doc in light of the merge, any review comments and the final committed state — not a fresh composition. It owns the title/body format, the draft-then-tighten pass, and both outputs (the PR comment beside the merge button and the two fenced blocks in the transcript). Do not draft the message inline here: printing an untightened first draft is the failure mode that skill exists to prevent.
 6. **Dispatch any CI-only bucket the diff reaches, then check the base.**
 
-   If the project has hydrated `/test-on-gh`, decide from the diff whether it reaches a surface the local gates don't cover (one that needs real credentials, real services, or a browser) and dispatch that bucket if so. It's a judgement call, not a reflex: don't dispatch a bucket the diff never touches, and don't skip one because the diff "looks fine". A red dispatch is a real failure — fix it under the two-shot rule. If `/test-on-gh` is still a stub, say so in the report rather than implying full coverage.
+   If the project has hydrated `/test-on-gh`, decide from the diff whether it reaches a surface the vet run doesn't cover (one that needs real credentials, real services, or a browser) and dispatch that bucket if so. It's a judgement call, not a reflex: don't dispatch a bucket the diff never touches, and don't skip one because the diff "looks fine". A red dispatch is a real failure — fix it under the two-shot rule. If `/test-on-gh` is still a stub, say so in the report rather than implying full coverage.
 
    Then, before ending the turn, run `/check-merge` (`@.claude/skills/check-merge/SKILL.md`) **once**: verification takes a while, so `origin/<base>` has often advanced while it ran and the target you just validated against may already be stale. Whatever the outcome, the final report **must state the `origin/<base>` SHA this check verified against** (short SHA + subject, e.g. `main @ 8903396 "style: …" as of this check`) — the operator compares it against current `origin/<base>` at a glance without re-running `/check-merge`.
    - **contained** (no movement) → go to step 7, then **end the turn** so the session reads as idle; the operator can run `/check-merge` again when they return.
@@ -48,7 +48,7 @@ Steps (stop on first unresolved failure):
      - You **MUST** read the incoming diff before deciding — `git log --oneline <merge-base>..origin/<base>` and `git diff <merge-base>..origin/<base> -- <areas this branch touched>`, where `<merge-base>` is the base commit the branch already contains (`/check-merge` prints it as `base=…`, or compute `git merge-base HEAD origin/<base>`). Deciding without reading the diff is not allowed.
      - Weigh the same interactions step 2 warns about (a helper/util/component that now duplicates something you wrote, a shared abstraction you should route through instead of your local one, a renamed/moved symbol you still reference the old way, a pattern this branch should now follow) **plus** the semantic incompatibilities above.
      - **Default to re-verify when unsure.** The test is _interaction_, not _whether the base touched code_ — most advances touch some code, and that alone doesn't warrant it. Skip re-verification when, having read the diff, you can say why the incoming commits and this branch's changes don't overlap: they're in different areas/modules, nothing this branch imports or depends on was touched, and no symbol/signature/pattern this branch uses was changed. If you can see a plausible interaction, or you genuinely can't tell, re-verify.
-       - **Interacting or ambiguous** → re-run step 2 (`git merge origin/<base>`, applying any dedup/simplification it opens), then step 1 (`./scripts/gates.sh`), push, and re-run any step-6 dispatch the diff still warrants. The two-shot rule does **not** apply to these base-advanced re-runs; they're keeping the target current, not fixing failures.
+       - **Interacting or ambiguous** → re-run step 2 (`git merge origin/<base>`, applying any dedup/simplification it opens), then step 1 (`./scripts/vet.sh`), push, and re-run any step-6 dispatch the diff still warrants. The two-shot rule does **not** apply to these base-advanced re-runs; they're keeping the target current, not fixing failures.
        - **Demonstrably independent** → `git merge origin/<base>`, push, and run `/check-merge` again when you return to confirm `origin/<base>` hasn't moved since. Unrelated code changes qualify: e.g. the base reworks a frontend modal while this branch changes a background job's retry policy — both touch code, but they don't interact.
    - Do NOT merge the PR — the user controls the final title/body and merge.
 
@@ -67,14 +67,14 @@ Steps (stop on first unresolved failure):
 
    Verified `<short-sha>` (`<branch>`) against `<base>` @ `<base-short-sha>` "<base subject>".
 
-   - `./scripts/gates.sh` — **green**
+   - `./scripts/vet.sh` — **green**
    - CI on this PR — **<green (run link) | nothing runs on a PR in this repo>**
    - CI-only buckets — **<dispatched and passed (run link) | not dispatched: the diff doesn't reach them | /test-on-gh is an unhydrated stub>**
 
    <If nothing runs on a PR here: "No workflow runs on a PR; this comment is the verification record.">
    ```
 
-   In `no attest` mode the comment still goes up — same marker, same place — saying that there was nothing to verify:
+   In `no vet` mode the comment still goes up — same marker, same place — saying that there was nothing to verify:
 
    ```md
    <!-- finalize-attestation -->
@@ -83,7 +83,7 @@ Steps (stop on first unresolved failure):
 
    `<short-sha>` (`<branch>`) against `<base>` @ `<base-short-sha>` "<base subject>".
 
-   Finalized in `no attest` mode: <why the diff has nothing to verify — e.g. "markdown only, no code path touched">. The local gates were skipped rather than run green, and no bucket was dispatched.
+   Finalized in `no vet` mode: <why the diff has nothing to verify — e.g. "markdown only, no code path touched">. `./scripts/vet.sh` was skipped rather than run green, and no bucket was dispatched.
 
    <If nothing runs on a PR here: "No workflow runs on a PR; this comment is the verification record.">
    ```
@@ -91,7 +91,7 @@ Steps (stop on first unresolved failure):
    **Finding the comment: match the marker, never `--edit-last`.** Same mechanic `@.claude/skills/squash-message/SKILL.md` § "Emit" uses for its own sticky comment — list the PR's comments (`gh api repos/<owner>/<repo>/issues/<n>/comments --paginate`), pick the one whose body contains `<!-- finalize-attestation -->`, and `gh api repos/<owner>/<repo>/issues/comments/<id> -X PATCH -F body=@<file>` that id; post a new comment only when no match exists. `gh pr comment --edit-last` looks like the tool for this and is not: it targets your most recent comment on the PR whatever that happens to be, so on the ordinary finalize ordering — squash proposal posted at step 5, attestation at step 7 — it overwrites the squash proposal with the attestation. Both comments are then one comment, and the loss is silent.
 
    Rules that make it worth trusting:
-   - **Attest what you ran, not what you meant to run.** If the gates were not green, or a dispatch was skipped for a reason other than "the diff doesn't reach it", or you stopped under the two-shot rule — say exactly that, in the comment. An honest partial attestation is useful; a tidy one that overstates is worse than none. That includes naming a stub: "`./scripts/gates.sh` is not implemented in this project yet" is an honest line, and it tells the reviewer exactly how much the attestation is worth.
-   - **One comment, edited in place.** Re-running `/finalize` after a base-advanced re-verify updates it; it must always describe the branch's current head, not the first pass. A branch finalized once in `no attest` mode and later re-finalized for real replaces the no-op body with the full one.
-   - **A no-op is a result, and it gets posted.** Never resolve `no attest` by staying silent. An operator coming back to the PR — days later, or from another machine — cannot distinguish "verification was skipped on purpose" from "nobody ever finalized this" unless one of them is written down, and the missing comment looks identical to the forgotten one. Say which it was.
+   - **Attest what you vetted, not what you meant to vet.** If the vet run was not green, or a dispatch was skipped for a reason other than "the diff doesn't reach it", or you stopped under the two-shot rule — say exactly that, in the comment. An honest partial attestation is useful; a tidy one that overstates is worse than none. That includes naming a stub: "`./scripts/vet.sh` is not implemented in this project yet" is an honest line, and it tells the reviewer exactly how much the attestation is worth.
+   - **One comment, edited in place.** Re-running `/finalize` after a base-advanced re-verify updates it; it must always describe the branch's current head, not the first pass. A branch finalized once in `no vet` mode and later re-finalized for real replaces the no-op body with the full one.
+   - **A no-op is a result, and it gets posted.** Never resolve `no vet` by staying silent. An operator coming back to the PR — days later, or from another machine — cannot distinguish "verification was skipped on purpose" from "nobody ever finalized this" unless one of them is written down, and the missing comment looks identical to the forgotten one. Say which it was.
    - End the body with the attribution footer the repo requires of every GitHub comment.

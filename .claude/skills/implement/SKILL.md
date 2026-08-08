@@ -59,7 +59,7 @@ Commit/push discipline is already governed by CLAUDE.md — don't reinvent it he
 - Commit and push proactively after each meaningful unit of work (CLAUDE.md "Git conventions" — feature branch in a remote/web env; the operator reviews from another machine and only sees pushed work).
 - **Never force-push.** The operator may be following the branch as you work and needs the sequence of changes to read cleanly; force-pushing rewrites that history out from under them. Only ever advance the branch with new commits.
 - Conventional-commit subjects; descriptive bodies.
-- **Do not** run `./scripts/gates.sh` per commit on a feature branch — that's `/finalize`'s job once the operator has reviewed.
+- **Do not** run `./scripts/vet.sh` per commit on a feature branch — that's `/finalize`'s job once the operator has reviewed.
 
 ## Step 3 — Mandatory quality passes
 
@@ -79,5 +79,5 @@ The **only** exception is an explicit "no PR" from the operator (e.g. `/implemen
 ## Do NOT
 
 - Re-open a plan cycle or re-edit the plan file per code change — it's a transient artifact `/finalize` sweeps (see `@.claude/skills/plan/SKILL.md`). Leave it as the approved snapshot (under its `.in-progress.md` name); only refresh it when the operator specifically asks — e.g. so a fresh session can pick up the work from an up-to-date plan.
-- Run the gates, mark the PR ready, dispatch a CI-only bucket, or attest — those are `/finalize`.
+- Run the vet suite, mark the PR ready, dispatch a CI-only bucket, or attest — those are `/finalize`.
 - Skip either Step-3 pass because the diff "looks clean." They're mandatory.

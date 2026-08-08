@@ -1,40 +1,32 @@
 Proposed squash title/body:
 
 ```
-feat: sync agent infrastructure from upstream (pr #3)
+feat: sync upstream's vet rename and add /sync-upstream (pr #4)
 ```
 
 ```
-This boilerplate was extracted from a private repo in May and has not
-moved since; that repo's agent infrastructure has, structurally. The
-monolithic prep-merge dissolved into composable skills, and a front
-half appeared that never existed here. This ports the
-project-agnostic part of that: skills go 5 to 20.
+This repo vendors CLAUDE.md, README.md, .claude/ and scripts/ from a
+private application repo, stripped of that stack. Two syncs have now
+been done by hand, and both re-derived the same facts: where upstream
+is, where the last sync stopped, which paths are in scope, and how to
+reach a cross-owner private repo when gh api 403s. /sync-upstream is
+the answer, with an upstream.json watermark recording upstream HEAD at
+sync time rather than the last commit taken, so triaged-and-skipped
+commits stay skipped. It is delete-on-bootstrap rather than
+hydrate-before-use — a generated repo is a divorced fork, and the
+upstream it names is unreadable to it — so the inherited skill count
+stays at 20.
 
-The PR loop is now /plan writes a gated plan file, /implement executes
-it and runs the quality passes, /draft-pr opens the PR, /finalize
-lands it — delegating to /squash-message, /qa-checklist,
-/branch-rename, /check-merge, /sync-branch and /watch-ci, each
-individually invocable. /plan and /implement exist because web
-sessions re-emit stacked plan-mode and AskUserQuestion prompts after
-idling and silently lose the answers, so a plan becomes a reviewable
-file whose name is the approval gate and questions become numbered
-prose. prep-merge is deleted. Supporting scripts came along:
-check-merge.sh and ci-watch-tick.sh over a shared lib, and pr-body.py.
-Everything imported drops the upstream stack — its package scripts
-become ./scripts/gates.sh, its promotion-branch lanes become generic
-base resolution, its framework references are cut rather than
-genericized.
-
-Seven skills — release, hotfix, preview, test-on-gh, log-review,
-readonly-probe, renumber-migration — ship as stubs: the shape of the
-job and the concerns any implementation must answer, with no
-procedure, since every line of a working version is stack-bound. Their
-descriptions and banners announce this, and that marking is
-load-bearing: a stub read as a working skill gets half-followed
-against a project it was never written for. Treat one as unavailable
-until hydrated. Note also that ./scripts/gates.sh is itself still a
-stub that exits 1, so nothing gated this change.
+The one upstream change that reaches us renames precommit to vet, and
+only half of it applies: its rationale was that the name claimed a git
+hook the repo lacks, and "gates" never made that claim. Taken anyway,
+because vocabulary drift is what turns a sync into a translation
+exercise. The half that lands on a real bug here is the split the
+rename names — vetting is the run, attestation is the record it
+produces — under which /finalize's docs-only flag was named after the
+one step it does not skip. It becomes no vet, with no ci and no attest
+kept as accepted spellings. scripts/gates.sh becomes scripts/vet.sh,
+still a stub that exits 1, so nothing gated this change.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```

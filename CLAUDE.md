@@ -14,11 +14,11 @@ This file is intentionally bare. It carries only the conventions that hold true 
 
 > _Document the top-level directories and what they're for as the layout stabilizes._
 
-## Local gates
+## Vetting
 
-Local gates are the fast checks the agent runs *before pushing* to save CI minutes — typically lint, type-check, format-check, and any tests fast enough to run in seconds. Entrypoint: `./scripts/gates.sh`.
+Vetting is the fast local check the agent runs over a branch *before pushing* to save CI minutes — typically lint, type-check, format-check, and any tests fast enough to run in seconds. Entrypoint: `./scripts/vet.sh`. **Vetting is the run; attestation is the record that it happened** — `/finalize` does both, and its docs-only flag (`no vet`) skips the first while still posting the second.
 
-**Action required when starting a new project**: implement `scripts/gates.sh` for your stack. Examples:
+**Action required when starting a new project**: implement `scripts/vet.sh` for your stack. It names the whole local run; Go's own `vet` being one line inside it is a coincidence of naming. Examples:
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm test:unit       # Node / pnpm
@@ -29,9 +29,9 @@ go vet ./... && go test -short ./...                # Go
 
 Until it's implemented, skills that depend on it (notably `/finalize`) will stop loudly.
 
-**Keep it current** as tooling evolves. If a CI job catches something `gates.sh` should have caught, that's a signal to extend it.
+**Keep it current** as tooling evolves. If a CI job catches something `vet.sh` should have caught, that's a signal to extend it.
 
-**Do not run gates before every commit** on feature branches — it's wasteful, especially in remote/web sessions. Gates run at milestones: before pushing review-ready work, before flipping a PR to ready. `/finalize` is the canonical caller.
+**Do not vet before every commit** on feature branches — it's wasteful, especially in remote/web sessions. The vet run happens at milestones: before pushing review-ready work, before flipping a PR to ready. `/finalize` is the canonical caller.
 
 ## Key principles
 
@@ -43,7 +43,7 @@ Until it's implemented, skills that depend on it (notably `/finalize`) will stop
 - **Comments describe the code's lasting contract, not the change that produced it.** Don't leave transient/situational notes that narrate an edit ("now also sets X", "migrated from Y", "this used to…") — they read as noise once the change is old. If the rationale is genuinely durable, phrase it as a present-tense property of the code. `/tighten-docs` is the pass that enforces this over recent work.
 - **Dev artifacts go under gitignored `tmp/`, not as new `.gitignore` entries.** Scratch files, spikes, exploratory output, extracted frames, probe results — all go under `tmp/` (already gitignored). Don't add per-artifact lines to `.gitignore`.
 - **Plans must include a `## DRY notes` section.** When writing an implementation plan, always include one that states, for any code the plan adds or moves: what is genuinely shared vs. duplicated, which existing helper/type/module is reused, and — when you decide _not_ to extract a shared abstraction — why forcing one would be net-negative. This makes the reuse-vs-duplication call explicit and reviewable before implementation, rather than discovered in review.
-- **Ignore IDE diagnostics until local gates.** Do not react to or try to fix type errors, lint warnings, or other diagnostics that appear in IDE context during implementation. IDE servers can lag behind file changes and produce stale or misleading errors. `./scripts/gates.sh` is the single source of truth for correctness — only fix errors it reports.
+- **Ignore IDE diagnostics until the vet run.** Do not react to or try to fix type errors, lint warnings, or other diagnostics that appear in IDE context during implementation. IDE servers can lag behind file changes and produce stale or misleading errors. `./scripts/vet.sh` is the single source of truth for correctness — only fix errors it reports.
 - **Don't revert unexpected mid-execution changes.** If new code, comments, or edits appear in files during execution, they're most likely from the user editing concurrently. If the context makes it clear they're user-made, preserve them without asking. If genuinely unclear, ask before touching them — but never silently revert.
 - **Don't spin on typing/linting errors.** If a type error or lint issue resists 2–3 straightforward fix attempts, stop. Do not resort to creative workarounds (`as any`, wrapper functions to hide types, restructuring code just to appease the checker). Ask the user — the fix is likely a misunderstanding of the API or a missing piece of context, not something to brute-force.
 - **Never silently swallow errors.** On primary code paths, errors must propagate — logging alone isn't enough. A logged-and-continued error is a silent fail with paperwork. Silent fallbacks are acceptable only for secondary fire-and-forget operations where failure demonstrably cannot affect the user-facing result, and only with explicit user approval for the specific call site.
@@ -106,7 +106,7 @@ Write descriptive commit messages: the subject line summarizes the change, and t
 
 **On a feature branch in a remote/web environment** (typically signalled by a branch named `<vendor>/<autoname>`), commit and push proactively after each meaningful unit of work — don't wait to be asked. The operator is usually reviewing from a different machine than the VM the agent runs on, so they can only see the work once it's pushed.
 
-**Do not run local gates before every commit on feature branches.** Gates run at milestones via `/finalize`. See "Local gates" above.
+**Do not vet before every commit on feature branches.** The vet run happens at milestones via `/finalize`. See "Vetting" above.
 
 **Rename auto-generated remote/web branches early.** **First check whether the branch is already semantic.** The harness now often assigns a task-derived name at session start, in which case there is nothing to rename — leave it. This is an **undocumented** harness behavior and may be reverted at any time, so the rename procedure stays as the fallback: apply it only when the branch is an opaque `claude/<adjective>-<noun>-<hash>` name (e.g. `claude/relaxed-brown-EhDOB`). Rename it as soon as the task scope is clear — typically right after the first commit — to `claude/<short-task-slug>-<hash>`, keeping the original random suffix so parallel sessions stay unique. **Always do this before opening a PR**: renaming a branch that already has a PR **closes that PR** (GitHub auto-closes when the head ref disappears and does not retarget onto the new name), forcing a replacement PR over the same diff. The routine "develop on branch `<name>`" line in a session's git-setup block is **not** a pin — only treat the name as fixed when the **user** explicitly says not to rename it. Rationale: `claude/lucid-hamilton-MigdG` tells nobody anything in `git log`, PR lists, or future search; `claude/rename-autobranches-MigdG` does. `@.claude/skills/branch-rename/SKILL.md` owns the procedure.
 
@@ -127,7 +127,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/plan`** — write the plan to `docs/plans/<slug>.draft.do-not-implement.md`; ask questions as numbered prose. Ends by handing over an `/implement <branch>` command for a fresh session.
 - **`/implement`** — execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR.
 - **`/draft-pr`** — rename the auto-branch, push, open the draft PR, post the squash proposal.
-- **`/finalize`** — land prep: gates, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest.
+- **`/finalize`** — land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest.
 
 **Entry points and support:**
 
@@ -150,6 +150,10 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 Seven skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
 
-**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/gates.sh` is the same contract in shell form — it exits `1` until implemented.
+**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` is the same contract in shell form — it exits `1` until implemented.
+
+### Not part of the inherited set
+
+**`/sync-upstream`** maintains the boilerplate repo itself: it pulls the vendored agent infrastructure forward from the application repo this template was extracted from. It is the one file here whose correct disposition on bootstrap is **delete** — a generated project is a divorced fork rather than a dependency, and the repo the skill's watermark names is private. It is marked the way the stubs are marked, for the same reason a stub is: a file that reads as applicable when it isn't gets half-followed. `rm -rf .claude/skills/sync-upstream/` removes the procedure and its watermark together.
 
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
