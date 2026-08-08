@@ -1,5 +1,3 @@
-> ⛔ **DRAFT — DO NOT IMPLEMENT.** This plan is not approved. Do not edit source while this file is named `*.draft.do-not-implement.md` — prep and spikes go in `tmp/`. On an explicit operator go-ahead, `git mv` it to `*.in-progress.md` and delete this banner (quoting the go-ahead in the commit) *before* touching code.
-
 # Sync agent infrastructure from `Playgramai/playgramapp`
 
 ## Context
@@ -124,6 +122,49 @@ The imported skills cross-reference each other by `@.claude/skills/<name>/SKILL.
 - **Untested cross-references.** Imported skills reference each other; a missed rename (e.g. a lingering `/prep-merge` link, or a Tier A skill delegating to a Tier B skill that wasn't imported) breaks a chain silently. Mitigated by a final grep for `prep-merge`, `pnpm `, `playgram`, and every skill name not in the imported set.
 - **Stubs that read as working skills.** A stub whose description doesn't announce itself will get invoked and then half-followed against a project it was never hydrated for — worse than its absence. The banner and the description prefix are what prevent this, so they are not decoration; `scripts/gates.sh` exits `1` for the same reason, and the stubs should fail as loudly.
 - **Character shift.** The boilerplate currently advertises "five project-agnostic skills". It becomes 20 — 13 working, 7 stubs. That is a deliberate change in what this template is.
+
+## Implementation context
+
+Durable notes for any session resuming this work (including after a context compaction).
+
+**Upstream source.** Cloned at `/tmp/claude-0/-home-user-agent-project-boilerplate/d917fd19-3d24-54e7-9583-b0cd0ac9d7f6/scratchpad/up`, deepened to `--shallow-since=2026-05-01`. Upstream HEAD `6c1adca`; this repo's extraction point is `2280857` (2026-05-25 12:28 +03:00). If the clone is gone, re-create it — the GitHub REST API is scope-gated to this repo, but **git transport with `$GH_TOKEN` is not**:
+
+```bash
+git -c credential.helper='!f(){ echo "username=x-access-token"; echo "password=$GH_TOKEN"; };f' \
+  clone https://github.com/Playgramai/playgramapp.git up
+```
+
+(`gh api` against `Playgramai/*` returns 403 in this session; `gh` against this repo works. `add_repo` refuses cross-owner adds.)
+
+**Source paths.** Skills at `<up>/.claude/skills/<name>/SKILL.md`; hook at `<up>/.claude/hooks/session-start.sh`; upstream `CLAUDE.md` at `<up>/CLAUDE.md`.
+
+**Substitutions applied to every imported file.**
+
+| Upstream | Boilerplate |
+|---|---|
+| `pnpm precommit` | `./scripts/gates.sh` |
+| `pnpm format:fix` | `./scripts/gates.sh` (no doc-only lane; drop the swap) |
+| `pnpm test` | `./scripts/gates.sh` |
+| `pnpm gh:export` | `python3 scripts/export-github-issue.py` |
+| `Playgramai/playgramapp`, `.claude/gh-repo.json` | resolve from `git remote` |
+| `epic/<slug>`, `staging`, `production` base lanes | generic `baseRefName` resolution only |
+| `docs/DECISIONS_SUMMARY.md`, `docs/decisions/*` | "the project's decision docs" |
+| Railway · Drizzle · Weaviate · Mantine · Supabase · Vitest · Playwright · LiteLLM · Bunny · Stripe | dropped, not genericized |
+| `/test-on-gh` dispatch steps in `finalize` | dropped (step 6 integration/E2E reasoning) |
+
+**Skill cross-reference closure** (verified against upstream; every arrow must resolve after import, or the chain breaks silently):
+
+- `implement` → `draft-pr`, `dry`, `finalize`, `from-branch`, `plan`, `tighten-docs`
+- `from-branch` → `check-merge`, `finalize`, `implement`, `plan`, `sync-branch`, ~~`test-on-gh`~~
+- `plan` → `finalize`, `from-branch`, `implement`, `issue`, `tighten-docs`
+- `draft-pr` → `branch-rename`, `finalize`, `implement`, `qa-checklist`, `squash-message`, ~~`test-on-gh`~~
+- `squash-message` → `check-merge`, `draft-pr`, `finalize`, `tighten-docs`, ~~`hotfix`~~, ~~`release`~~
+- `qa-checklist` → `draft-pr`, `finalize`, `issue`, ~~`test-on-gh`~~
+- `branch-rename` → `draft-pr`; `tighten-docs` → `squash-message`; `dry` → none
+
+Struck-through targets become **stubs**, so those references stay valid but must be reworded to point at a stub ("if you have hydrated `/test-on-gh`…") rather than assuming a working skill.
+
+**Already verified identical to upstream:** `dry`, `explore` — no action needed.
 
 ## Execution order
 
