@@ -17,7 +17,7 @@ This skill acts **autonomously mid-run**: no user-confirmation gate before apply
 
 ## Why mid-run commits are safe (with `[no ci]`)
 
-(`[no ci]` here is GitHub's own commit-message skip marker, unrelated to `/finalize`'s `no attest` flag despite the spelling.)
+(`[no ci]` here is GitHub's own commit-message skip marker, unrelated to `/finalize`'s `no vet` flag despite `no ci` being one of that flag's accepted spellings.)
 
 A workflow with `concurrency: cancel-in-progress: true` cancels its in-flight run when you push to the same ref. A commit whose message contains `[no ci]` does not schedule a new workflow run, so the concurrency cancellation never fires. (On a ref where a push schedules nothing anyway, the marker simply has nothing left to suppress.)
 
@@ -45,7 +45,7 @@ After each tick:
 - **Exit 0, `overall=completed/success`** → Step 2a.
 - **Exit 10** (in progress, new failures) →
   - For each newly-failed job, locate the source files referenced by the failure, propose a concrete fix, and **apply it directly** to the working tree. Do not ask the user — mid-run autonomy is the point of this skill.
-  - **Commit and push the fix with `[no ci]` in the commit subject.** One commit per logical fix is fine; batching multiple fixes from a single tick into one commit is also fine. Example: `git commit -m "fix: address flaky timeout on the upload path [no ci]"` then `git push`. Do NOT run `./scripts/gates.sh` between ticks — that's deferred to the terminal step.
+  - **Commit and push the fix with `[no ci]` in the commit subject.** One commit per logical fix is fine; batching multiple fixes from a single tick into one commit is also fine. Example: `git commit -m "fix: address flaky timeout on the upload path [no ci]"` then `git push`. Do NOT run `./scripts/vet.sh` between ticks — that's deferred to the terminal step.
   - Maintain a running fix log in conversation memory:
     ```
     - <job name>: <root cause> → <commit sha>
@@ -76,6 +76,6 @@ Unaddressed failures (if any):
 
 Then branch:
 
-- **Fixes pushed AND no unaddressed failures** → run `./scripts/gates.sh` to verify the accumulated branch is clean. If green, re-dispatch (`/test-on-gh` with the same selectors, if hydrated) or, on a lane where a push does schedule a run, push a single empty commit to schedule a fresh run with all the fixes baked in — e.g. `git commit --allow-empty -m "ci: retrigger with accumulated fixes from run <url>"`. **The retrigger commit message must NOT contain the literal skip marker (the `[no ci]` / `[skip ci]` characters) anywhere — not even in prose like "after [no ci] fixes".** GitHub scans the whole message and will skip the run, so the retrigger silently does nothing (symptom: `ci-watch-tick` reports "No CI run found for HEAD …"). Refer to it as "the skip marker" or "skip-marked commits" instead of writing the characters. Skill ends. Does NOT auto-re-invoke (risks an infinite loop on persistent infra failures); the user can chain `/watch-ci` again if they want.
-- **Fixes pushed BUT unaddressed failures remain** → run `./scripts/gates.sh` to verify the partial fixes. Surface the unaddressed failures with proposed fixes or questions for each. The user decides whether to push the retrigger empty commit + address the rest manually, or hand off elsewhere. Skill ends without retriggering.
+- **Fixes pushed AND no unaddressed failures** → run `./scripts/vet.sh` to verify the accumulated branch is clean. If green, re-dispatch (`/test-on-gh` with the same selectors, if hydrated) or, on a lane where a push does schedule a run, push a single empty commit to schedule a fresh run with all the fixes baked in — e.g. `git commit --allow-empty -m "ci: retrigger with accumulated fixes from run <url>"`. **The retrigger commit message must NOT contain the literal skip marker (the `[no ci]` / `[skip ci]` characters) anywhere — not even in prose like "after [no ci] fixes".** GitHub scans the whole message and will skip the run, so the retrigger silently does nothing (symptom: `ci-watch-tick` reports "No CI run found for HEAD …"). Refer to it as "the skip marker" or "skip-marked commits" instead of writing the characters. Skill ends. Does NOT auto-re-invoke (risks an infinite loop on persistent infra failures); the user can chain `/watch-ci` again if they want.
+- **Fixes pushed BUT unaddressed failures remain** → run `./scripts/vet.sh` to verify the partial fixes. Surface the unaddressed failures with proposed fixes or questions for each. The user decides whether to push the retrigger empty commit + address the rest manually, or hand off elsewhere. Skill ends without retriggering.
 - **No mid-run fixes ever applied** (run failed non-actionably — flake, infra, an environment issue the agent couldn't act on) → report the failure, name what made it non-actionable, and stop. Don't push a retrigger hoping a flake clears; say plainly that the run failed for a reason this skill can't fix and let the operator decide.

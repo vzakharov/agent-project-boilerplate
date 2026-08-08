@@ -8,7 +8,7 @@ Ships:
 - **`.claude/skills/`** — 20 skills: 13 working out of the box, 7 stubs awaiting hydration (see "What's included" below).
 - **`.claude/rules/`** — the path-scoped convention mechanism, with a README and no rules yet: a file here loads only when a session touches the paths it declares.
 - **`.claude/hooks/session-start.sh`** — installs a `gh` shim that routes the GitHub CLI around the egress proxy in remote sessions (working); dependency install is a stub you implement for your stack.
-- **`scripts/gates.sh`** — stub for "local gates" (fast pre-push checks); you implement it for your stack.
+- **`scripts/vet.sh`** — stub for the vet run (the fast pre-push checks); you implement it for your stack.
 - **`scripts/export-github-issue.py`** — exporter that downloads an issue (body + comments + timeline + attachments) into `docs/issue/<n>/`. Used by `/issue`.
 - **`scripts/pr-body.py`** — pulls a PR body to `docs/pr/<n>/body.md` for local editing and PATCHes it back. Used by `/qa-checklist`.
 - **`scripts/check-merge.sh`**, **`scripts/ci-watch-tick.sh`** — the git/GitHub polling behind `/check-merge` and `/watch-ci`.
@@ -32,7 +32,7 @@ gh repo create <owner>/<your-new-repo> \
 ## Bootstrap checklist after creating your repo
 
 1. Fill in the **"About this project"** stub at the top of `CLAUDE.md`.
-2. Implement **`scripts/gates.sh`** for your stack. Until you do, `/finalize` will stop loudly. See `CLAUDE.md` → Local gates.
+2. Implement **`scripts/vet.sh`** for your stack. Until you do, `/finalize` will stop loudly. See `CLAUDE.md` → Vetting.
 3. Implement dep-install in **`.claude/hooks/session-start.sh`** so remote sessions start with a current `node_modules` / `venv` / equivalent.
 4. Go through the **seven skill stubs** (below) — hydrate the ones your project needs, delete the ones it doesn't.
 5. Replace any other stubs in `CLAUDE.md` (repository layout, testing) as those conventions stabilize.
@@ -48,7 +48,7 @@ gh repo create <owner>/<your-new-repo> \
 | `/plan` | Write the plan to a reviewable `docs/plans/` file; ask questions as numbered prose. The filename is the approval gate. |
 | `/implement` | Execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR. |
 | `/draft-pr` | Rename the auto-branch, push, open the draft PR, post the squash proposal. |
-| `/finalize` | Land prep: gates, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. |
+| `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. |
 
 `/plan` and `/implement` exist because Claude Code's web/remote sessions re-emit stacked plan-mode and `AskUserQuestion` prompts after idling, silently losing answers ([anthropics/claude-code#72704](https://github.com/anthropics/claude-code/issues/72704)). A plan becomes a file the operator can pull and review from another machine, and questions become prose that survives in the transcript.
 
@@ -89,6 +89,6 @@ Individually invocable, and composed by the loop above: `/branch-rename`, `/squa
 
 Every line of a working version of these is bound to a particular stack, so they ship carrying only the durable part: the shape of the job, and the concerns any implementation has to answer. Each file opens with a banner naming what must be filled in, and its frontmatter description announces that it is a stub — so it reads as unhydrated in the skills list rather than looking like a skill the agent can follow.
 
-**Treat an unhydrated stub as unavailable.** Half-following one against a project it was never written for is worse than not having it. Hydrating means writing the project's real commands in and deleting the banner; three of them tell you when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/gates.sh` is the same contract in shell form — it exits `1` until implemented.
+**Treat an unhydrated stub as unavailable.** Half-following one against a project it was never written for is worse than not having it. Hydrating means writing the project's real commands in and deleting the banner; three of them tell you when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` is the same contract in shell form — it exits `1` until implemented.
 
 See `CLAUDE.md` and the individual `SKILL.md` files for the full contracts.

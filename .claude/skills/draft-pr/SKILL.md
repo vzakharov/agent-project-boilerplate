@@ -113,6 +113,6 @@ Print the PR URL on its own line so it's easy to copy. One sentence summary of w
 Do **not**:
 
 - Mark the PR ready for review (that's `/finalize`'s job).
-- Run the local gates (also `/finalize`).
+- Run the vet suite (also `/finalize`).
 - Dispatch any CI bucket (also `/finalize`, via `/test-on-gh` if the project has hydrated it).
 - Push further commits unless asked.

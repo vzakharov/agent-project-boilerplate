@@ -1,5 +1,5 @@
 #!/bin/bash
-# Local gates: fast checks the agent runs before pushing review-ready work.
+# Vet: the fast checks the agent runs before pushing review-ready work.
 #
 # Wire these up for your stack (lint, type-check, format-check, fast tests).
 # Examples:
@@ -8,7 +8,7 @@
 #   ruff check . && mypy . && pytest -q
 #   go vet ./... && go test -short ./...
 #
-# See CLAUDE.md → Local gates for the contract.
+# See CLAUDE.md → Vetting for the contract.
 
-echo "TODO: implement local gates for this project (see CLAUDE.md → Local gates)." >&2
+echo "TODO: implement vetting for this project (see CLAUDE.md → Vetting)." >&2
 exit 1

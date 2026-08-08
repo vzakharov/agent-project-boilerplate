@@ -148,5 +148,5 @@ Tightness (3)
 Both groups always appear; **an empty one gets a sentence saying why** rather
 than silence ("nothing added was over-documented" is a real outcome).
 
-Then commit the edits (on a feature branch, just commit — the gates run at
+Then commit the edits (on a feature branch, just commit — the vet run happens at
 milestones via `/finalize`, not per commit).
