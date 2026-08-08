@@ -45,11 +45,11 @@ Clone into the session scratchpad, not the repo:
 cd <scratchpad> && rm -rf up && git clone --filter=blob:none --no-checkout \
   -c "credential.helper=!f() { echo username=x-access-token; echo password=$GH_TOKEN; }; f" \
   https://github.com/<repo>.git up
-cd <scratchpad>/up && git config credential.helper \
-  "!f() { echo username=x-access-token; echo password=$GH_TOKEN; }; f"
 ```
 
-The blobless partial clone carries **full history** for a fraction of the transfer, so any `git log <sha>..HEAD` resolves. The second command persists the helper inside the clone so the lazy blob fetches a later `git show` triggers can authenticate — without it, the log works and the first diff dies on `could not read Username`.
+The blobless partial clone carries **full history** for a fraction of the transfer, so any `git log <sha>..HEAD` resolves.
+
+**`-c` after `clone`, not `git -c` before it.** The two spellings look interchangeable and are not: `clone -c` writes the helper into the new repo's config, where the lazy blob fetches a later `git show` triggers can still find it, while `git -c … clone` applies it to the clone alone. Under the second, the log works and the first diff dies on `could not read Username`. The token does land in `<scratchpad>/up/.git/config` in the clear, which is the other reason the clone belongs in the scratchpad rather than anywhere under the repo.
 
 **Do not reach for `--depth` or `--shallow-since` instead.** A shallow clone that doesn't reach back past `lastSyncedSha` fails with a bare "unknown revision", which reads like a bad SHA rather than a truncated clone, and the previous sync lost time to exactly that.
 
