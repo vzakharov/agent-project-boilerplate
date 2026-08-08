@@ -36,6 +36,8 @@ Both exist because web/remote sessions re-emit stacked plan-mode and `AskUserQue
 
 Import the project-agnostic surface; leave Playgram's stack behind. Each imported skill is de-playgrammed: `pnpm precommit` → `./scripts/gates.sh`, `pnpm gh:export` → `python3 scripts/export-github-issue.py`, and Railway/Drizzle/Weaviate/Mantine/Supabase references dropped rather than genericized into vagueness.
 
+Skills fall into three dispositions: **imported working** (Tier A + B — usable the moment a project is bootstrapped), **imported as stubs** (Tier C — the shape and the durable concerns, awaiting hydration for the host stack), and **not imported**.
+
 ### Tier A — the core loop (replaces what's here)
 
 | Skill | Disposition |
@@ -58,15 +60,36 @@ Import the project-agnostic surface; leave Playgram's stack behind. Each importe
 
 ### Tier B — quality and support
 
-`tighten-docs`, `propose-issue`, `update-tests`, `update-docs` (generalized from `DECISIONS_SUMMARY.md` to "the project's decision docs"), `fix-ci` (generic — drops `ci-failure-inspect.sh` and the Playwright console-log fetch), and **`override-gh`**.
+`tighten-docs`, `propose-issue`, and **`override-gh`**.
 
 `override-gh` is nine lines and earns its place: this very session burned several turns concluding upstream was unreachable because the system prompt says "you do NOT have access to the `gh` CLI" while `gh` and `GH_TOKEN` were in fact present. A marker skill whose description contradicts that in the skills list is the cheapest possible fix.
 
-### Tier C — not imported
+### Tier C — imported as stubs
 
-**Project-specific:** `hotfix`, `release`, `renumber-migration` (Drizzle), `preview` (Next.js + Mantine CSS), `test-on-gh` (Vitest buckets), `log-review` (Railway), `readonly-probe` (Supabase/Weaviate), `watch-precommit` (folded into gates).
+These cover needs almost every repo has, but every line of upstream's implementation is stack-bound. Import each as a **stub**: the durable shape plus the concerns that hold regardless of stack, explicitly marked as needing hydration for the host project. Same contract `scripts/gates.sh` already uses, so the pattern is established rather than invented.
 
-**Deferred, not rejected** — `weigh`, `synthesize`, `roundtable` (the multi-model workflow) and `autopilot` (unattended backlog grooming). All four are genuinely project-agnostic, but they're a self-contained subsystem orthogonal to the PR loop, and `autopilot` additionally needs repo labels and a scheduled routine to mean anything. Better as a follow-up than bundled into a sync PR. `bootstrap-workflow-dispatch` is skipped as too narrow.
+`release`, `hotfix`, `preview`, `test-on-gh`, `log-review`, `readonly-probe`, `renumber-migration`.
+
+**Stub shape** — each `SKILL.md` carries:
+
+1. A frontmatter `description` that names the skill's job **and** states it is an unhydrated stub, so it reads correctly in the skills list.
+2. A `> ⚠️ **STUB**` banner: what must be filled in before the skill is usable, and an instruction to delete the banner once hydrated.
+3. **What this skill is for** — the universal shape, in one short section.
+4. **Concerns that hold regardless of stack** — the substance. Distilled from upstream's working version, with every Playgram specific stripped:
+
+| Stub | Agnostic concerns it carries |
+|---|---|
+| `release` | version scheme and whether the prefix is reserved; a notes file per version; whether merging *arms* a deploy or *ships* one; tag or no tag; which gate must be green before arming; who owns the version bump |
+| `hotfix` | branch off the production ref, not the trunk; bypasses the normal promotion path; must be reconciled back into the trunk or the fix is lost on the next release; needs its own durable record; exists because "is the trunk safe to ship" is a question you can't always answer yes to |
+| `preview` | judging appearance by reading code is the failure mode; mount the thing under test on a scratch route; boot against placeholder config so no secrets are needed; capture at several widths; keep the artifacts out of the merge |
+| `test-on-gh` | some buckets can't run on the agent's machine (credentials, real services, browsers); dispatch to CI on the branch and block for the result; scope the dispatch to the branch diff; separate cheap-and-always from expensive-and-on-demand; a green local run says nothing about an undispatched bucket |
+| `log-review` | a window since the last run; two outputs — a qualitative readout and health triage; dedupe into tracked issues instead of re-reporting; interactive vs unattended modes; care with PII when quoting |
+| `readonly-probe` | ground the investigation in real deployed data rather than guesswork; enforce read-only at the transport (read-only transaction, replica, or scoped credential), never by convention; name the environment explicitly; commit the output so the reasoning is reviewable |
+| `renumber-migration` | sequential numbers collide across in-flight branches; detect the fork; adopt the other branches' files so the sequence stays contiguous; renumber yours on top; re-parent any snapshot/checksum to the schema it actually lands on; never renumber a migration that has already run anywhere |
+
+### Not imported
+
+`weigh`, `synthesize`, `roundtable` (multi-model workflow) and `autopilot` (unattended backlog grooming) are fully stack-agnostic, so the stub treatment would have nothing to strip — they are all-or-nothing imports, and this sync leaves them out as a self-contained subsystem orthogonal to the PR loop. `update-docs`, `update-tests` and `fix-ci` are dropped from the import set. `watch-precommit` is folded into gates; `bootstrap-workflow-dispatch` is too narrow.
 
 ### Non-skill changes
 
@@ -97,16 +120,18 @@ The imported skills cross-reference each other by `@.claude/skills/<name>/SKILL.
 
 ## Risks
 
-- **Volume.** ~20 new files, several long. The PR will be large and hard to review line-by-line; it is a vendoring operation, and the review question is "is this the right set, correctly de-playgrammed" rather than "is each line right".
-- **Untested cross-references.** Imported skills reference each other; a missed rename (e.g. a lingering `/prep-merge` or `/test-on-gh` link) breaks a chain silently. Mitigated by a final grep for `prep-merge`, `pnpm `, `playgram`, and every skill name not in the imported set.
-- **Character shift.** The boilerplate currently advertises "five project-agnostic skills". It becomes ~22. That is a deliberate change in what this template is, and is the main thing worth a second opinion — see question 1.
+- **Volume.** ~23 new files, several long. The PR will be large and hard to review line-by-line; it is a vendoring operation, and the review question is "is this the right set, correctly de-playgrammed" rather than "is each line right".
+- **Untested cross-references.** Imported skills reference each other; a missed rename (e.g. a lingering `/prep-merge` link, or a Tier A skill delegating to a Tier B skill that wasn't imported) breaks a chain silently. Mitigated by a final grep for `prep-merge`, `pnpm `, `playgram`, and every skill name not in the imported set.
+- **Stubs that read as working skills.** A stub whose description doesn't announce itself will get invoked and then half-followed against a project it was never hydrated for — worse than its absence. The banner and the description prefix are what prevent this, so they are not decoration; `scripts/gates.sh` exits `1` for the same reason, and the stubs should fail as loudly.
+- **Character shift.** The boilerplate currently advertises "five project-agnostic skills". It becomes 20 — 13 working, 7 stubs. That is a deliberate change in what this template is.
 
 ## Execution order
 
 1. `docs/plans/` lifecycle flip; `.gitignore` `tmp/`.
 2. `.claude/rules/README.md`; `session-start.sh` gh shim.
 3. Tier A skills, in dependency order: `branch-rename` → `squash-message` → `qa-checklist` → `check-merge` → `sync-branch` → `watch-ci` → `draft-pr` → `finalize` → `plan` → `implement`; then update `from-branch`, `issue`; delete `prep-merge`.
-4. Tier B skills.
-5. `CLAUDE.md`, `README.md`.
-6. Cross-reference grep sweep.
-7. `./scripts/gates.sh` is a stub that exits 1 by design — it cannot gate this PR. Note that explicitly in the PR body rather than pretending it ran.
+4. Tier B skills: `tighten-docs`, `propose-issue`, `override-gh`.
+5. Tier C stubs, all seven.
+6. `CLAUDE.md`, `README.md` — including a short section on the stub contract, so a project bootstrapping from this template knows which skills still need hydrating.
+7. Cross-reference grep sweep.
+8. `./scripts/gates.sh` is a stub that exits 1 by design — it cannot gate this PR. Note that explicitly in the PR body rather than pretending it ran.
