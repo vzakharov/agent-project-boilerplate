@@ -1,40 +1,47 @@
 Proposed squash title/body:
 
 ```
-feat: sync agent infrastructure from upstream (pr #3)
+feat: sync upstream's vet rename and add /sync-upstream (pr #4)
 ```
 
 ```
-This boilerplate was extracted from a private repo in May and has not
-moved since; that repo's agent infrastructure has, structurally. The
-monolithic prep-merge dissolved into composable skills, and a front
-half appeared that never existed here. This ports the
-project-agnostic part of that: skills go 5 to 20.
+This repo vendors CLAUDE.md, README.md, .claude/ and scripts/ from a
+private application repo and strips them of that stack. Two syncs have
+now been done by hand, and both spent most of their time re-deriving
+the same four facts: where upstream is, which commit the last sync
+stopped at, which paths are even in scope, and how to reach a
+cross-owner private repo when gh api 403s on it.
 
-The PR loop is now /plan writes a gated plan file, /implement executes
-it and runs the quality passes, /draft-pr opens the PR, /finalize
-lands it — delegating to /squash-message, /qa-checklist,
-/branch-rename, /check-merge, /sync-branch and /watch-ci, each
-individually invocable. /plan and /implement exist because web
-sessions re-emit stacked plan-mode and AskUserQuestion prompts after
-idling and silently lose the answers, so a plan becomes a reviewable
-file whose name is the approval gate and questions become numbered
-prose. prep-merge is deleted. Supporting scripts came along:
-check-merge.sh and ci-watch-tick.sh over a shared lib, and pr-body.py.
-Everything imported drops the upstream stack — its package scripts
-become ./scripts/gates.sh, its promotion-branch lanes become generic
-base resolution, its framework references are cut rather than
-genericized.
+The one upstream change that reaches us renames precommit to vet, and
+only half of it applies: its rationale was that the name claimed a git
+hook the repo does not have, and "gates" never made that claim. Taken
+anyway, because vocabulary drift is what turns a sync into a
+translation exercise, and this repo is itself upstream for every
+project generated from it. The half that lands on a real bug is the
+split the rename names — vetting is the run, attestation is the record
+it produces — under which /finalize's docs-only flag was named after
+the one thing it does not do. The skill said, two sentences apart,
+that "no attest" does not skip the attestation. It follows the run and
+becomes no vet, with no ci and no attest kept as accepted spellings.
+scripts/gates.sh becomes scripts/vet.sh; the rest is ~12 files of one
+string, frontmatter descriptions included.
 
-Seven skills — release, hotfix, preview, test-on-gh, log-review,
-readonly-probe, renumber-migration — ship as stubs: the shape of the
-job and the concerns any implementation must answer, with no
-procedure, since every line of a working version is stack-bound. Their
-descriptions and banners announce this, and that marking is
-load-bearing: a stub read as a working skill gets half-followed
-against a project it was never written for. Treat one as unavailable
-until hydrated. Note also that ./scripts/gates.sh is itself still a
-stub that exits 1, so nothing gated this change.
+/sync-upstream is the answer to the four facts above.
+upstream.json beside it records upstream HEAD at sync time rather than
+the last commit taken, so a triaged-and-skipped commit stays skipped,
+and the skill bumps it in a sync's final commit — an un-bumped
+watermark costs a re-triage, a bumped one that lands without its port
+skips those commits forever. The skill also carries the corners each
+sync paid for once: git transport with $GH_TOKEN reaches what gh api
+and add_repo refuse, clone -c persists the credential where git -c
+does not, a blobless clone keeps the history a shallow one truncates,
+and cherry-pick is useless against de-vendored rewrites. It is the one
+file here marked delete-on-bootstrap rather than hydrate-before-use,
+since a generated repo is a divorced fork and the upstream it names is
+unreadable to it; the inherited count stays at 20.
+
+./scripts/vet.sh is itself still a stub that exits 1, so nothing
+gated this change.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
