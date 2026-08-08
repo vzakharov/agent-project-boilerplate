@@ -27,11 +27,11 @@ ruff check . && mypy . && pytest -q                 # Python
 go vet ./... && go test -short ./...                # Go
 ```
 
-Until it's implemented, skills that depend on it (notably `prep-merge`) will stop loudly.
+Until it's implemented, skills that depend on it (notably `/finalize`) will stop loudly.
 
 **Keep it current** as tooling evolves. If a CI job catches something `gates.sh` should have caught, that's a signal to extend it.
 
-**Do not run gates before every commit** on feature branches — it's wasteful, especially in remote/web sessions. Gates run at milestones: before pushing review-ready work, before flipping a PR to ready. `prep-merge` is the canonical caller.
+**Do not run gates before every commit** on feature branches — it's wasteful, especially in remote/web sessions. Gates run at milestones: before pushing review-ready work, before flipping a PR to ready. `/finalize` is the canonical caller.
 
 ## Key principles
 
@@ -39,6 +39,10 @@ Until it's implemented, skills that depend on it (notably `prep-merge`) will sto
 - **Don't replace what already works.** Only swap a tool or service for a concrete problem with it, not on aesthetics or novelty.
 - **Never add lint-suppression comments without explicit user confirmation.** This includes `eslint-disable`, `# noqa`, `# type: ignore`, `// nolint`, and equivalents in any language. When a lint rule flags code, fix the code to satisfy the rule. If the rule is genuinely wrong for that case, ask the user before suppressing. **Exception for test files:** file-level suppression is acceptable when the disabled rules relate to mocking mechanics that conflict with test setup. Do not suppress rules that flag real code quality issues even in tests.
 - **Linters are signals, not puzzles to game.** Do not contort the architecture solely to silence a rule when a clearer approach exists. Rules exist to keep the codebase consistent and safe — work _with_ them, not around them in a hacky way.
+- **When analysis keeps failing to explain a real bug, widen the frame — don't just deepen it.** Re-reading the same code more closely won't surface a cause that lives in a part of the system you implicitly scoped out at the start. Stop and take in the bigger picture: explicitly name what you've been assuming is irrelevant or already-correct — adjacent layers, surrounding systems, the stretches of the request/data path you never opened — and question those boundaries. The blind spot is usually something you excluded from the problem, not something you misread inside it; "this code can't be wrong" is the cue to look at everything around it.
+- **Comments describe the code's lasting contract, not the change that produced it.** Don't leave transient/situational notes that narrate an edit ("now also sets X", "migrated from Y", "this used to…") — they read as noise once the change is old. If the rationale is genuinely durable, phrase it as a present-tense property of the code. `/tighten-docs` is the pass that enforces this over recent work.
+- **Dev artifacts go under gitignored `tmp/`, not as new `.gitignore` entries.** Scratch files, spikes, exploratory output, extracted frames, probe results — all go under `tmp/` (already gitignored). Don't add per-artifact lines to `.gitignore`.
+- **Plans must include a `## DRY notes` section.** When writing an implementation plan, always include one that states, for any code the plan adds or moves: what is genuinely shared vs. duplicated, which existing helper/type/module is reused, and — when you decide _not_ to extract a shared abstraction — why forcing one would be net-negative. This makes the reuse-vs-duplication call explicit and reviewable before implementation, rather than discovered in review.
 - **Ignore IDE diagnostics until local gates.** Do not react to or try to fix type errors, lint warnings, or other diagnostics that appear in IDE context during implementation. IDE servers can lag behind file changes and produce stale or misleading errors. `./scripts/gates.sh` is the single source of truth for correctness — only fix errors it reports.
 - **Don't revert unexpected mid-execution changes.** If new code, comments, or edits appear in files during execution, they're most likely from the user editing concurrently. If the context makes it clear they're user-made, preserve them without asking. If genuinely unclear, ask before touching them — but never silently revert.
 - **Don't spin on typing/linting errors.** If a type error or lint issue resists 2–3 straightforward fix attempts, stop. Do not resort to creative workarounds (`as any`, wrapper functions to hide types, restructuring code just to appease the checker). Ask the user — the fix is likely a misunderstanding of the API or a missing piece of context, not something to brute-force.
@@ -46,6 +50,15 @@ Until it's implemented, skills that depend on it (notably `prep-merge`) will sto
 - **Validate at boundaries.** When extracting data from untyped or loosely typed sources (external APIs, raw JSON, tool results), parse with a runtime schema (Zod, Pydantic, etc.) instead of asserting/casting. A cast hides shape mismatches at runtime; a parse surfaces them immediately. Don't re-parse data that's already type-safe inside the program.
 - **Keep production files under ~450 lines.** Rule of thumb, not a hard cap. Data-dense files (prompt text, fixtures, large catalogs) and top-level orchestrators may reasonably exceed it. When a logic-heavy file climbs well past ~450 lines, look for natural seams (focused helpers, sub-components) rather than letting it grow indefinitely.
 - **Don't run Bash with `run_in_background`.** Always run commands synchronously, even long ones. Background tasks have a tendency to stall without an obvious reason — set a long `timeout` on a normal foreground call instead.
+
+## Plan mode & questions in web sessions
+
+Claude Code's **web/remote** sessions have a bug in the plan-mode approval UI and the `AskUserQuestion` tool: after a session sits idle, the backend re-wakes it and re-emits the pending plan/question prompt repeatedly, so the operator sees it stacked several times and answers to superseded prompts are silently lost (tracking issue: https://github.com/anthropics/claude-code/issues/72704). `@.claude/skills/plan/SKILL.md` routes around both — plans go to a reviewable `docs/plans/` file, questions are asked as numbered prose.
+
+- **The plan file's name gates implementation.** A plan is written as `docs/plans/<slug>.draft.do-not-implement.md` and stays that way until the operator gives an explicit go-ahead; only then is it `git mv`'d to `<slug>.in-progress.md` (quoting the go-ahead in the commit) — and to `<slug>.completed.md` when done. The `do-not-implement` token is a deliberate tripwire: if you're about to edit source while the plan still carries it, you have not been cleared. `/plan` writes and flips-on-approval, `/implement` flips draft→in-progress→completed, `/finalize` sweeps the whole tree at squash so no plan reaches the trunk. Every state still matches `docs/plans/*.md`, so directory-glob consumers are unaffected. Because implementation normally starts in a **new** session, a `/plan` turn ends by handing over a copyable `/implement <branch>` command rather than asking whether to proceed — the block's exact format lives in the skill.
+- **If you are in a web/remote session** (the cloud execution environment described in your system prompt), **use the `plan` skill for new sessions instead of native plan mode / `AskUserQuestion`.** Even when launched in edits/auto mode, **assume you were launched in plan mode** and invoke the skill — UNLESS the operator's initial prompt explicitly says "no plan" (or equivalent), or **the session is launched via `/from-branch`** (which attaches to an existing branch/PR and so is continued work, not a new session — see the next bullet).
+- **This applies only to new sessions, not continued work.** Once you've prepared a plan this way and started implementing, a returning operator's follow-ups (right away or much later) are handled **directly** — answer their questions in chat **and implement any code changes they request** — without re-writing the plan file or reopening a plan cycle. A `/from-branch` launch is the same situation from the start: it re-points the session at work begun elsewhere, so treat it as continued work — do not open a plan cycle for it (unless the operator's follow-up explicitly asks you to plan a fresh piece of work).
+- Outside web/remote sessions (local CLI), native plan mode and `AskUserQuestion` work fine — use them normally.
 
 ## Docstrings
 
@@ -93,7 +106,11 @@ Write descriptive commit messages: the subject line summarizes the change, and t
 
 **On a feature branch in a remote/web environment** (typically signalled by a branch named `<vendor>/<autoname>`), commit and push proactively after each meaningful unit of work — don't wait to be asked. The operator is usually reviewing from a different machine than the VM the agent runs on, so they can only see the work once it's pushed.
 
-**Do not run local gates before every commit on feature branches.** Gates run at milestones via `prep-merge`. See "Local gates" above.
+**Do not run local gates before every commit on feature branches.** Gates run at milestones via `/finalize`. See "Local gates" above.
+
+**Rename auto-generated remote/web branches early.** **First check whether the branch is already semantic.** The harness now often assigns a task-derived name at session start, in which case there is nothing to rename — leave it. This is an **undocumented** harness behavior and may be reverted at any time, so the rename procedure stays as the fallback: apply it only when the branch is an opaque `claude/<adjective>-<noun>-<hash>` name (e.g. `claude/relaxed-brown-EhDOB`). Rename it as soon as the task scope is clear — typically right after the first commit — to `claude/<short-task-slug>-<hash>`, keeping the original random suffix so parallel sessions stay unique. **Always do this before opening a PR**: renaming a branch that already has a PR **closes that PR** (GitHub auto-closes when the head ref disappears and does not retarget onto the new name), forcing a replacement PR over the same diff. The routine "develop on branch `<name>`" line in a session's git-setup block is **not** a pin — only treat the name as fixed when the **user** explicitly says not to rename it. Rationale: `claude/lucid-hamilton-MigdG` tells nobody anything in `git log`, PR lists, or future search; `claude/rename-autobranches-MigdG` does. `@.claude/skills/branch-rename/SKILL.md` owns the procedure.
+
+The proposed squash title/body goes up when the PR opens and is kept in sync as the branch changes — see `@.claude/skills/squash-message/SKILL.md` for when a push warrants a re-sync.
 
 ## Keeping docs in sync
 
@@ -103,12 +120,36 @@ Write descriptive commit messages: the subject line summarizes the change, and t
 
 ## Working with skills
 
-This project ships a small set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session:
+This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
 
-- **`/issue`** — take a GitHub issue end-to-end (read, optionally split, implement, open a draft PR).
-- **`/prep-merge`** — land prep: run gates, merge main, flip to ready, draft squash message, watch CI.
-- **`/from-branch`** — attach the current session to an existing branch or PR, abandoning the auto-created session branch.
+**The main loop**, in the order a piece of work passes through it:
+
+- **`/plan`** — write the plan to `docs/plans/<slug>.draft.do-not-implement.md`; ask questions as numbered prose. Ends by handing over an `/implement <branch>` command for a fresh session.
+- **`/implement`** — execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR.
+- **`/draft-pr`** — rename the auto-branch, push, open the draft PR, post the squash proposal.
+- **`/finalize`** — land prep: gates, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest.
+
+**Entry points and support:**
+
+- **`/issue`** — take a GitHub issue end-to-end (export, optionally split, implement, open a draft PR).
+- **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
+- **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/explore`** — investigate the codebase via parallel Explore agents.
-- **`/dry`** — review the session's diff for DRY opportunities; applies obvious wins, surfaces ambiguous ones.
+- **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 
-Add new skills here as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project.
+**Quality passes** (both are mandatory inside `/implement`):
+
+- **`/dry`** — review the session's diff for DRY opportunities; applies obvious wins, surfaces ambiguous ones.
+- **`/tighten-docs`** — rewrite prose that narrates the change into present-tense contracts, and cut what the names and types already say.
+
+**Mechanical pieces**, individually invocable and composed by the loop above:
+
+- **`/branch-rename`**, **`/squash-message`**, **`/qa-checklist`**, **`/check-merge`**, **`/sync-branch`**, **`/watch-ci`**.
+
+### Stubs awaiting hydration
+
+Seven skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
+
+**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/gates.sh` is the same contract in shell form — it exits `1` until implemented.
+
+Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
