@@ -4,7 +4,7 @@ description: Finalize (a.k.a. "prep merge") — land prep: verify there's a draf
 
 **Optional branch/PR target**: if the first token of the argument is a branch name, `#NNN` PR number, or PR URL, then `/finalize <target>` is shorthand for attaching to that branch first and then finalizing — equivalent to `/from-branch <target> /finalize`. Load `@.claude/skills/from-branch/SKILL.md` and follow it to attach to `<target>`, then run the finalize steps below. If the argument has no target token, skip this and finalize the current branch as usual.
 
-**`no vet` is the docs-only mode.** Pass it when the diff has nothing to verify — markdown, top-level docs, read-only reference data. It skips the vet run (there is nothing for it to check) and skips any bucket dispatch. It does **not** skip step 7: the attestation still goes up, stating that verification was a deliberate no-op and why. Everything else below still applies. (`no ci` and `no attest` are accepted spellings of this flag — the flag skips the run, never the record.)
+**`no vet` is the docs-only mode.** Pass it when the diff has nothing to verify — markdown, top-level docs, read-only reference data. It skips the vet run (there is nothing for it to check) and skips any bucket dispatch. It does **not** skip step 7: the attestation still goes up, stating that verification was a deliberate no-op and why. Everything else below still applies. (`no ci` and `no attest` are accepted spellings of this flag.)
 
 **Pre-check**:
 

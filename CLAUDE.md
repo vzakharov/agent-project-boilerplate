@@ -18,7 +18,7 @@ This file is intentionally bare. It carries only the conventions that hold true 
 
 Vetting is the fast local check the agent runs over a branch *before pushing* to save CI minutes — typically lint, type-check, format-check, and any tests fast enough to run in seconds. Entrypoint: `./scripts/vet.sh`. **Vetting is the run; attestation is the record that it happened** — `/finalize` does both, and its docs-only flag (`no vet`) skips the first while still posting the second.
 
-**Action required when starting a new project**: implement `scripts/vet.sh` for your stack. `vet.sh` names the whole local run, whatever it happens to call — one of its lines being Go's own `vet` is a coincidence of naming, not the definition. Examples:
+**Action required when starting a new project**: implement `scripts/vet.sh` for your stack. It names the whole local run; Go's own `vet` being one line inside it is a coincidence of naming. Examples:
 
 ```bash
 pnpm lint && pnpm typecheck && pnpm test:unit       # Node / pnpm

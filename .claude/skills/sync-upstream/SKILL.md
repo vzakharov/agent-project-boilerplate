@@ -51,7 +51,7 @@ The blobless partial clone carries **full history** for a fraction of the transf
 
 **`-c` after `clone`, not `git -c` before it.** The two spellings look interchangeable and are not: `clone -c` writes the helper into the new repo's config, where the lazy blob fetches a later `git show` triggers can still find it, while `git -c … clone` applies it to the clone alone. Under the second, the log works and the first diff dies on `could not read Username`. The token does land in `<scratchpad>/up/.git/config` in the clear, which is the other reason the clone belongs in the scratchpad rather than anywhere under the repo.
 
-**Do not reach for `--depth` or `--shallow-since` instead.** A shallow clone that doesn't reach back past `lastSyncedSha` fails with a bare "unknown revision", which reads like a bad SHA rather than a truncated clone, and the previous sync lost time to exactly that.
+**Do not reach for `--depth` or `--shallow-since` instead.** A shallow clone that doesn't reach back past `lastSyncedSha` fails with a bare "unknown revision", which reads like a bad SHA rather than a truncated clone.
 
 **Bash `cwd` resets between calls in this harness** — chain `cd <clone> && …` in every command that needs to be inside it.
 
@@ -92,6 +92,6 @@ Set `lastSyncedSha` to the HEAD recorded in Step 3 and `lastSyncedAt` to today, 
 
 Report the triage table — every candidate, with its verdict and one line of reasoning, skips included. Then hand off to `@.claude/skills/dry/SKILL.md`, `@.claude/skills/tighten-docs/SKILL.md` and `@.claude/skills/draft-pr/SKILL.md`; the skipped commits' reasoning belongs in the PR body, since the watermark advances past them and nothing else records why.
 
-## This skill is written from a sample of two
+## Add what the next sync teaches you
 
-It will be wrong about something. When a sync teaches you a corner this file doesn't carry, add it here rather than to the PR description — that is where the next session will look.
+This procedure is distilled from very few syncs and is incomplete by construction. When one surfaces a corner the file doesn't carry, add it here rather than to the PR body — this is where the next session looks.
