@@ -152,4 +152,8 @@ Seven skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`
 
 **A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` is the same contract in shell form — it exits `1` until implemented.
 
+### Not part of the inherited set
+
+**`/sync-upstream`** maintains the boilerplate repo itself: it pulls the vendored agent infrastructure forward from the application repo this template was extracted from. It is the one file here whose correct disposition on bootstrap is **delete** — a generated project is a divorced fork rather than a dependency, and the repo the skill's watermark names is private. It is marked the way the stubs are marked, for the same reason a stub is: a file that reads as applicable when it isn't gets half-followed. `rm -rf .claude/skills/sync-upstream/` removes the procedure and its watermark together.
+
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
