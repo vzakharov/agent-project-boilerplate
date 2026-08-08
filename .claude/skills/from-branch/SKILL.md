@@ -1,22 +1,37 @@
 ---
-description: Attach the current session to an existing branch or PR and continue work from there, abandoning the auto-created session branch. Invoke as `/from-branch <branch-name|#PR|PR-url> [<follow-up instruction or /skill ...>]`.
+description: Attach the current session to an existing branch or PR and continue work from there, abandoning the auto-created session branch. Invoke as `/from-branch <branch-name|#PR|PR-url> [<follow-up instruction or /skill ...>]`. The PR target may be a bare PR link or any deep link into it (a review link like `.../pull/NNN#pullrequestreview-<id>`, a review-comment or conversation-comment link, or a `/files` tab URL) — the PR number after `/pull/` is the basis for finding the branch. Also use when a session's launch prompt just names an existing branch to continue (e.g. `implement claude/foo-xxxx`) instead of a literal `/from-branch`. The follow-up can be `implement`/`execute` to run the plan a prior `/plan` session left under `docs/plans/`.
 ---
 
 When a Claude Code on-the-web session starts, the harness usually creates a fresh branch (e.g. `claude/add-foo-bar-XXXX`) and checks it out. This skill **discards that auto-branch** and re-points the working tree at an existing branch or PR head so the rest of the session continues that work.
+
+## Recognizing the signal (explicit _and_ implicit)
+
+The obvious trigger is an explicit `/from-branch …` invocation. But a session can also **start** with a launch prompt that just names an existing branch to continue — with no literal `/from-branch`. Common shapes:
+
+- `implement claude/some-feature-xxxx` (or `execute …`),
+- "continue the work on `<branch>`", "pick up `<branch>`", "keep going on `#123`".
+
+These are the **same signal**: the harness has put you on a fresh auto-branch, but the operator's intent is to attach to the _named_ existing branch and continue its work — not to start new work on the auto-branch. Treat such a launch prompt as an implicit `/from-branch <that-branch> <the rest of the prompt as follow-up>` and run this skill: resolve the named branch as the **Target** (Step 1), and take everything else in the prompt as the **Follow-up** (bare `implement`/`execute` → run the plan under `docs/plans/`; anything richer → free-form follow-up). The tell is a launch prompt whose subject is an _existing_ branch/PR the session is not already on — when in doubt, `git ls-remote --heads origin <name>` confirms the branch exists before attaching.
 
 ## Argument shape
 
 The skill argument has two parts:
 
-1. **Target** (required, first token): a branch name, a `#NNN` PR number, or a full PR URL (`https://github.com/<owner>/<repo>/pull/NNN`).
-2. **Follow-up** (optional, everything after the target): either a free-form instruction ("…fix the failing test, then push") **or** a slash-command invocation of another skill (e.g. `/prep-merge`, `/fix-ci`). If the follow-up is a slash command, load and follow that skill **after** the attach step completes.
+1. **Target** (required, first token): a branch name, a `#NNN` PR number, or **any URL that carries a PR number** — a bare PR URL (`https://github.com/<owner>/<repo>/pull/NNN`) or a deep link into that PR: a review link (`.../pull/NNN#pullrequestreview-<id>`), a review-comment link (`.../pull/NNN#discussion_r<id>`), a conversation-comment link (`.../pull/NNN#issuecomment-<id>`), or a tab/file URL (`.../pull/NNN/files`, `.../pull/NNN/commits/<sha>`, …). The PR number `NNN` after `/pull/` is the basis; the `#fragment`, trailing path, and any `?query` are stripped when resolving the branch (see Step 1), but a review/comment fragment is worth keeping as a pointer to _which_ feedback the operator wants addressed.
+2. **Follow-up** (optional, everything after the target): one of —
+   - a free-form instruction ("…fix the failing test, then push"),
+   - a slash-command invocation of another skill (e.g. `/finalize`, `/check-merge`) — if so, load and follow that skill **after** the attach step completes, or
+   - the keyword **`implement`** (or its synonym **`execute`**), optionally trailed by "the plan" / "plan" filler, meaning "execute the plan file a prior `/plan` session left under `docs/plans/`". Bare `implement` — with no plan named — still means "implement the plan". Step 6 dispatches it.
 
 Examples:
 
 - `/from-branch #123` — attach and wait for further instructions.
 - `/from-branch #123 finish the migration and push` — attach, then do the described work.
-- `/from-branch #123 /prep-merge` — attach, then invoke `@.claude/skills/prep-merge/SKILL.md`.
-- `/from-branch feat/new-thing /fix-ci` — same idea with a raw branch name.
+- `/from-branch #123 implement` — attach, then execute the plan under `docs/plans/`.
+- `/from-branch #123 implement the plan` — same thing (the trailing "the plan" is just filler).
+- `/from-branch #123 /finalize` — attach, then invoke `@.claude/skills/finalize/SKILL.md`.
+- `/from-branch feat/new-thing /sync-branch` — same idea with a raw branch name.
+- `/from-branch https://github.com/<owner>/<repo>/pull/123#pullrequestreview-999` — a review deep link: parse `123` as the PR, attach to its branch, and treat that review's comments as the feedback to address.
 
 ## Environment note (read this before running gh)
 
@@ -26,10 +41,15 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 
 Parse the first token of the argument:
 
-- **`#NNN` or PR URL** → resolve with `gh pr view <NNN-or-url> --json number,headRefName,headRepository,headRepositoryOwner,isCrossRepository,state,url`. The branch you want is `headRefName`. If `isCrossRepository` is true, the PR is from a fork — note this; the remote will be the fork, not `origin`.
+- **`#NNN`, a PR URL, or any deep link into a PR** → the branch is keyed off the **PR number**, so first extract it. Don't hand a fragment-bearing URL straight to `gh` — a trailing `#pullrequestreview-…` / `#discussion_r…` / `#issuecomment-…`, a `/files`|`/commits/<sha>` path, or a `?query` can confuse it. Pull `NNN` out of the URL with a `pull/(\d+)` match and resolve the bare number: `gh pr view <NNN> --json number,headRefName,headRepository,headRepositoryOwner,isCrossRepository,state,url` (a bare `#NNN` needs no extraction). The branch you want is `headRefName`. If `isCrossRepository` is true, the PR is from a fork — note this; the remote will be the fork, not `origin`.
+  - **If the link carried a review/comment fragment**, it's telling you _which_ feedback to act on — resolve it so the follow-up is grounded in it. `#pullrequestreview-<id>` is a review (its inline comments carry the substance even when the review body is just "see below" — read them with `gh api repos/<owner>/<repo>/pulls/<NNN>/reviews/<id>/comments`, or the equivalent MCP `get_review_comments`); `#discussion_r<id>` is one review comment; `#issuecomment-<id>` is a conversation comment. Treat addressing that feedback as the implicit follow-up when the operator didn't spell one out.
 - **Plain branch name** → use it as-is. Confirm it exists on `origin` with `git ls-remote --heads origin <branch>` (or on the fork remote if the user gave `owner:branch`).
 
 If resolution fails (PR not found, branch doesn't exist on the remote), **stop and report** — do not silently fall back to the auto-branch.
+
+**Always look for any PRs on the target branch — open _or_ closed — and skim them before doing anything else.** Even when the target is a plain branch name (not a `#NNN`/URL), the branch usually has PR history that tells you what the work is, what's already been reviewed, and whether an earlier PR was closed/merged/superseded. Run `gh pr list -R <owner>/<repo> --head <branch> --state all --json number,title,state,url,isDraft,baseRefName`, then for each hit skim its body, commits, and reviews (`gh pr view <NNN> -R <owner>/<repo> --json body,commits,reviews,comments,mergeable,mergeStateStatus,isDraft,state`). This grounds the rest of the session in the branch's actual history — reviewer feedback still to address, a merged PR meaning follow-up must restart from the trunk (see the system prompt's merged-PR rule), or a draft that `/finalize` will later land.
+
+**Note the PR's base ref while you're there.** `baseRefName` is the branch this work merges into, and it is not always the trunk — a project with promotion branches or long-lived feature branches will have PRs based elsewhere. Every follow-up you dispatch (`/finalize`, `/check-merge`, `/sync-branch`, free-form work) resolves the base from the PR itself, but state it explicitly when you hand off so nothing silently reverts to a `main` assumption.
 
 ## Step 2 — Record the auto-branch and sanity-check it
 
@@ -88,8 +108,11 @@ State this explicitly in your turn output so the user can see the redirect took 
 ## Step 6 — Dispatch the follow-up
 
 - **No follow-up provided** → report the attach (current branch, last commit, PR link if applicable) in 1–2 sentences and stop. Wait for the user's next instruction.
-- **Free-form follow-up** → proceed with the described work on the now-current branch.
-- **Slash-command follow-up** (e.g. `/prep-merge`, `/fix-ci`, `/request-ci`) → load `@.claude/skills/<name>/SKILL.md` and follow it. Do **not** inline-copy its steps; read and execute the actual file so updates to that skill flow through.
+- **`implement` / `execute` follow-up** (the keyword optionally trailed by "the plan" / "plan" — nothing richer) → load `@.claude/skills/implement/SKILL.md` and follow it from its Step 1; it owns locating the plan under `docs/plans/`, the plan-file lifecycle flip, and the closing draft PR. Do **not** inline-copy those steps. A `/from-branch` launch is already continued work, so there is no plan cycle to open — this follow-up **is** the go-ahead the lifecycle flip quotes. If the follow-up carries a real instruction beyond `implement`/`execute` + that filler, it's a free-form follow-up — handle it as the bullet below instead.
+- **Free-form follow-up** → load `@.claude/skills/implement/SKILL.md` and follow it via its § "Planless entry", treating the follow-up text as the task. Two points are `/from-branch`-specific:
+  - **A concrete request is not a plan cycle.** `/from-branch` is continued work (CLAUDE.md § "Plan mode & questions in web sessions"), so routing through `/implement` is not an invitation to write a plan file first.
+  - **The quality passes are diff-scoped, so they self-limit.** A follow-up that produced no code ("explain why X fails", "rerun CI") leaves them nothing to act on, and each says so in its own "When to use". That is a property of the passes — "the change was small" is not grounds to skip them.
+- **Slash-command follow-up** (e.g. `/finalize`, `/check-merge`, `/sync-branch`, or `/test-on-gh` where the project has hydrated it) → load `@.claude/skills/<name>/SKILL.md` and follow it. Do **not** inline-copy its steps; read and execute the actual file so updates to that skill flow through.
 
 ## Failure modes to call out
 
@@ -97,3 +120,4 @@ State this explicitly in your turn output so the user can see the redirect took 
 - **Target branch already checked out** — skip Steps 2–4 and proceed to Step 6.
 - **MCP says "not allowed"** for a branch/PR action — switch to `gh` (the token is in `GH_TOKEN`). Don't report the action as impossible.
 - **Branch was force-pushed since the PR was opened** — `git pull --ff-only` will refuse; do a `git reset --hard origin/<branch>` only after confirming with the user that there's no local work to lose.
+- **`implement`/`execute` given but `docs/plans/` has zero or multiple files** — don't guess; `@.claude/skills/implement/SKILL.md` Step 1 owns the resolution, and Step 6 dispatches there.
