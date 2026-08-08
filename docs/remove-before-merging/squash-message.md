@@ -6,42 +6,27 @@ feat: sync upstream's vet rename and add /sync-upstream (pr #4)
 
 ```
 This repo vendors CLAUDE.md, README.md, .claude/ and scripts/ from a
-private application repo and strips them of that stack. Two syncs have
-now been done by hand, and both spent most of their time re-deriving
-the same four facts: where upstream is, which commit the last sync
-stopped at, which paths are even in scope, and how to reach a
-cross-owner private repo when gh api 403s on it.
+private application repo, stripped of that stack. Two syncs have now
+been done by hand, and both re-derived the same facts: where upstream
+is, where the last sync stopped, which paths are in scope, and how to
+reach a cross-owner private repo when gh api 403s. /sync-upstream is
+the answer, with an upstream.json watermark recording upstream HEAD at
+sync time rather than the last commit taken, so triaged-and-skipped
+commits stay skipped. It is delete-on-bootstrap rather than
+hydrate-before-use — a generated repo is a divorced fork, and the
+upstream it names is unreadable to it — so the inherited skill count
+stays at 20.
 
 The one upstream change that reaches us renames precommit to vet, and
 only half of it applies: its rationale was that the name claimed a git
-hook the repo does not have, and "gates" never made that claim. Taken
-anyway, because vocabulary drift is what turns a sync into a
-translation exercise, and this repo is itself upstream for every
-project generated from it. The half that lands on a real bug is the
-split the rename names — vetting is the run, attestation is the record
-it produces — under which /finalize's docs-only flag was named after
-the one thing it does not do. The skill said, two sentences apart,
-that "no attest" does not skip the attestation. It follows the run and
-becomes no vet, with no ci and no attest kept as accepted spellings.
-scripts/gates.sh becomes scripts/vet.sh; the rest is ~12 files of one
-string, frontmatter descriptions included.
-
-/sync-upstream is the answer to the four facts above.
-upstream.json beside it records upstream HEAD at sync time rather than
-the last commit taken, so a triaged-and-skipped commit stays skipped,
-and the skill bumps it in a sync's final commit — an un-bumped
-watermark costs a re-triage, a bumped one that lands without its port
-skips those commits forever. The skill also carries the corners each
-sync paid for once: git transport with $GH_TOKEN reaches what gh api
-and add_repo refuse, clone -c persists the credential where git -c
-does not, a blobless clone keeps the history a shallow one truncates,
-and cherry-pick is useless against de-vendored rewrites. It is the one
-file here marked delete-on-bootstrap rather than hydrate-before-use,
-since a generated repo is a divorced fork and the upstream it names is
-unreadable to it; the inherited count stays at 20.
-
-./scripts/vet.sh is itself still a stub that exits 1, so nothing
-gated this change.
+hook the repo lacks, and "gates" never made that claim. Taken anyway,
+because vocabulary drift is what turns a sync into a translation
+exercise. The half that lands on a real bug here is the split the
+rename names — vetting is the run, attestation is the record it
+produces — under which /finalize's docs-only flag was named after the
+one step it does not skip. It becomes no vet, with no ci and no attest
+kept as accepted spellings. scripts/gates.sh becomes scripts/vet.sh,
+still a stub that exits 1, so nothing gated this change.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```

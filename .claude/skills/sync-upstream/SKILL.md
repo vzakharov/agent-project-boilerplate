@@ -8,7 +8,7 @@ description: "BOILERPLATE MAINTENANCE ONLY — delete this skill when generating
 
 This repo vendors its agent infrastructure — `CLAUDE.md`, `README.md`, `.claude/`, `scripts/` — from a working application repo, stripped of that application's stack. Upstream keeps editing those files. This skill finds what changed since the last sync, decides commit by commit what applies here, and ports the ones that do.
 
-It is **not** a way to pull the template back into a generated project. "Use this template" produces a divorced repo, not a dependency: it hydrates stubs, writes its own `CLAUDE.md` sections, and diverges from the first commit. Reconciling that is fork-merging, a genuinely harder problem than tracking a vendored surface — and a skill that looks like it handles the second while being invoked for the first is worse than no skill at all.
+It runs in **one direction only**: upstream → this repo. It is not a way for a project generated from this template to pull the template's later changes back in. Such a project starts diverging on its first commit — it hydrates the stubs and rewrites `CLAUDE.md` for its own stack — so catching it up to the template is a fork merge, not the path-scoped diff this skill does. Don't invoke it for that.
 
 ## The watermark
 
@@ -22,8 +22,6 @@ It is **not** a way to pull the template back into a generated project. "Use thi
   "vendoredPaths": ["CLAUDE.md", "README.md", ".claude/", "scripts/"]
 }
 ```
-
-It sits beside this file rather than at `.claude/upstream.json` so the procedure and its state are one directory — the bootstrap deletion above is then a single `rm -rf`, with nothing left behind pointing at a repo the new project cannot read.
 
 **`lastSyncedSha` is upstream HEAD at sync time, not the last commit taken.** A commit triaged and skipped is *done*; the reasoning lives in that sync's PR body. A watermark that only advanced to the last-taken commit would re-surface every skipped commit on every future run.
 
@@ -62,6 +60,8 @@ cd <scratchpad>/up && git log --oneline <lastSyncedSha>..HEAD -- <vendoredPaths>
 ```
 
 `vendoredPaths` is what turns a wall of upstream commits into a handful of candidates in one command. Record `git rev-parse HEAD` **now**, before triage — that value is the next watermark regardless of how the triage goes.
+
+**The clone is whole; `vendoredPaths` filters only this log.** A commit touching nothing on the list is never surfaced, which is right while the list is complete and silent when it isn't: the moment upstream puts agent infrastructure somewhere new — a `.github/` workflow, another top-level directory — it stays invisible until the list names it. So run the log once unfiltered too (`git log --oneline --name-only <lastSyncedSha>..HEAD`, skimmed for unfamiliar paths) and widen `vendoredPaths` in the same commit that bumps the watermark.
 
 ### Step 4 — Triage each candidate, from its commit message first
 
