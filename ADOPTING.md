@@ -190,8 +190,8 @@ what does.
    strip the `@`-references pointing into it.
 3. **Fill in the "About this project" stub** at the top of `CLAUDE.md`.
 4. **Implement dep-install in `.claude/hooks/session-start.sh`** so remote
-   sessions start with a current `node_modules` / `venv` / equivalent. The `gh`
-   shim half already works.
+   sessions start with a current `node_modules` / `venv` / equivalent — the stub
+   noted in its [G4 row](docs/catalog.md#g4--remote-session-plumbing).
 
 Then continue to the shared tail.
 
