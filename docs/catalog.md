@@ -221,8 +221,6 @@ Four closure facts are counter-intuitive enough to state outright:
 
 ## Keeping this file honest
 
-`scripts/check-skill-catalog.sh` asserts that every skill directory has exactly
-one row here and that every path a row names exists. Run it when adding,
-renaming or removing a skill — without it, a new skill silently leaves the
-catalog incomplete, which is the same drift `/sync-upstream` warns about for its
-path list.
+The one-row-per-skill invariant is machine-checked by
+`scripts/check-skill-catalog.sh`, so a skill added without a row here fails the
+check rather than going unnoticed.

@@ -9,12 +9,11 @@
 #      `docs/catalog.md`.
 #   3. Every path named in a catalog row's first column exists.
 #
-# Assertions 2-3 skip when `docs/catalog.md` is absent, which is the normal
-# downstream case — the catalog describes the source repo and is never vendored.
-# So the same script is useful at every link in the adoption chain.
+# Assertions 2-3 skip when `docs/catalog.md` is absent — the normal downstream
+# case, since the catalog describes the source repo and is never vendored. So the
+# same script is useful at every link in the adoption chain.
 #
-# Run it when adding, renaming or removing a skill. Exits non-zero on any
-# failure, listing every one rather than stopping at the first.
+# Reports every failure rather than stopping at the first.
 
 set -uo pipefail
 

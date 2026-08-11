@@ -62,9 +62,9 @@ Adopt the agent infrastructure from https://github.com/vzakharov/agent-project-b
 into this repo: clone it somewhere temporary, read ADOPTING.md, and follow it.
 ```
 
-The agent selects a subset against your repo's actual shape — most of the criteria
-are decidable by inspection, so it should need little from you beyond whether
-your sessions run on the web and what your deploy/test surface looks like.
+The agent selects a subset against your repo's actual shape, mostly by
+inspection — expect it to ask only about your session type and your deploy/test
+surface.
 
 Either way, later changes here come forward with `/sync-upstream`, pointed at this
 repo by your own `upstream.json`. The infrastructure is adoptable **and**

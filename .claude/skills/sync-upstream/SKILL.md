@@ -7,8 +7,8 @@ description: "Pull the agent-infrastructure changes this repo adopted from its s
 > If you adopted this skill from another repo, **rewrite that file for yours**
 > (see `ADOPTING.md` at the source) rather than inheriting the copy that came
 > with it — an inherited watermark points your sync at a repo you may not be able
-> to read and sets `lastSyncedSha` to a foreign history. Repointing is the whole
-> adjustment; there is nothing to delete.
+> to read and sets `lastSyncedSha` to a foreign history. That rewrite is the only
+> adjustment the skill needs.
 
 ## What this skill is for
 
