@@ -1,45 +1,60 @@
 Proposed squash title/body:
 
 ```
-docs: rename /draft-pr to /pr and vendor the backlog-audit sweep (pr #5)
+feat: make this boilerplate adoptable into an existing repo (pr #7)
 ```
 
 ```
-Twelve of the 23 commits upstream landed since b6ea16e4 touch the paths
-this repo vendors, and four carry something a stack-free template can
-hold. The largest is a rename: /draft-pr becomes /pr, because "draft"
-named the state of the artifact the skill produces rather than what the
-command is. A skill's invocation name comes from its directory, so this
-is a directory move plus every reference across eight skills, CLAUDE.md
-and README.md. The constraint to preserve when editing any of it: every
-reference stays slash-adjacent — "PR" is the ordinary word for a pull
-request throughout this tree, so a bare `pr` is invisible in that prose
-and no regex separates the two.
+This repo was reachable by exactly one route: "Use this template",
+which produces a whole-repo fork. An agent standing in a repo that
+already exists, told to take what it needs from here, had nothing to
+read — it would copy `.claude/` and `scripts/` wholesale and inherit
+seven stubs that read as working skills, a watermark pointed at a
+private repo, and a README about someone else's template. And a fork
+had no route back to later changes, which the old doctrine documented
+as a property of forks rather than treating as the gap it was. Both
+halves are now closed.
 
-/audit-github-backlog is new: the whole-backlog sweep, judging every
-open issue and PR against today's code on demand and roughly monthly,
-stopping at a reviewable plan and mutating nothing on GitHub. Its
-judgement half ports whole — the verdict taxonomy split across GitHub's
-state_reason enum, "age is never a reason to close" as a rule, one
-analyst per bucket over a shared analyst-rules.md, the guards against
-closing work recorded nowhere else. Its mechanical half is 2,300 lines
-of upstream TypeScript that cannot come here, so Steps 1 and 4 instead
-say what that half must produce and where hand collection stops being
-adequate — the coverage assertion is the load-bearing part, since a
-hand-merged run silently dropped 2 of 213 items and looked complete.
+`ADOPTING.md` is the acquisition procedure and `docs/catalog.md` the
+per-item inventory; with `README.md` reduced to what/why plus the two
+acquisition lines, each fact lives in exactly one of the three, so this
+removes more duplication than it adds. Adoption is decided per group
+against criteria an agent can mostly evaluate by inspecting the target
+repo, and dispositions are three rather than two — `rewrite` covers the
+two files whose contents are per-repo by definition, which is what stops
+an adopter inheriting a watermark it cannot resolve. The procedure's
+probes are REST throughout and verified unshimmed, because the `gh` shim
+is itself part of what is being adopted: a GraphQL 403 while profiling
+is therefore evidence that the shim is needed, not a failure, and
+`gh auth status` is ruled out as a capability probe since it reports the
+token invalid in sessions where `gh api` works. Installing that shim
+means unsetting `HTTPS_PROXY`, which an adopting agent's own guidance
+forbids, so the conflict is named where the decision is made and the
+decline path is designed in rather than bolted on.
 
-The /log-review stub gains four rows from three upstream repairs of that
-same skill, each a defect that only shows up on repeat: a recurrence is
-a regression only if the fix was running when it recurred, the readout
-series is itself a backlog that has to close its own output, a
-single-window run cannot ground a claim about the series, and a dedup
-query capped below its population silently drops the oldest items. Its
-PII row is rewritten rather than extended, because upstream's first
-readout written under a prior naming what not to quote leaked anyway —
-it now carries the reconstructability test and binds it to every section
-that paraphrases user content. CLAUDE.md takes the tombstone convention
-from the same range, and the watermark advances to upstream HEAD at
-triage time so the eight skipped commits stay skipped.
+`/sync-upstream` becomes the universal re-sync path, which needed no
+second skill and no extracted core: "upstream" is relative to the repo
+you stand in, so only the body and the watermark were parochial and
+direction becomes data. `adopted` replaces `vendoredPaths` at any
+granularity, `declined` records refusals with their reason so re-sync
+stops re-offering them, and a new skill at the source is surfaced with
+its catalog criteria rather than taken. Two invariants hold at every
+link and so are hardcoded: never sync the watermark file itself —
+it sits inside `.claude/`, so a naive sync silently repoints an
+adopter at a foreign history and surfaces one sync later as an
+unresolvable SHA — and judge the diff rather than a commit message's
+"we", since in a chain commits arrive written in a third repo's
+vocabulary.
+
+The closure this depends on is machine-checked. Fifteen of 26 skills
+reference a sibling, and a subset copy that ignores those references
+leaves pointers that fail silently, the agent following the surviving
+prose past the step it could not load; `scripts/check-skill-catalog.sh`
+asserts they resolve, and that assertion is the one that still works
+downstream. Left deliberately undone: the `gh`-heavy skills still need
+the shim on the web, so making them proxy-safe would remove the one step
+where an adopter may reasonably refuse — tracked in #6, and linked from
+where that refusal happens.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
