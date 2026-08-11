@@ -88,10 +88,8 @@ there is no condition under which it fails to apply.
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
-`CLAUDE.md` is a **donor, not a replacement**. Your repo already has
-conventions; take the sections, merge them into yours, and keep your
-stack-specific content. Overwriting it is the one way to make adoption a
-regression.
+`CLAUDE.md` is a **donor, not a replacement** — overwriting it is the one way to
+make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 
 ### G2 — The PR loop
 

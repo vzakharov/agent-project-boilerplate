@@ -163,13 +163,9 @@ you skipped** in your report.
 
 Read [`docs/catalog.md`](docs/catalog.md) and decide group by group, using the
 Step 2 profile. Then, before copying, resolve each chosen group's **Pulls in**
-column — a skill copied without the siblings it `@`-references leaves a pointer
-to a file that isn't there, and that failure is silent: the agent follows the
-surviving prose and skips the step it could not load.
-
-The catalog's [Closure is not
-optional](docs/catalog.md#closure-is-not-optional) section lists the four
-counter-intuitive cases. Don't re-derive them.
+column — [Closure is not
+optional](docs/catalog.md#closure-is-not-optional) explains what breaks if you
+don't, and lists the four counter-intuitive cases. Don't re-derive them.
 
 Copy the resolved set from the clone into your repo. Then continue to the shared
 tail.
@@ -199,10 +195,9 @@ Then continue to the shared tail.
 
 ### Reconcile `CLAUDE.md` rather than overwrite it
 
-Your repo already has conventions, or will. The boilerplate's `CLAUDE.md` is a
-**seed upstream and a donor downstream**: take its sections, merge them into
-yours, and keep your stack-specific content. Overwriting is the one way to make
-adoption a regression.
+Your repo already has conventions, or will. Take the boilerplate's sections,
+merge them into yours, and keep your stack-specific content — it is a
+[donor, not a replacement](docs/catalog.md#g1--prose--principles).
 
 Replace the remaining stubs — repository layout, testing — as those conventions
 stabilize, and add `.claude/rules/` files as area-specific conventions emerge
@@ -219,20 +214,17 @@ ruff check . && mypy . && pytest -q                       # Python
 go vet ./... && go test -short ./...                      # Go
 ```
 
-The shipped stub **exits `1` by design**, and six skills invoke it —
-`/finalize` stops loudly until you do this. It is a
-[`rewrite`](docs/catalog.md#three-dispositions-not-two), not a choice: there is
-no version of the PR loop that does not run your checks.
+The shipped stub **exits `1` by design**, so skipping this step leaves the PR
+loop stopping loudly — it is a
+[`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
+[the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
 
 ### Hydrate or delete the G6 stubs
 
-Go through the [G6 rows](docs/catalog.md#g6--stack-stubs). Hydrating one means
-writing your project's real commands in and **deleting the banner** at the top.
-
-**An unhydrated stub is worse than a missing skill** — half-following one against
-a project it was never written for beats not having it only in appearance. Delete
-the ones that don't apply; three of them tell you when deleting is the right
-answer outright (no visual surface, no CI-only tests, no numbered migrations).
+Go through the [G6 rows](docs/catalog.md#g6--stack-stubs) and apply the criterion
+stated there: hydrate now, or delete. Hydrating means writing your project's real
+commands in and **deleting the banner** at the top — a stub that still carries its
+banner is still a stub.
 
 ### Repoint the sync watermark
 
