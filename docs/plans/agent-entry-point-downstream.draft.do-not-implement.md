@@ -18,11 +18,30 @@ Three deliverables, in dependency order:
 - This repo is **public** (`vzakharov/agent-project-boilerplate`, template, default branch `main`). So the downstream clone needs no credential helper — but it does need full history to resolve `lastSyncedSha..HEAD`. That is a genuine parameter of the shared clone step, not a copy of it.
 - The skills are **densely cross-referenced** — 15 of 26 `@`-reference at least one sibling. `scripts/vet.sh` is referenced by six skills and `/plan` by four. A subset copy that ignores the closure leaves dangling `@.claude/skills/x/SKILL.md` pointers, which fail silently: the agent follows the surviving prose and skips the step it can't load.
 
+## Doc DRY: which file owns what
+
+Three documents, three non-overlapping jobs. Every fact lives in exactly one of them, and the other two link.
+
+| File | Owns | Audience |
+|---|---|---|
+| `README.md` | What this repo is and why; the two acquisition entry points, one line each; links out. Stays short. | A human evaluating the repo. |
+| `ADOPTING.md` | The **acquisition procedure**, for both modes — template fork and subset-adoption into an existing repo. | An agent, once, over the network. |
+| `docs/catalog.md` | The **inventory**: one row per skill/script/file, with criteria. | Both, plus `/sync-boilerplate` on every run. |
+
+This resolves four existing duplications rather than adding to them:
+
+- README's **"Ships:"** bullets and its two **"What's included"** tables are per-item descriptions → they become group headings plus a catalog pointer. The catalog's columns are a superset of what those tables carried.
+- README's **"Bootstrap checklist after creating your repo"** is the template-fork half of the acquisition procedure, and it shares four of its steps with subset-adoption (reconcile `CLAUDE.md`, implement `vet.sh`, hydrate-or-delete the stubs, initialize the sync watermark). Keeping it in README means maintaining that overlap in two files, so `ADOPTING.md` grows a **§ Template fork** and README keeps only the `gh repo create --template` line plus a pointer at it.
+- README's **"Not inherited: `/sync-upstream`"** section is a per-item adoption criterion → the catalog's "Never adopt" row, with README keeping one sentence of framing.
+- README's **"treat an unhydrated stub as unavailable"** paragraph is the G6 adoption criterion → the catalog, cited from `ADOPTING.md`'s hydrate-or-delete step.
+
+`ADOPTING.md` does not restate what a skill does — it cites catalog rows. The catalog does not restate procedure — it names groups and conditions.
+
 ## Deliverable 1 — `ADOPTING.md` (root) + `docs/catalog.md`
 
-**`ADOPTING.md`** is the first-contact procedure, at the repo root so it is visible in GitHub's file list and fetchable at a stable raw URL. It is read once, over the network, and is **never copied downstream**.
+**`ADOPTING.md`** is the acquisition procedure, at the repo root so it is visible in GitHub's file list and fetchable at a stable raw URL. It is read once, over the network, and is **never copied downstream**. It opens by branching on mode: **§ Template fork** (short — the fork already gave you every file, so the work is pruning and hydration) and **§ Adopt into an existing repo** (the steps below). The two sections share the tail, so the shared steps are written once and the mode sections converge on them.
 
-Its steps:
+Its steps, for the subset-adoption mode:
 
 1. **Clone this repo somewhere temporary** — `git clone --depth 1` into the session scratchpad or `tmp/`. Public, so no token. (Shallow is right here and wrong for `/sync-boilerplate`; see DRY notes.)
 2. **Profile the target repo, don't interrogate the human.** Most adoption criteria are decidable by inspection, and the doc says so as commands: `git remote -v` (GitHub?), `gh auth status` (is `gh` usable?), `python3 -V` / `command -v jq` (script prerequisites), `ls .github/workflows` (CI?), `gh issue list --limit 1` (are issues used to track work?), `gh repo view --json squashMergeAllowed` (does the squash-message discipline apply?). Only what the repo cannot answer gets asked: whether sessions run on Claude Code web/remote, and whether the project has a deploy path, a visual surface, or numbered migrations.
@@ -33,8 +52,6 @@ Its steps:
 7. **Verify**: run `scripts/check-skill-catalog.sh` to prove no `@`-reference dangles, confirm the copied skills appear in the session's skill list, and confirm no unhydrated stub was taken silently.
 
 **`docs/catalog.md`** is the single per-item inventory: one row per skill/script/file, with columns *what it does* · *group* · *requires* · *pulls in* · *skip if*. It is the file a human or agent reads to answer "how much of this do I need," and the file `/sync-boilerplate` consults when a **new** skill appears upstream. It is **read from the clone on every sync, never vendored downstream** — so it structurally cannot go stale in an adopter's tree.
-
-`README.md`'s existing per-skill tables collapse to group headings plus a pointer at the catalog, so the one-liners live in one place.
 
 ### The groups (the "criterion per group" the task asks for)
 
@@ -107,7 +124,7 @@ Assertions 2–3 skip cleanly when `docs/catalog.md` is absent (the downstream c
 
 ## Consistency sweep (part of the work, not follow-up)
 
-- `README.md`: inherited-skill counts change (20 → 21; 13 working → 14). New "Adopt into an existing repo" section. Per-skill tables → catalog pointer. Bootstrap checklist step 5 becomes "delete `/sync-upstream`, and initialize `/sync-boilerplate`'s watermark" — which is also the fix for the README's current claim that a template fork has no way back to the template.
+- `README.md`: reduced to its owned scope per "Doc DRY" above — what/why, the two acquisition lines, links out. Inherited-skill counts change (20 → 21; 13 working → 14) wherever they survive the reduction. The bootstrap checklist moves to `ADOPTING.md` § Template fork, where its step 5 becomes "delete `/sync-upstream`, **and** initialize `/sync-boilerplate`'s watermark" — which is also the fix for the README's current claim that a template fork has no way back to the template.
 - `CLAUDE.md`: `/sync-boilerplate` added to the skills index; "Not part of the inherited set" reworded so `/sync-upstream` is still the one delete-on-bootstrap file while the downstream direction now has a home; the `check-skill-catalog.sh` line.
 - `/sync-upstream`: the one-direction paragraph, and its steps that now live in the core.
 - Grep `vendoredPaths` and "one direction" across the repo, frontmatter `description:` lines included.
@@ -122,7 +139,11 @@ Assertions 2–3 skip cleanly when `docs/catalog.md` is absent (the downstream c
 
 **Deliberately not shared** — the two clone commands. `ADOPTING.md` uses `git clone --depth 1` with no credentials; the core uses a blobless, no-checkout, **full-history** clone with an optional credential helper. They look similar and are not interchangeable: shallow is correct for first contact (only the working tree matters) and *breaks* re-sync (`lastSyncedSha` is unreachable, failing as a bare "unknown revision" that reads like a bad SHA). Forcing one helper would either give first-contact a clone it doesn't need or give re-sync one that cannot work. The core's warning against `--depth` is the durable record of why.
 
-**Deliberately not shared** — skill one-liners. `docs/catalog.md` becomes the single source; `README.md` drops its per-skill tables to a pointer rather than keeping a parallel copy that drifts one skill at a time. The catalog's columns are a superset of what the README's tables carried.
+**Extracted, not duplicated** — the prose the new docs would otherwise restate from `README.md`. The three-way split in "Doc DRY" above is the mechanism: skill one-liners move to `docs/catalog.md`, the post-acquisition checklist moves to `ADOPTING.md`, and README keeps framing and links. Net effect is that this change **removes** more duplication from the repo than it introduces, rather than adding a third file that paraphrases the first two. The failure mode being designed out is per-item drift: a skill gains a flag, and today three files claim to describe it.
+
+**Deliberately duplicated, once** — the human-oriented kickoff line appears in both `README.md` and `ADOPTING.md`. It is two sentences, it is the thing a human copies, and both files are places they will look for it; a pointer would cost more than the copy. Nothing derives from it, so it cannot drift silently.
+
+**Deliberately not merged** — the two acquisition modes stay separate sections rather than one parameterized procedure. They share the tail (the four steps named above, written once and converged on) but their heads are genuinely different work: a fork starts with every file present and prunes, an adopting repo starts with none and selects. Collapsing them into one branchy procedure would make both harder to follow than the shared-tail form.
 
 **Reused, not rebuilt** — the group/condition vocabulary comes from what the skills already declare (their `@`-references and the `gh`/`jq`/`python3` calls in their bodies), and `check-skill-catalog.sh` derives the closure from those same references rather than from a hand-maintained dependency list. A hand-written adjacency table would be exactly the "hand-written duplicate whose shape tracks another declaration" `CLAUDE.md` forbids.
 
@@ -133,3 +154,5 @@ Assertions 2–3 skip cleanly when `docs/catalog.md` is absent (the downstream c
 - `ADOPTING.md`'s profiling commands each run in this environment and produce the shape of answer the doc claims.
 - Every skill directory and every `scripts/` file appears in exactly one catalog group, "Never adopt" included — no orphans.
 - Grep confirms no surviving claim that the downstream direction is unsupported.
+- **No per-item description survives in two of `README.md` / `ADOPTING.md` / `docs/catalog.md`.** Check by reading the three back-to-back: each skill name should appear with a description exactly once, and each acquisition step exactly once. A skill name may of course appear as a bare cross-reference.
+- `README.md` after the reduction still answers, on its own, "what is this and how do I get it" — the pointers replace detail, not the through-line.
