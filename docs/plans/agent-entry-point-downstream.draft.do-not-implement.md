@@ -172,7 +172,9 @@ Assertions 2–3 skip cleanly when `docs/catalog.md` is absent (the downstream c
 
 ## Out of scope (noted, not done)
 
-`docs/plans/*.completed.md` (two files) and `docs/remove-before-merging/squash-message.md` are tracked on `main`, contrary to the working-artifact conventions that say `/finalize` sweeps them. They are why the catalog needs a "never" row for `docs/`. Cleaning them up is a separate change; this branch's own `/finalize` sweep will remove the `docs/plans/` tree, which incidentally takes the two stale files with it — worth confirming at finalize rather than assuming.
+**Making the `gh`-heavy skills proxy-safe.** The measured findings above mean that in a web session the adopted skills need G4's shim, because they call GraphQL-flavoured `gh` (`gh pr view --json`, `gh pr list`, `gh issue list`). Rewriting those call sites into the REST forms that work through the proxy would make G4 genuinely optional and remove the one step where an adopting agent may refuse — but it touches roughly ten skills, changes behaviour in *this* repo as much as downstream, and is judged on its own merits rather than as a rider on an adoption entry point. So this branch documents the dependency and the decline path instead of removing the dependency. `/implement` files it as an issue (via `/propose-issue`, so it dedupes) and links it from `ADOPTING.md`'s G4 section, so an adopter who hits the refusal finds the tracking thread rather than a dead end.
+
+**Stale working artifacts on `main`.** `docs/plans/*.completed.md` (two files) and `docs/remove-before-merging/squash-message.md` are tracked on `main`, contrary to the working-artifact conventions that say `/finalize` sweeps them. They are why the catalog needs a "never" row for `docs/`. Cleaning them up is a separate change; this branch's own `/finalize` sweep will remove the `docs/plans/` tree, which incidentally takes the two stale files with it — worth confirming at finalize rather than assuming.
 
 ## DRY notes
 
