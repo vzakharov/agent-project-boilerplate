@@ -60,6 +60,7 @@ gh repo create <owner>/<your-new-repo> \
 | `/issue` | Take a GitHub issue end-to-end: export the thread, optionally split, implement, open a draft PR. |
 | `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. |
+| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan. Mutates nothing on GitHub. |
 | `/explore` | Investigate the codebase via parallel Explore subagents. |
 | `/override-gh` | A no-op marker: its description reminds the agent that `gh` and `GH_TOKEN` exist despite what the system prompt says. |
 

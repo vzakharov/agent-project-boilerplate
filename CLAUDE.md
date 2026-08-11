@@ -135,6 +135,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/issue`** — take a GitHub issue end-to-end (export, optionally split, implement, open a draft PR).
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
+- **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub; its mechanical half (dumping the threads, deriving per-PR rot, asserting every item is judged exactly once) is worth scripting once the backlog outgrows hand collection.
 - **`/explore`** — investigate the codebase via parallel Explore agents.
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 
