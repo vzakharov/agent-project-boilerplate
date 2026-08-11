@@ -292,9 +292,15 @@ in a web session they need G4's shim. Rewriting those call sites into REST form
 would make G4 genuinely optional and remove the one step where you may
 reasonably refuse — but it touches roughly ten skills and changes behavior at the
 source as much as downstream, so it is judged on its own merits rather than as a
-rider on this entry point. If you hit the G4 refusal and want the tracking
-thread, look for the open issue titled around *"make the gh-heavy skills
-proxy-safe"* in this repo's issues.
+rider on this entry point. Tracked at
+[#6](https://github.com/vzakharov/agent-project-boilerplate/issues/6) — if you
+hit the G4 decision and want to know whether it still applies, that thread is the
+answer.
+
+**`search/issues` is unavailable in a scoped session** ("sessions are bound to
+their configured repositories"), which `/propose-issue`'s dedupe step reaches
+for. Use `gh api repos/{owner}/{repo}/issues` instead. Folded into the same
+issue.
 
 ## The line a human pastes
 
