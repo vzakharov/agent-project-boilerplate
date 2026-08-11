@@ -20,10 +20,9 @@ of one.
 
 ## This is a living document
 
-Everything here was distilled from a **single** run over a 213-issue backlog, in
-the repo this project's agent infrastructure came from. It is right about what
-that run hit and unproven about everything else, so treat it as the current best
-account rather than a settled procedure.
+Everything here was distilled from a **single** run over a 213-issue backlog. It
+is right about what that run hit and unproven about everything else, so treat it
+as the current best account rather than a settled procedure.
 
 **While running it, collect what it gets wrong** — a trap it does not warn
 about, a step that misfires, a bucket heuristic that produces nonsense, guidance
@@ -71,9 +70,9 @@ obvious approach fails *silently*, and a rot number derived from a broken
 items, `gh` calls driven from the skill are fine. At a couple of hundred they are
 not: the collection is re-run on every abandoned attempt, the rot matrix is
 per-PR git work, and Step 4's coverage check is the difference between a complete
-sweep and one that quietly dropped two items. Upstream's equivalents are two
-scripts (`collect` and `aggregate`) that hard-fail rather than guessing — if you
-write them here, keep that property, and add them to `scripts/`.
+sweep and one that quietly dropped two items. Write it as two scripts under
+`scripts/` — collect and aggregate — and make both **hard-fail rather than
+guess**, since every trap below is a case where guessing looks like an answer.
 
 **Read `buckets.md` and override the split freely.** The proposal is a
 convenience; what matters is the coverage assertion behind it. Merge two small
@@ -294,6 +293,7 @@ Each of these was hit for real. **All but the first fail quietly.**
 | `gh issue view/list --json stateReason` → `Unknown JSON field`                                     | valid fields are `state`, `closed`, `closedAt`; the close **reason** lives in the closing comment |
 | `gh pr list --search 'issue/1647'` does not index branch names                                     | `gh api '/repos/<owner>/<repo>/pulls?head=<owner>:<branch>'`, or scan the paginated history        |
 | `gh pr list --limit 500` silently truncates                                                        | `gh api --paginate`                                                                               |
+| `gh api --paginate` emits one JSON array **per page**, concatenated — so a single `JSON.parse` reads page 1 and drops the rest | `--slurp` (gh ≥ 2.52) flattens them; below that, split the concatenated arrays yourself           |
 | Merged-PR-title → issue-number matching without `base.ref` reads epic-branch merges as landed      | always filter on `base.ref`                                                                       |
 | Bash `cd` persists between tool calls, so later globs resolve against the wrong directory          | absolute paths                                                                                    |
 | A subagent's transcript output file will overflow the coordinator's context                        | never read it; use the completion notification                                                    |
