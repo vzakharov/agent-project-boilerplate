@@ -117,6 +117,7 @@ The proposed squash title/body goes up when the PR opens and is kept in sync as 
 - **Plan drift**: When work deviates significantly from your plan docs, update them to reflect actual progress and revised ordering. The plan is a living document, not a stale ideal.
 - **Decision-doc consistency**: When revising a decision (e.g., renaming a convention, changing a tool choice), update all docs that reference the old convention.
 - **Plan-item voice**: Plan checklist items should read as forward-looking intent (how you'd phrase them _before_ doing the work), not as retrospective reports.
+- **Retiring a doc leaves a tombstone.** Don't just `rm` a doc that other files, comments, or history cite — leave a file recording the last commit that contained it and the `git show <sha>:<path>` recipe to read it, so every surviving citation still resolves, plus a pointer to where any still-live content went. **One tombstone per retirement, not per file**: docs retired together get a single tombstone with a row each. A tombstone standing in for a whole retired directory is `retired.md` at that directory's root; one standing in for a single file is `<name>.retired.md` beside its siblings — so every tombstone matches `*retired.md`.
 
 ## Working with skills
 
@@ -126,7 +127,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/plan`** — write the plan to `docs/plans/<slug>.draft.do-not-implement.md`; ask questions as numbered prose. Ends by handing over an `/implement <branch>` command for a fresh session.
 - **`/implement`** — execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR.
-- **`/draft-pr`** — rename the auto-branch, push, open the draft PR, post the squash proposal.
+- **`/pr`** — rename the auto-branch, push, open the draft PR, post the squash proposal.
 - **`/finalize`** — land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest.
 
 **Entry points and support:**
@@ -134,6 +135,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/issue`** — take a GitHub issue end-to-end (export, optionally split, implement, open a draft PR).
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
+- **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
 - **`/explore`** — investigate the codebase via parallel Explore agents.
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 

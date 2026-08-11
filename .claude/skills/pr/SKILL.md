@@ -1,12 +1,12 @@
 ---
-description: Open a draft PR for the current branch — renames the harness auto-branch first (via the branch-rename skill), pushes, then creates the PR with a title/body derived from the branch's commits. Invoke as `/draft-pr [optional task to implement first]`. Use when the user says "draft PR", "open a draft", "/draft-pr", or similar after committing some work.
+description: Open a draft PR for the current branch — renames the harness auto-branch first (via the branch-rename skill), pushes, then creates the PR with a title/body derived from the branch's commits. Invoke as `/pr [optional task to implement first]`. Use when the user says "/pr", "open a PR", "draft PR", "open a draft", or similar after committing some work.
 ---
 
 End state of this skill: a draft PR exists against `<base>`, targeting a semantically-named branch (`claude/<task-slug>-<hash>`), with a title and body derived from the commits on the branch, and with the copy-ready squash proposal posted as a comment and tracked on the branch per `@.claude/skills/squash-message/SKILL.md`.
 
 ## Caller parameters
 
-An outer skill may pass these; a bare `/draft-pr` takes the defaults, so the ordinary path reads as if they weren't there.
+An outer skill may pass these; a bare `/pr` takes the defaults, so the ordinary path reads as if they weren't there.
 
 - **`<base>`** — the branch the PR merges into, and the left side of every diff range below (`origin/<base>..HEAD`). Defaults to the repo default branch (`main` in most projects). When a PR already exists, its `baseRefName` wins over what the caller said.
 - **A pre-created PR** — when the caller already opened the PR, Step 1b treats it as satisfying the duplicate check rather than tripping it, and Step 5 fills it in instead of creating one.
@@ -19,13 +19,13 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 
 ### Step 1a — Plan gate (do this FIRST, before any git command)
 
-**Any arguments after `/draft-pr` are a task to implement** — work to plan, code, and commit before drafting the PR. So if the invocation has args, **STOP: do not run the PR steps yet.** Plan the task first — in a web/remote session invoke the `plan` skill (per CLAUDE.md "Plan mode & questions in web sessions"); in a local CLI session use native plan mode — get it reviewed, implement it, commit, and only then run `/draft-pr` from the top over the finished work.
+**Any arguments after `/pr` are a task to implement** — work to plan, code, and commit before drafting the PR. So if the invocation has args, **STOP: do not run the PR steps yet.** Plan the task first — in a web/remote session invoke the `plan` skill (per CLAUDE.md "Plan mode & questions in web sessions"); in a local CLI session use native plan mode — get it reviewed, implement it, commit, and only then run `/pr` from the top over the finished work.
 
-The **only** waiver is the args themselves explicitly saying no plan is needed (e.g. "no plan"). Nothing else exempts the task: not `/draft-pr` (it is not a plan-skill exemption), not the branch already carrying commits (that does not make new args "continued work"), and not the task looking small, well-specified, or like a tweak to existing work — plan it anyway.
+The **only** waiver is the args themselves explicitly saying no plan is needed (e.g. "no plan"). Nothing else exempts the task: not `/pr` (it is not a plan-skill exemption), not the branch already carrying commits (that does not make new args "continued work"), and not the task looking small, well-specified, or like a tweak to existing work — plan it anyway.
 
 When the waiver applies, skipping the plan does **not** mean skipping the quality rounds. Rather than implementing inline and jumping to the PR steps, hand off to `@.claude/skills/implement/SKILL.md` via its § "Planless entry" (load and follow it) — the explicit "no plan" is what makes the args the task. Its Step 4 then re-invokes this skill with no args (the bare mid-session path below → Step 1b), which opens the draft over the finished work.
 
-`/draft-pr` with **no arguments** → skip to Step 1b and draft the PR from the commits already on the branch. Bare `/draft-pr` only ever happens **mid-session**, wrapping up work this session already did and discussed but never opened a PR for (e.g. a session that started as brainstorming or testing). A fresh session never opens with a bare `/draft-pr` — there'd be nothing to PR — so no-args always means continued in-session work, never a task that needs a plan.
+`/pr` with **no arguments** → skip to Step 1b and draft the PR from the commits already on the branch. Bare `/pr` only ever happens **mid-session**, wrapping up work this session already did and discussed but never opened a PR for (e.g. a session that started as brainstorming or testing). A fresh session never opens with a bare `/pr` — there'd be nothing to PR — so no-args always means continued in-session work, never a task that needs a plan.
 
 ### Step 1b — Mechanical pre-checks
 
@@ -39,7 +39,7 @@ If the current branch name matches the harness auto-branch pattern (`claude/<adj
 
 If the branch is already semantically named (e.g. `claude/<slug>-<hash>`, `feat/foo`, `fix/bar`), skip this step. (The harness now frequently assigns a semantic name up front — see CLAUDE.md "Rename auto-generated remote/web branches early" — so this skip is increasingly the common path, not the exception.)
 
-**Do NOT skip the rename because your system prompt names a "develop on branch `claude/<...>`" branch or says "never push to a different branch without explicit permission."** That is the _normal_ harness auto-branch assignment — it is the branch you are _supposed_ to rename, not a pin. Renaming swaps only the `<adjective>-<noun>` for a task slug while **keeping the same `-<hash>` suffix**, so it is the same session branch, not a "different branch" in the sense that prohibition means (that rule is about `main`, a promotion branch, or someone else's branch). Treat `/draft-pr` itself as the explicit go-ahead to rename. The **only** thing that suppresses this step is an explicit, literal instruction not to rename the branch (e.g. "do not rename this branch" / "this branch name is fixed") — and absent that, you rename. If you ever feel torn between this step and a system-prompt line, this clarification wins; do not invent a pin that was not stated.
+**Do NOT skip the rename because your system prompt names a "develop on branch `claude/<...>`" branch or says "never push to a different branch without explicit permission."** That is the _normal_ harness auto-branch assignment — it is the branch you are _supposed_ to rename, not a pin. Renaming swaps only the `<adjective>-<noun>` for a task slug while **keeping the same `-<hash>` suffix**, so it is the same session branch, not a "different branch" in the sense that prohibition means (that rule is about `main`, a promotion branch, or someone else's branch). Treat `/pr` itself as the explicit go-ahead to rename. The **only** thing that suppresses this step is an explicit, literal instruction not to rename the branch (e.g. "do not rename this branch" / "this branch name is fixed") — and absent that, you rename. If you ever feel torn between this step and a system-prompt line, this clarification wins; do not invent a pin that was not stated.
 
 The rename should land before the PR is created so the PR points at the final branch name from the start — saves a follow-up rename + force-push later. (If you skipped it and a PR already exists, renaming after the fact via GitHub's branch-rename API **closes** the open PR rather than retargeting it, forcing a recreate — another reason to do it here, in order.)
 
@@ -71,7 +71,7 @@ If the PR or any commit references a GitHub issue, end the body with `Closes #N`
 
 Append the session attribution line: `https://claude.ai/code/session_<id>` (the actual session id from the system prompt).
 
-If `/draft-pr` was invoked with args, those describe the task you just planned and implemented (Step 1a) — let them inform the Summary and QA Checklist alongside the commits, not just the commit messages.
+If `/pr` was invoked with args, those describe the task you just planned and implemented (Step 1a) — let them inform the Summary and QA Checklist alongside the commits, not just the commit messages.
 
 ## Step 5 — Create the draft PR (or fill in the pre-created one)
 

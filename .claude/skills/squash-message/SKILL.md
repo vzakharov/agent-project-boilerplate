@@ -37,7 +37,7 @@ resolve it here from `gh pr view --json baseRefName`. Never assume `main`.
 ## When to (re)run
 
 The proposal is created once, when the PR opens — in whichever lane opened it
-(`/draft-pr`, or a hydrated `/release` / `/hotfix` lane routing through it) — and
+(`/pr`, or a hydrated `/release` / `/hotfix` lane routing through it) — and
 re-run whenever a push changes **what the permanent record should say**: new or
 changed behavior, scope added or dropped, a new `Closes #N`, the essence shifting
 after a base merge, or the PR being recreated under a different `(pr #N)`.

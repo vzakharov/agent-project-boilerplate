@@ -1,5 +1,5 @@
 ---
-description: Generate a QA checklist from the current branch's change and write it into the current PR's body as a `## QA Checklist` section, followed by a table classifying each step's automatability and test coverage. Single source of truth for the PR verification checklist — `/draft-pr` and `/issue` delegate to it by reference. Invoke as `/qa-checklist [optional focus guidance]`. Use when the user says "manual qa", "qa checklist", "/qa-checklist", or when those skills need to produce the checklist.
+description: Generate a QA checklist from the current branch's change and write it into the current PR's body as a `## QA Checklist` section, followed by a table classifying each step's automatability and test coverage. Single source of truth for the PR verification checklist — `/pr` and `/issue` delegate to it by reference. Invoke as `/qa-checklist [optional focus guidance]`. Use when the user says "manual qa", "qa checklist", "/qa-checklist", or when those skills need to produce the checklist.
 ---
 
 End state of this skill: the current branch's open PR has a `## QA Checklist` section in its body — a markdown checklist of concrete, user-visible steps a human clicks through to verify the change end-to-end. This skill edits an existing PR body; it does not create PRs, run the vet suite, or push commits.
@@ -7,7 +7,7 @@ End state of this skill: the current branch's open PR has a `## QA Checklist` se
 **Two ways this skill is used:**
 
 - **Standalone** (`/qa-checklist` on an existing PR) — run all steps below: locate the PR, derive the checklist, and write it into the body.
-- **Referenced by `/draft-pr` and `/issue`** — those skills compose the `## QA Checklist` section directly into the PR body **at creation time**, so they only need **Step 2 (Derive the checklist)** — the single source of truth for what a good checklist looks like. They do not run Steps 1 or 3 (there's no existing body to edit).
+- **Referenced by `/pr` and `/issue`** — those skills compose the `## QA Checklist` section directly into the PR body **at creation time**, so they only need **Step 2 (Derive the checklist)** — the single source of truth for what a good checklist looks like. They do not run Steps 1 or 3 (there's no existing body to edit).
 
 ## Environment note (read this before running gh)
 
@@ -19,7 +19,7 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 gh pr view --json number,url
 ```
 
-If no PR exists for the current branch, **stop and tell the user** to open one first (e.g. via `/draft-pr`) — this skill mutates an existing PR body, it does not create PRs. (This step only applies to the standalone path; `/draft-pr` and `/issue` compose the section at creation and skip straight to Step 2.)
+If no PR exists for the current branch, **stop and tell the user** to open one first (e.g. via `/pr`) — this skill mutates an existing PR body, it does not create PRs. (This step only applies to the standalone path; `/pr` and `/issue` compose the section at creation and skip straight to Step 2.)
 
 ## Step 2 — Derive the checklist
 

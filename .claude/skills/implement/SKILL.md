@@ -26,11 +26,11 @@ Asking costs one round-trip. The point is that the operator makes the call knowi
 
 ## Planless entry
 
-A caller skill may enter here with a **task** in place of a plan — `@.claude/skills/from-branch/SKILL.md` Step 6's free-form follow-up, and `@.claude/skills/draft-pr/SKILL.md` Step 1a's "no plan" waiver. In that mode:
+A caller skill may enter here with a **task** in place of a plan — `@.claude/skills/from-branch/SKILL.md` Step 6's free-form follow-up, and `@.claude/skills/pr/SKILL.md` Step 1a's "no plan" waiver. In that mode:
 
 - **Step 1 is already satisfied** — the caller's task text is the plan. Start at Step 2; do not go looking under `docs/plans/`, and do not ask which plan to implement.
 - **Step 3 runs unchanged** — its passes are the reason this entry exists. The trailing `git mv` to `*.completed.md` is a no-op with no plan file.
-- **Step 4 runs unchanged.** A branch that already has a PR — the normal `/from-branch` case — stops at `/draft-pr`'s own Step 1b pre-check, which reports the existing PR rather than opening a duplicate.
+- **Step 4 runs unchanged.** A branch that already has a PR — the normal `/from-branch` case — stops at `/pr`'s own Step 1b pre-check, which reports the existing PR rather than opening a duplicate.
 - **The § "Branch-name form" canary does not apply.** It reads _user-typed_ prompts for a handoff block that lost its branch or landed in a session with a life of its own; a skill-to-skill dispatch already holding the task is neither.
 
 Planless is not gateless: locating a plan is the only thing this entry skips.
@@ -72,7 +72,7 @@ Then **`git mv` the plan to `docs/plans/<slug>.completed.md`** and commit — im
 
 ## Step 4 — Draft PR
 
-Implementing an approved plan is itself the operator's request for a PR, so it satisfies the system prompt's "don't open a PR unless asked" gate. Load `@.claude/skills/draft-pr/SKILL.md` and follow it (it pushes and opens the draft with a derived title/body).
+Implementing an approved plan is itself the operator's request for a PR, so it satisfies the system prompt's "don't open a PR unless asked" gate. Load `@.claude/skills/pr/SKILL.md` and follow it (it pushes and opens the draft with a derived title/body).
 
 The **only** exception is an explicit "no PR" from the operator (e.g. `/implement, no PR`) — then stop after Step 3 and report.
 

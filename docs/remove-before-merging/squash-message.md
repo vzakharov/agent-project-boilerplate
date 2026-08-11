@@ -1,32 +1,45 @@
 Proposed squash title/body:
 
 ```
-feat: sync upstream's vet rename and add /sync-upstream (pr #4)
+docs: rename /draft-pr to /pr and vendor the backlog-audit sweep (pr #5)
 ```
 
 ```
-This repo vendors CLAUDE.md, README.md, .claude/ and scripts/ from a
-private application repo, stripped of that stack. Two syncs have now
-been done by hand, and both re-derived the same facts: where upstream
-is, where the last sync stopped, which paths are in scope, and how to
-reach a cross-owner private repo when gh api 403s. /sync-upstream is
-the answer, with an upstream.json watermark recording upstream HEAD at
-sync time rather than the last commit taken, so triaged-and-skipped
-commits stay skipped. It is delete-on-bootstrap rather than
-hydrate-before-use — a generated repo is a divorced fork, and the
-upstream it names is unreadable to it — so the inherited skill count
-stays at 20.
+Twelve of the 23 commits upstream landed since b6ea16e4 touch the paths
+this repo vendors, and four carry something a stack-free template can
+hold. The largest is a rename: /draft-pr becomes /pr, because "draft"
+named the state of the artifact the skill produces rather than what the
+command is. A skill's invocation name comes from its directory, so this
+is a directory move plus every reference across eight skills, CLAUDE.md
+and README.md. The constraint to preserve when editing any of it: every
+reference stays slash-adjacent — "PR" is the ordinary word for a pull
+request throughout this tree, so a bare `pr` is invisible in that prose
+and no regex separates the two.
 
-The one upstream change that reaches us renames precommit to vet, and
-only half of it applies: its rationale was that the name claimed a git
-hook the repo lacks, and "gates" never made that claim. Taken anyway,
-because vocabulary drift is what turns a sync into a translation
-exercise. The half that lands on a real bug here is the split the
-rename names — vetting is the run, attestation is the record it
-produces — under which /finalize's docs-only flag was named after the
-one step it does not skip. It becomes no vet, with no ci and no attest
-kept as accepted spellings. scripts/gates.sh becomes scripts/vet.sh,
-still a stub that exits 1, so nothing gated this change.
+/audit-github-backlog is new: the whole-backlog sweep, judging every
+open issue and PR against today's code on demand and roughly monthly,
+stopping at a reviewable plan and mutating nothing on GitHub. Its
+judgement half ports whole — the verdict taxonomy split across GitHub's
+state_reason enum, "age is never a reason to close" as a rule, one
+analyst per bucket over a shared analyst-rules.md, the guards against
+closing work recorded nowhere else. Its mechanical half is 2,300 lines
+of upstream TypeScript that cannot come here, so Steps 1 and 4 instead
+say what that half must produce and where hand collection stops being
+adequate — the coverage assertion is the load-bearing part, since a
+hand-merged run silently dropped 2 of 213 items and looked complete.
+
+The /log-review stub gains four rows from three upstream repairs of that
+same skill, each a defect that only shows up on repeat: a recurrence is
+a regression only if the fix was running when it recurred, the readout
+series is itself a backlog that has to close its own output, a
+single-window run cannot ground a claim about the series, and a dedup
+query capped below its population silently drops the oldest items. Its
+PII row is rewritten rather than extended, because upstream's first
+readout written under a prior naming what not to quote leaked anyway —
+it now carries the reconstructability test and binds it to every section
+that paraphrases user content. CLAUDE.md takes the tombstone convention
+from the same range, and the watermark advances to upstream HEAD at
+triage time so the eight skipped commits stay skipped.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```

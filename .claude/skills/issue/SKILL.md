@@ -92,7 +92,7 @@ Say so in the written plan (plan mode) or briefly in the thread (direct mode) an
 
 ### Every plan ends by opening the draft PR
 
-Whatever the split outcome, a plan written in plan mode **must** end with an explicit implementation step that opens the draft PR via `@.claude/skills/draft-pr/SKILL.md` (see Step 4). Don't let the plan trail off at the final code/test change — the draft PR is the intended end state of this skill, and only an explicit, approved plan step reliably gets you there.
+Whatever the split outcome, a plan written in plan mode **must** end with an explicit implementation step that opens the draft PR via `@.claude/skills/pr/SKILL.md` (see Step 4). Don't let the plan trail off at the final code/test change — the draft PR is the intended end state of this skill, and only an explicit, approved plan step reliably gets you there.
 
 The one exception: if the operator says this is a **split-only session** — the run's deliverable is creating the sub-issues, with **no** code changes to be implemented within it — then there's nothing to PR, so the plan ends at creating the sub-issues and commenting on the parent.
 
@@ -108,9 +108,9 @@ Do the work the issue (and any written plan or thread agreement) calls for: bran
 
 Push your branch and open a **draft** PR (not ready for review). Draft is mandatory: a ready PR signals "I have finished and verified this, come look", and marking it ready is `/finalize`'s job.
 
-**In plan mode, the plan you write MUST list "open a draft PR via `@.claude/skills/draft-pr/SKILL.md`" as its final implementation step — verbatim, as a step, not as prose.** The draft PR is part of the deliverable, not an optional follow-up. Without it spelled out in the approved plan, execution reliably stops at the last code change and the PR never gets opened (the recurring miss this note exists to prevent) — even though this skill "obviously" intends it. Folding it into the plan is what guarantees you carry through: when you finish the last code step, the next approved step is literally "run `/draft-pr`", so you do. This holds for **every** issue plan, split-worthy or not.
+**In plan mode, the plan you write MUST list "open a draft PR via `@.claude/skills/pr/SKILL.md`" as its final implementation step — verbatim, as a step, not as prose.** The draft PR is part of the deliverable, not an optional follow-up. Without it spelled out in the approved plan, execution reliably stops at the last code change and the PR never gets opened (the recurring miss this note exists to prevent) — even though this skill "obviously" intends it. Folding it into the plan is what guarantees you carry through: when you finish the last code step, the next approved step is literally "run `/pr`", so you do. This holds for **every** issue plan, split-worthy or not.
 
-Open it with `@.claude/skills/draft-pr/SKILL.md` — that skill owns the title/body/QA-checklist shape, the issue-closing `Closes #<n>` / `Fixes #<n>` line, and the auto-branch rename. Don't hand-roll `gh pr create`.
+Open it with `@.claude/skills/pr/SKILL.md` — that skill owns the title/body/QA-checklist shape, the issue-closing `Closes #<n>` / `Fixes #<n>` line, and the auto-branch rename. Don't hand-roll `gh pr create`.
 
 **Report to the user with a clickable PR link.** Summarize what's in the PR and stop.
 
