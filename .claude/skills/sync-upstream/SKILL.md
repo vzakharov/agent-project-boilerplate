@@ -8,7 +8,18 @@ description: "Pull the agent-infrastructure changes this repo adopted from its s
 > (see `ADOPTING.md` at the source) rather than inheriting the copy that came
 > with it — an inherited watermark points your sync at a repo you may not be able
 > to read and sets `lastSyncedSha` to a foreign history. That rewrite is the only
-> adjustment the skill needs.
+> adjustment the skill *requires*.
+>
+> 🏷️ **Rename it if the name misleads in your repo.** "Upstream" is a fork's
+> vocabulary, and this is not a fork — in a repo whose real upstream is something
+> else, or one where nobody thinks of the boilerplate as upstream at all,
+> `/sync-boilerplate`, `/sync-agent-infra` or whatever your team would actually
+> say is a better name than the one it arrived with. You may of course rename any
+> adopted skill; this one is singled out because it is the one whose shipped name
+> describes the source's relationships rather than the job. Rename the directory,
+> then update every `@.claude/skills/sync-upstream/SKILL.md` pointer and the
+> `CLAUDE.md` index entry — `bash scripts/check-skill-catalog.sh` fails on the
+> ones you miss, which is the whole reason it exists.
 
 ## What this skill is for
 
@@ -48,10 +59,15 @@ what applies.
   adopting repo's is a real subset. It is what turns a wall of source commits into
   a handful of candidates.
 - **`declined`** — path → why-not. This is what keeps re-sync quiet: without it,
-  every sync re-offers every skill the repo already refused. It records the
-  *reason*, so a sync can notice when the reason has stopped being true (a repo
-  that declined the issue skills because it used Linear, and has since moved to
-  GitHub issues, should be re-offered them).
+  every sync re-offers every skill the repo already refused.
+
+**A declined path is not declined forever.** Most reasons are conditions that can
+flip — *no CI yet*, *work isn't tracked as issues yet* — which is why the map
+stores prose instead of a bare list, and why reasons are written in the present
+tense. **Re-read them on every sync** and re-offer anything whose condition has
+stopped holding: a repo that declined the issue skills because it used Linear,
+and has since moved to GitHub issues, should be asked again. A reason that says
+`"never — …"` is the one that does not need re-reading.
 
 A repo with two sources would make this an array. Nothing here precludes that and
 nothing here builds it.
@@ -170,7 +186,7 @@ above. Verdicts:
 | **translate** | The intent applies; the wording, paths or commands do not. |
 | **skip (stack-bound)** | Touches an adopted path but is about the source's stack — a build script, a migration, a framework config. |
 | **skip (already have)** | This repo reached the same end state independently. |
-| **skip (not adopted)** | The path is in `declined`, or in neither list. For the second case, run Step 4a rather than skipping silently. |
+| **skip (not adopted)** | The path is in `declined` **and its recorded reason still holds** — if it doesn't, re-offer the path per Step 4a and move it to `adopted` if taken. Or the path is in neither list, which is Step 4a's other case. Never skip silently on either. |
 | **skip (diverged locally)** | This repo rewrote the file for its own stack — `scripts/vet.sh`, the watermark, anything the source marks `rewrite`. The source's edit is advice at best; read it for an idea, don't port it. |
 
 **The source's fix may not be this repo's fix.** Split a commit's rationale

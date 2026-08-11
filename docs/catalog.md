@@ -84,7 +84,6 @@ there is no condition under which it fails to apply.
 | `.claude/rules/` | The path-scoped convention mechanism: a rule file loads only when a session touches the paths it declares. Ships with a README and no rules. | — | — | adopt |
 | `/dry` | Review the session's diff for DRY opportunities; apply the obvious wins, surface the ambiguous ones. | — | — | adopt |
 | `/tighten-docs` | Rewrite prose that narrates a change into present-tense contracts, and cut what names and types already say. | — | — | adopt |
-| `/explore` | Investigate the codebase via parallel Explore subagents. | — | — | adopt |
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
@@ -96,7 +95,7 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `/plan` | Write the plan to a reviewable `docs/plans/` file and ask questions as numbered prose; the filename is the approval gate. | — | `/finalize`, `/implement` | adopt |
-| `/implement` | Execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR. | `scripts/vet.sh` | `/dry`, `/tighten-docs` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
+| `/implement` | Execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR. | — | `/dry`, `/tighten-docs` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
 | `/pr` | Rename the auto-branch, push, open the draft PR, post the squash proposal. | `gh` | `/branch-rename`, `/implement`, `/qa-checklist`, `/squash-message` | adopt |
 | `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. | `gh`, `scripts/vet.sh` | `/check-merge`, `/from-branch`, `/plan`, `/squash-message`; **conditionally** `/issue` (G3), `/watch-ci` (G5) | adopt |
 | `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. | `gh` | `/finalize`, `/implement` | adopt |
@@ -123,7 +122,7 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 | `/issue` | Take a GitHub issue end-to-end: export the thread, optionally split, implement, open a draft PR. | G2, `gh`, `scripts/export-github-issue.py` | `/finalize`, `/pr` (G2) | adopt |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. | G2, `gh`, `jq` | `/plan` (G2) | adopt |
 | `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
-| `scripts/export-github-issue.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token` | — | adopt |
+| `scripts/export-github-issue.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`. Issues only; a PR thread is not a supported argument. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token` | — | adopt |
 
 ### G4 — Remote-session plumbing
 
@@ -134,19 +133,39 @@ proxy so the rest of the infrastructure works at all.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash` | — | adopt |
+| `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash`; **`gh` already on `PATH`** | — | adopt |
 | `.claude/settings.json` | Project settings wiring the SessionStart hook. Merge into yours if you already have one. | — | — | adopt — merge if present |
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
-**Declinable, at a scoped cost** — `ADOPTING.md` § "If you decline G4" owns the
-rationale, the `HTTPS_PROXY` conflict and the fallback. In short: the
-`gh`-heavy skills need their calls rewritten into REST form, and `gh run
-watch`-style long-polling (`/watch-ci`) does not work at all.
+**The hook does not install `gh`; it shims one that is already there.** Finding
+none, it warns and continues, so the shim silently never appears and the failure
+surfaces later at an unrelated `gh` call. On web/remote that install belongs in
+the environment setup script, which only the operator can set — `ADOPTING.md`
+§ "Hand the operator a setup script" owns what to tell them.
 
-**`/override-gh` is not only G4's.** `/sync-upstream` (G0) and
-`/audit-github-backlog` (G3) both `@`-reference it, so it travels with them even
-in a local-only repo where the hook itself is pointless. It is three paragraphs
-and a no-op — copy it rather than editing two skills to drop the citation.
+**Declinable, at a scoped cost** — `ADOPTING.md` § "If you decline G4" owns the
+rationale, the `HTTPS_PROXY` conflict and the fallback. What declining actually
+costs, counted rather than waved at: of the GraphQL-flavored `gh` calls these
+skills make, most have a REST equivalent that works through the proxy — `gh pr
+view/list/create/edit/comment/checks` and `gh issue view/create` all map onto
+`gh api repos/{owner}/{repo}/…`. **Two do not**, and they are the reason this is
+a real decision rather than a mechanical rewrite:
+
+- **`gh pr ready`** — promoting a draft to ready-for-review is a GraphQL
+  mutation with no REST endpoint (REST's pull-update accepts title, body, state,
+  base — not `draft`). `/finalize`'s flip is therefore manual without the shim.
+- **`gh run watch`** — long-polling, which the proxy blocks outright, so
+  `/watch-ci` (G5) is unavailable rather than degraded.
+
+`gh search issues` is a third case with a different cause: REST-reachable, but
+`search/issues` is refused in a repo-scoped session regardless of the shim.
+
+**`/override-gh` travels beyond G4.** `/sync-upstream` (G0) and
+`/audit-github-backlog` (G3) `@`-reference it, so **a repo that declines G4
+entirely still needs this one file** if it takes either of those — otherwise the
+reference dangles. Concretely: copy `.claude/skills/override-gh/` even when you
+skip the hook and `settings.json`. It is a no-op marker, so copying it is cheaper
+than editing two skills to remove the citation.
 
 ### G5 — CI & landing
 
@@ -187,6 +206,14 @@ instead (no visual surface, no CI-only tests, no numbered migrations).
 These describe or maintain *this* repo. Copying one means shipping a document
 about someone else's template, or a working artifact from someone else's branch.
 
+**The last two rows should not exist in a clone at all.** `/finalize` sweeps
+`docs/plans/` and `docs/remove-before-merging/` before a branch goes green, so on
+`main` those directories are normally absent and there is nothing to skip. They
+are listed because the sweep is a discipline rather than a guarantee — a merge
+that bypassed `/finalize` leaves them behind, and a clone taken mid-flight from a
+feature branch has them by construction. Seeing either directory in your clone
+means you are looking at working state, not the product.
+
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `README.md` | What this repo is, and the two ways to acquire it. Yours already exists. | — | — | never |
@@ -205,13 +232,21 @@ repo to prove nothing dangles.
 
 Four closure facts are counter-intuitive enough to state outright:
 
-- **`/plan` travels with G2 even for a local-only adopter.** Its motivation is a
-  web-session bug, so a local repo reasonably assumes it can skip it — but
-  `/implement`, `/finalize`, `/propose-issue` and `/audit-github-backlog` all
-  reference it. Drop it only if you also strip those references.
-- **`scripts/vet.sh` is not optional within G2.** Six skills invoke it and
-  `/finalize` stops loudly without it. Hence its **rewrite** disposition rather
-  than a choice: there is no version of G2 that does not run your checks.
+- **`/plan` travels with G2 even for a local-only adopter.** A web-session bug is
+  what prompted it, so a local repo reasonably assumes it can skip it. Two
+  reasons not to. The references: `/implement`, `/finalize`, `/propose-issue` and
+  `/audit-github-backlog` all cite it, so dropping it means stripping those too.
+  And the bug is no longer the point — a plan on disk is reviewable from another
+  machine, holds a **DRY notes** section the operator can argue with before any
+  code exists, and ends by handing over a copy-pasteable `/implement <branch>`
+  line that starts the next session with the approval already recorded. Native
+  plan mode gives none of that even where it works correctly.
+- **`scripts/vet.sh` is not optional within G2.** `/finalize`, `/sync-branch` and
+  `/watch-ci` run it, and `/finalize` stops loudly without it. Hence its
+  **rewrite** disposition rather than a choice: there is no version of G2 that
+  does not run your checks. (Four more skills *name* it — `/implement` and
+  `/issue` to say vetting is not their job, `/sync-upstream` and `/test-on-gh` as
+  an example — so a grep overcounts the dependency.)
 - **`/finalize` reaches into G3 and G5 conditionally.** Its working-artifact
   sweep cites `/issue`, and its CI steps cite `/watch-ci`. Both citations are
   guarded by prose conditions ("if a workflow runs on PRs"), so the behavior

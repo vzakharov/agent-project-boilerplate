@@ -4,7 +4,7 @@ Boilerplate for projects where Claude Code is a first-class collaborator.
 Language- and framework-agnostic.
 
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
-stack, **26 skills** (19 working out of the box, 7 stubs awaiting hydration) that
+stack, **25 skills** (18 working out of the box, 7 stubs awaiting hydration) that
 compose into a plan → implement → PR → land loop, the path-scoped `.claude/rules/`
 mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
 scripts behind it all.
@@ -15,7 +15,7 @@ per skill, script and file, grouped so you can tell how much of it you need:
 | Group | What it covers |
 | --- | --- |
 | **G0** | The sync path — how you pull later changes forward. |
-| **G1** | Prose & principles: `CLAUDE.md`, `.claude/rules/`, `/dry`, `/tighten-docs`, `/explore`. |
+| **G1** | Prose & principles: `CLAUDE.md`, `.claude/rules/`, `/dry`, `/tighten-docs`. |
 | **G2** | The PR loop: `/plan`, `/implement`, `/pr`, `/finalize` and the mechanical pieces they compose. |
 | **G3** | Issue & backlog: `/issue`, `/propose-issue`, `/audit-github-backlog`. |
 | **G4** | Remote-session plumbing — the `gh` shim that makes the rest work on the web. |
@@ -27,11 +27,20 @@ the shell scripts need `gh`, `jq`, and `git`.
 
 ## Why `/plan` and `/implement` exist
 
-Claude Code's web/remote sessions re-emit stacked plan-mode and `AskUserQuestion`
-prompts after idling, silently losing answers
+They started as a workaround: Claude Code's web/remote sessions re-emit stacked
+plan-mode and `AskUserQuestion` prompts after idling, silently losing answers
 ([anthropics/claude-code#72704](https://github.com/anthropics/claude-code/issues/72704)).
-So a plan becomes a file the operator can pull and review from another machine,
-and questions become prose that survives in the transcript.
+So a plan became a file the operator can pull and review from another machine,
+and questions became prose that survives in the transcript.
+
+**The file turned out to be worth more than the bug it routed around** — enough
+that these stay whether or not the bug is still there. A plan on disk can carry
+sections native plan mode has nowhere to put, notably the mandatory **DRY notes**
+that force the reuse-vs-duplication call to be argued *before* implementation.
+Its filename doubles as the approval gate (`.draft.do-not-implement.md` until the
+operator says otherwise), and it ends by handing over a copy-pasteable
+`/implement <branch>` line, so the next session starts with the approval already
+recorded rather than re-litigated.
 
 ## Getting it
 

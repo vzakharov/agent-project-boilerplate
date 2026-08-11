@@ -8,10 +8,15 @@
 #   2. Every `.claude/skills/*/` directory has exactly one row in
 #      `docs/catalog.md`.
 #   3. Every path named in a catalog row's first column exists.
+#   4. A skill's two stub markers agree, and no unhydrated stub is present
+#      downstream.
 #
 # Assertions 2-3 skip when `docs/catalog.md` is absent — the normal downstream
 # case, since the catalog describes the source repo and is never vendored. So the
-# same script is useful at every link in the adoption chain.
+# same script is useful at every link in the adoption chain. Assertion 4 runs
+# everywhere but changes verdict on the same signal: the catalog's presence is
+# what distinguishes "this repo ships the stubs on purpose" from "a stub was
+# copied into a project it was never written for".
 #
 # Reports every failure rather than stopping at the first.
 
@@ -108,6 +113,60 @@ else
     if [ ! -e "$path" ] && [ ! -e "${path%/}" ]; then
       fail "$CATALOG names \`$item\` — $path does not exist"
     fi
+  done
+fi
+
+# --- Assertion 4: stub markers ---------------------------------------------
+#
+# A stub carries its status twice: a `> ⚠️ **STUB.**` banner in the body, and the
+# word in its frontmatter `description`. They are separate surfaces — the banner
+# is what an agent reads on load, the description is what the operator scans in
+# the skills list — and hydration means clearing both. One without the other is a
+# half-hydrated skill, which is worse than either state: it either advertises a
+# working skill that has no procedure, or hides a procedure behind a stub label.
+
+echo "4. Stub markers agree with hydration state"
+
+stubs=()
+for dir in .claude/skills/*/; do
+  name=$(basename "$dir")
+  file="$dir/SKILL.md"
+  [ -f "$file" ] || continue
+
+  banner=0
+  grep -qE '^>.*\*\*STUB\.\*\*' "$file" && banner=1
+
+  # Frontmatter only: the lines between the opening `---` and its closer. A
+  # description can span lines (`description: >-`), so match the block, not one
+  # line — and never the body, which may legitimately discuss stubs.
+  declared=0
+  case "$(awk '/^---[[:space:]]*$/{n++; next} n==1' "$file")" in
+    *STUB*) declared=1 ;;
+  esac
+
+  if [ "$banner" -ne "$declared" ]; then
+    if [ "$banner" -eq 1 ]; then
+      fail "/$name carries a STUB banner but its description does not say so — hydrate both or neither"
+    else
+      fail "/$name is described as a STUB but has no banner — restore it, or clear the description"
+    fi
+  elif [ "$banner" -eq 1 ]; then
+    stubs+=("$name")
+  fi
+done
+
+if [ ${#stubs[@]} -eq 0 ]; then
+  echo "   no stubs present"
+elif [ -f "$CATALOG" ]; then
+  # The source repo: stubs are the shipped product, listed rather than flagged.
+  printf '   %d unhydrated stub(s), expected here: %s\n' "${#stubs[@]}" "${stubs[*]}"
+else
+  # No catalog means an adopting tree, where a stub is a stowaway: half-following
+  # one against a project it was never written for beats not having it only in
+  # appearance. Hydrate it (write your commands in, delete the banner, drop STUB
+  # from the description) or delete the skill.
+  for name in "${stubs[@]}"; do
+    fail "/$name is still an unhydrated stub — hydrate it or delete the skill"
   done
 fi
 
