@@ -117,6 +117,7 @@ The proposed squash title/body goes up when the PR opens and is kept in sync as 
 - **Plan drift**: When work deviates significantly from your plan docs, update them to reflect actual progress and revised ordering. The plan is a living document, not a stale ideal.
 - **Decision-doc consistency**: When revising a decision (e.g., renaming a convention, changing a tool choice), update all docs that reference the old convention.
 - **Plan-item voice**: Plan checklist items should read as forward-looking intent (how you'd phrase them _before_ doing the work), not as retrospective reports.
+- **Retiring a doc leaves a tombstone.** Don't just `rm` a doc that other files, comments, or history cite — leave a file recording the last commit that contained it and the `git show <sha>:<path>` recipe to read it, so every surviving citation still resolves, plus a pointer to where any still-live content went. **One tombstone per retirement, not per file**: docs retired together get a single tombstone with a row each, and the per-file form is for a doc retired on its own. A tombstone standing in for a whole retired directory is `retired.md` at that directory's root; one standing in for a single file is `<name>.retired.md` beside its siblings — so every tombstone matches `*retired.md`.
 
 ## Working with skills
 
