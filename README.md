@@ -48,7 +48,7 @@ gh repo create <owner>/<your-new-repo> \
 | --- | --- |
 | `/plan` | Write the plan to a reviewable `docs/plans/` file; ask questions as numbered prose. The filename is the approval gate. |
 | `/implement` | Execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR. |
-| `/draft-pr` | Rename the auto-branch, push, open the draft PR, post the squash proposal. |
+| `/pr` | Rename the auto-branch, push, open the draft PR, post the squash proposal. |
 | `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. |
 
 `/plan` and `/implement` exist because Claude Code's web/remote sessions re-emit stacked plan-mode and `AskUserQuestion` prompts after idling, silently losing answers ([anthropics/claude-code#72704](https://github.com/anthropics/claude-code/issues/72704)). A plan becomes a file the operator can pull and review from another machine, and questions become prose that survives in the transcript.

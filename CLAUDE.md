@@ -126,7 +126,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/plan`** — write the plan to `docs/plans/<slug>.draft.do-not-implement.md`; ask questions as numbered prose. Ends by handing over an `/implement <branch>` command for a fresh session.
 - **`/implement`** — execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR.
-- **`/draft-pr`** — rename the auto-branch, push, open the draft PR, post the squash proposal.
+- **`/pr`** — rename the auto-branch, push, open the draft PR, post the squash proposal.
 - **`/finalize`** — land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest.
 
 **Entry points and support:**
