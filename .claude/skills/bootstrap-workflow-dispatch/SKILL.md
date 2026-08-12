@@ -86,17 +86,16 @@ asks for it.
 
 ## Notes
 
-- The bootstrap run is expected to be a normal Actions run, not a dispatch run.
+- The bootstrap run is a normal Actions run, not a dispatch run.
 - If you renamed the workflow file, the old filename may still 404 on the default
   branch too; that does **not** mean the trick failed.
 
 ## Related
 
-This skill ends the moment `gh workflow run` stops 404ing — it registers a
-workflow, and does nothing about the run that follows.
+This skill ends the moment `gh workflow run` stops 404ing — registering the
+workflow is all it does.
 
 `@.claude/skills/test-on-gh/SKILL.md` (once hydrated) is the usual source of the
-dispatch that hits the 404, since hydrating it against a fresh dispatch-only
-workflow is exactly the case GitHub has not yet seen.
-`@.claude/skills/watch-ci/SKILL.md` takes over on the other side: it watches the
-run a *successful* dispatch produces.
+blocked dispatch: a freshly written dispatch-only workflow is exactly what
+Actions has not seen yet. `@.claude/skills/watch-ci/SKILL.md` takes the other
+side, watching the run a *successful* dispatch produces.

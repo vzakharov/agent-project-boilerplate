@@ -176,16 +176,16 @@ than editing two skills to remove the citation.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/bootstrap-workflow-dispatch` | Register a brand-new `workflow_dispatch` workflow in Actions metadata with a one-shot branch-scoped push trigger, so `gh workflow run` stops 404ing on a branch whose workflow is not on the default branch yet. | GitHub Actions, `gh`, push access to the branch | `/test-on-gh` (G6), `/watch-ci` | adopt |
+| `/bootstrap-workflow-dispatch` | Register a `workflow_dispatch` workflow in Actions metadata with a one-shot branch-scoped push trigger, so `gh workflow run` stops 404ing on a branch whose workflow has not reached the default branch yet. | GitHub Actions, `gh`, push access to the branch | `/test-on-gh` (G6), `/watch-ci` | adopt |
 | `/watch-ci` | Watch an in-flight GitHub Actions run incrementally, surfacing failures as they happen so fixes can go out mid-run. | GitHub Actions, `gh`, `scripts/ci-watch-tick.sh`; **G4 on the web** | — | adopt |
 | `scripts/ci-watch-tick.sh` | One polling tick of a CI run: what changed since the last tick. | `gh`, `jq` | — | adopt |
 | `scripts/lib/watch-tick-common.sh` | Shared shell helpers for the watch-tick scripts. | `bash` | — | adopt |
 
-The group's three CI-facing skills partition one timeline and do not overlap.
-`/bootstrap-workflow-dispatch` ends the moment `gh workflow run` stops 404ing;
-`/test-on-gh` is the dispatch that hits that 404 first, and ships as a stub, so
-it is listed under [G6](#g6--stack-stubs) with the other stubs — one row, one
-group; `/watch-ci` watches the run a successful dispatch produces.
+The group's three CI-facing skills partition one timeline.
+`/bootstrap-workflow-dispatch` ends the moment `gh workflow run` stops 404ing,
+`/test-on-gh` is the dispatch that hits that 404 first, and `/watch-ci` watches
+the run a successful dispatch produces. `/test-on-gh` ships as a stub, so it is
+listed under [G6](#g6--stack-stubs) with the other stubs — one row, one group.
 
 **G4 is a `/watch-ci` requirement, not a group-wide one** — it is `gh run
 watch`'s long-polling that the proxy blocks, counted among the costs of
