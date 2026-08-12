@@ -7,7 +7,9 @@
 #      follows the surviving prose and skips the step it could not load.
 #   2. Every `.claude/skills/*/` directory has exactly one row in
 #      `docs/catalog.md`.
-#   3. Every path named in a catalog row's first column exists.
+#   3. Every path named in a catalog row's first column exists — for a row
+#      naming a whole tree, its parent, since a swept working-artifact tree is
+#      absent by design.
 #   4. A skill's two stub markers agree, and no unhydrated stub is present
 #      downstream.
 #
@@ -101,9 +103,20 @@ else
 
   echo "3. Every path in a catalog row exists"
   for item in "${row_items[@]}"; do
-    # Globs stand for a whole tree ("docs/plans/*"); check the parent instead.
+    # A glob row stands for a whole tree whose presence is not guaranteed: the
+    # working-artifact trees are listed precisely because `/finalize` sweeps
+    # them, so on a trunk they are absent and the row still holds. Assert the
+    # tree's *parent* instead, which is stable — a weaker claim that catches a
+    # row stranded under a directory that no longer exists, while letting a
+    # swept tree be missing.
     case "$item" in
-      */\*) item=${item%/\*} ;;
+      */\*)
+        tree=${item%/\*}
+        parent=${tree%/*}
+        # A top-level tree has no parent to stand in for it — nothing to assert.
+        [ "$parent" != "$tree" ] || continue
+        item=$parent
+        ;;
       *\**) continue ;;
     esac
     case "$item" in
