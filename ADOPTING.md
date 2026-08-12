@@ -151,6 +151,14 @@ case for it:
 - It is checked-in, reviewable configuration owned by the repo, not a runtime
   argument you are being talked into.
 
+**What you are actually giving up**, stated plainly rather than left for you to
+discover: the proxy also narrows what the API surface will serve to the session's
+configured repositories, and unproxied `gh` is bounded only by the token's own
+permissions — a search or a read can reach a repo outside that set. That is the
+same property that makes the blocked calls work again; it is one mechanism, not
+two. If your instructions scope you to particular repositories, that scoping is
+now yours to honor rather than the proxy's to enforce.
+
 **Decide knowingly.** If you are not satisfied, decline it — the procedure is
 built to finish without it.
 
@@ -160,10 +168,22 @@ Adoption **never hard-depends on the shim**. This file's own steps are
 proxy-safe REST throughout, so declining costs you nothing here. What it costs
 downstream is scoped and stated:
 
-- The `gh`-heavy skills need their GraphQL-flavored calls rewritten into the REST
-  forms that work through the proxy (`gh api repos/{owner}/{repo}/…`).
-- `gh run watch`-style long-polling does not work at all, so `/watch-ci` (G5) is
+- Most GraphQL-flavored calls need rewriting into the REST forms that work through
+  the proxy (`gh api repos/{owner}/{repo}/…`) — `gh pr view/list/create/edit/
+  comment/checks` and `gh issue view/create` all have one.
+- **`gh pr ready` has no REST form at all.** Promoting a draft to ready-for-review
+  is a GraphQL-only mutation, and this is the failure mode to know about: REST's
+  pull-update endpoint accepts `draft=false` and **silently ignores it** — HTTP
+  200, no error, the PR still a draft. An agent trusting the response reports
+  success on a PR nobody can merge. So without the shim, `/finalize`'s flip is a
+  step the operator does by hand.
+- **`gh run watch`-style long-polling is blocked outright**, so `/watch-ci` (G5) is
   unavailable rather than degraded.
+- **The whole `search/*` API path is blocked**, which `/propose-issue`'s dedupe
+  reaches for. The refusal reads *"sessions are bound to their configured
+  repositories"*, which sounds like a scope check and is not one: a search
+  restricted to the session's **own** repo is refused too. Substitute
+  `gh api repos/{owner}/{repo}/issues` and filter locally.
 
 Making those skills proxy-safe at the source — which would remove this dependency
 and this decision entirely — is tracked separately; see
@@ -309,28 +329,100 @@ paste into that setting. Two things make it worth the paragraph:
   sessions, and `scripts/vet.sh` running under the wrong one is a confusing
   failure.
 
-What such a script has to get right, whatever the stack:
+#### Where it goes — tell the operator this, not just "the settings"
+
+In the session composer, the environment picker → **Cloud** → the environment
+itself, whose **gear icon** opens its settings; the setup script is there. It is
+per-environment, so an operator with several ("Default", "No setup script", one
+named after the project) is editing one of them, not a global:
+
+![The environment picker: Cloud → the environment's gear icon](docs/img/environment-setup-script-location.png)
+
+#### A worked example
+
+This is a real, working script — the one this repo's own donor project uses. It is
+**Node/pnpm with that project's pins**, so it is an example to adapt rather than
+paste; the comments are the transferable part, since each one records a trap that
+actually bit.
 
 ```bash
 #!/bin/bash
 set -e
+set -x
 
-# 1. No top-level `cd` into the repo. The repo is not at a fixed path at
-#    snapshot-build time — assuming one crashes the whole script.
-# 2. Pin the toolchain version as a literal, not by reading a repo file
-#    (see 1). Note beside it which repo file it must stay in sync with.
-# 3. Install the toolchain, then put it on PATH for *non-interactive*
-#    shells — symlink into /usr/local/bin rather than editing a profile.
-# 4. Check what the base image already ships. If it has its own toolchain
-#    dirs earlier on PATH, `which` resolves to the stale one no matter what
-#    you linked into /usr/local/bin; repoint those shims too.
-# 5. apt-get install -y gh
-# 6. Prime the dependency cache last, guarded so a missing repo dir is
-#    not fatal.
+# (1) No top-level `cd` into the repo — this is what crashed on Slack, where the
+# repo isn't at /home/user/<project> at setup-script time. Nothing below needs
+# the repo dir except the guarded install at the very end.
+
+# (2) Node version pinned as a literal instead of `cat .nvmrc` (repo-dependent).
+# Keep in sync with .nvmrc (currently 24.14.0).
+NODE_VERSION="24.14.0"
+
+NODE_TARBALL="node-v${NODE_VERSION}-linux-x64"
+if [ ! -d "/opt/${NODE_TARBALL}" ]; then
+  curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/${NODE_TARBALL}.tar.xz" | tar -xJ -C /opt/
+fi
+ln -sfn "/opt/${NODE_TARBALL}" /opt/node-current
+
+# Make Node available to ALL shells (login, non-login, interactive, non-interactive)
+# by symlinking into /usr/local/bin which is already on the default PATH.
+for bin in node npm npx corepack; do
+  ln -sfn "/opt/node-current/bin/$bin" "/usr/local/bin/$bin"
+done
+
+# The base image ships /opt/node20, /opt/node21, /opt/node22 and puts
+# /opt/node22/bin EARLIER on PATH than /usr/local/bin. Without this loop,
+# `which node` resolves to the stale Node 22 binary even though /usr/local/bin/node
+# points at the current version. Redirect the legacy bin shims to the current install.
+for legacy in /opt/node20 /opt/node21 /opt/node22; do
+  [ -d "$legacy/bin" ] || continue
+  for bin in node npm npx corepack; do
+    ln -sfn "/opt/node-current/bin/$bin" "$legacy/bin/$bin"
+  done
+done
+
+# Belt-and-suspenders for login shells.
+echo 'export PATH=/opt/node-current/bin:$PATH' > /etc/profile.d/nodejs.sh
+
+export PATH=/opt/node-current/bin:$PATH
+node --version
+
+corepack enable
+# Version pinned explicitly so corepack doesn't need package.json in CWD.
+# Keep in sync with "packageManager" in package.json (currently pnpm@10.32.0).
+corepack prepare pnpm@10.32.0 --activate
+
+# Symlink corepack-managed pnpm into /usr/local/bin AND into the legacy
+# /opt/nodeNN/bin dirs (same PATH-order reason as above).
+# Done after `corepack prepare --activate` so the source binaries exist.
+for bin in pnpm pnpx; do
+  ln -sfn "/opt/node-current/bin/$bin" "/usr/local/bin/$bin"
+  for legacy in /opt/node20 /opt/node21 /opt/node22; do
+    [ -d "$legacy/bin" ] || continue
+    ln -sfn "/opt/node-current/bin/$bin" "$legacy/bin/$bin"
+  done
+done
+
+apt-get install -y gh
 ```
 
-Write the operator a concrete version for your stack, with your pins filled in.
-Say plainly in the report that this is the one step you could not apply yourself.
+What carries over to any stack, and what to check before adapting it:
+
+1. **No top-level `cd`** into the repo — comment (1) above is a real crash, not a
+   hypothetical.
+2. **Pin versions as literals**, with a comment naming the repo file each pin must
+   track. Reading `.nvmrc` or `.tool-versions` needs the repo, which brings back 1.
+3. **Reach non-interactive shells.** A profile edit alone doesn't; symlinking into
+   `/usr/local/bin` does.
+4. **Check what the base image already ships and where it sits on `PATH`.** The
+   `/opt/nodeNN` loop exists because those directories sort *earlier* than
+   `/usr/local/bin`, so `which` kept resolving a stale binary. Whatever your
+   toolchain, look for the same shape before assuming your symlink won.
+5. **`apt-get install -y gh`** — see above; without it the shim never installs.
+6. **Prime the dependency cache last**, guarded, since the repo dir may be absent.
+
+Adapt it, fill in your pins, and hand the operator the finished text. Say plainly
+in your report that this is the one step you could not apply yourself.
 
 ### Verify
 
@@ -373,8 +465,6 @@ you read this, the shim is no longer load-bearing and the G4 decision above is
 moot — check it before you weigh the tradeoff, and don't copy the link into your
 own tree, where it would read as an issue of yours.
 
-**`/propose-issue`'s dedupe reaches for `search/issues`, which a scoped session
-refuses** ("sessions are bound to their configured repositories"). This is a
-runtime gap, not an adoption one — you will hit it the first time you run that
-skill, not while copying it — and `gh api repos/{owner}/{repo}/issues` is the
-working substitute. Folded into the same issue.
+Note what is *not* on this list: `gh pr ready` and the `search/*` block are not
+gaps in the infrastructure. Both work once the shim is in, so they are costs of
+declining G4 rather than defects — they are listed there, not here.

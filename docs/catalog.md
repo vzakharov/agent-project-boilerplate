@@ -151,14 +151,19 @@ view/list/create/edit/comment/checks` and `gh issue view/create` all map onto
 `gh api repos/{owner}/{repo}/…`. **Two do not**, and they are the reason this is
 a real decision rather than a mechanical rewrite:
 
-- **`gh pr ready`** — promoting a draft to ready-for-review is a GraphQL
-  mutation with no REST endpoint (REST's pull-update accepts title, body, state,
-  base — not `draft`). `/finalize`'s flip is therefore manual without the shim.
-- **`gh run watch`** — long-polling, which the proxy blocks outright, so
-  `/watch-ci` (G5) is unavailable rather than degraded.
+- **`gh pr ready`** — promoting a draft to ready-for-review is a GraphQL-only
+  mutation. REST's pull-update endpoint takes `draft=false` and **silently
+  ignores it** (200, unchanged), so the fallback isn't merely absent, it looks
+  like it worked. `/finalize`'s flip is manual without the shim.
+- **`gh run watch`** — long-polling, blocked outright, so `/watch-ci` (G5) is
+  unavailable rather than degraded.
+- **The entire `search/*` path** — which `/propose-issue`'s dedupe uses. The
+  refusal is worded as a repository-scope message but is a path-level block: a
+  search restricted to the session's own repo is refused too. Substitute
+  `repos/{owner}/{repo}/issues` and filter locally.
 
-`gh search issues` is a third case with a different cause: REST-reachable, but
-`search/issues` is refused in a repo-scoped session regardless of the shim.
+All three come back with the shim installed; they are the price of declining G4,
+not standing defects.
 
 **`/override-gh` travels beyond G4.** `/sync-upstream` (G0) and
 `/audit-github-backlog` (G3) `@`-reference it, so **a repo that declines G4
