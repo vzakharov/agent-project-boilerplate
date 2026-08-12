@@ -19,9 +19,11 @@ on the bug: reviewable from another machine, room for the mandatory
 `## DRY notes`, a gate whose clearing is a commit, approval carried into
 the next session by the `/implement <branch>` handoff, and questions
 that survive in the transcript. The re-emitted-prompt failure becomes a
-closing Origin note on why web/remote is where this path is mandatory
-rather than merely better; it defers the mechanics to CLAUDE.md and
-keeps the tracking link as history.
+closing Origin note — why web/remote is where the path is mandatory —
+that defers the mechanics to CLAUDE.md, keeps the tracking link as
+history, and ends by saying an upstream fix does not retire the skill.
+That order is load-bearing: state the independence before the origin
+and it presupposes a bug the reader has not met yet.
 
 `/implement` states the matching point beside the approval it assumes:
 its plan-file flip records nothing done retroactively, which is why it
