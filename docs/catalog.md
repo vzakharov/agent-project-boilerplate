@@ -107,6 +107,7 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | `scripts/check-merge.sh` | The git/GitHub polling behind `/check-merge`. | `gh`, `jq`, `git` | — | adopt |
 | `scripts/pr-body.py` | Pull a PR body to `docs/pr/<n>/body.md` for local editing and PATCH it back. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token` | — | adopt |
 | `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | — | **rewrite** |
+| `scripts/run-parallel.sh` | Optional helper for `scripts/vet.sh`: run the checks concurrently, print output only for the ones that failed, and name files an autofix step rewrote. POSIX `sh`. | `sh`; `git` for the autofix check only | — | adopt |
 
 Two things in this group are less optional than they look — see
 [Closure](#closure-is-not-optional).
