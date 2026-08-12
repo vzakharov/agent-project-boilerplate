@@ -7,7 +7,7 @@ description: Take on a GitHub issue end-to-end — export/read the thread, split
 **First command:** run the bundled exporter:
 
 ```bash
-python3 scripts/export-github-issue.py <issue-number|https://github.com/OWNER/REPO/issues/N> [--repo OWNER/REPO]
+python3 scripts/export-github-item.py <issue-number|https://github.com/OWNER/REPO/issues/N> [--repo OWNER/REPO]
 ```
 
 The script writes `docs/issue/<n>/issue.md` (body + comments + timeline) and downloads any image / file attachments referenced in the thread to `docs/issue/<n>/attachments/`. **Read `issue.md` end-to-end, and open the attachment files when you need pixels** (screenshots, mockups, design references). `gh issue view` alone does **not** fetch attachments — GitHub's `private-user-images.githubusercontent.com` URLs require an authenticated request even when the issue is public, which is why the export script exists. Don't rely on `WebFetch` for github.com issue pages either; it often fails in isolated environments.
