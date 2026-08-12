@@ -53,7 +53,7 @@ conditions, and any row can be escaped individually.
 | [G2 — The PR loop](#g2--the-pr-loop) | A change is a branch → PR → squash-merge, on GitHub, with `gh` and `$GH_TOKEN` reachable. **In a web/remote session, needs G4.** |
 | [G3 — Issue & backlog](#g3--issue--backlog) | G2 **and** work is actually tracked as GitHub issues. Same web-session dependency on G4. |
 | [G4 — Remote-session plumbing](#g4--remote-session-plumbing) | Sessions run on Claude Code web/remote. Inert locally — but a **prerequisite** of G2/G3/G5 on the web, not a nicety. Declinable at a stated cost. |
-| [G5 — CI & landing](#g5--ci--landing) | CI runs on GitHub Actions, reachable via `gh`. In a web session **G4 is required**, not merely recommended. |
+| [G5 — CI & landing](#g5--ci--landing) | CI runs on GitHub Actions, reachable via `gh`. `/watch-ci` additionally needs **G4** in a web session, not merely recommends it; the rest of the group works through the proxy unshimmed. |
 | [G6 — Stack stubs](#g6--stack-stubs) | Per row, and only if you will hydrate it now. |
 | [Never](#never) | — |
 
@@ -176,12 +176,28 @@ than editing two skills to remove the citation.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
+| `/bootstrap-workflow-dispatch` | Register a brand-new `workflow_dispatch` workflow in Actions metadata with a one-shot branch-scoped push trigger, so `gh workflow run` stops 404ing on a branch whose workflow is not on the default branch yet. | GitHub Actions, `gh`, push access to the branch | `/test-on-gh` (G6), `/watch-ci` | adopt |
 | `/watch-ci` | Watch an in-flight GitHub Actions run incrementally, surfacing failures as they happen so fixes can go out mid-run. | GitHub Actions, `gh`, `scripts/ci-watch-tick.sh`; **G4 on the web** | — | adopt |
 | `scripts/ci-watch-tick.sh` | One polling tick of a CI run: what changed since the last tick. | `gh`, `jq` | — | adopt |
 | `scripts/lib/watch-tick-common.sh` | Shared shell helpers for the watch-tick scripts. | `bash` | — | adopt |
 
-`/test-on-gh` also belongs to this group's job but ships as a stub, so it is
-listed under [G6](#g6--stack-stubs) with the other stubs — one row, one group.
+The group's three CI-facing skills partition one timeline and do not overlap.
+`/bootstrap-workflow-dispatch` ends the moment `gh workflow run` stops 404ing;
+`/test-on-gh` is the dispatch that hits that 404 first, and ships as a stub, so
+it is listed under [G6](#g6--stack-stubs) with the other stubs — one row, one
+group; `/watch-ci` watches the run a successful dispatch produces.
+
+**G4 is a `/watch-ci` requirement, not a group-wide one.** `gh run watch`
+long-polls, which the agent proxy blocks outright, so that skill is unavailable
+on the web without the shim. `/bootstrap-workflow-dispatch` dispatches over REST
+(`POST /repos/{owner}/{repo}/actions/workflows/{id}/dispatches`) and needs no
+shim.
+
+**Taking this group without G6 means editing one reference.**
+`/bootstrap-workflow-dispatch` `@`-references `/test-on-gh`, and G6's rule is to
+copy a stub only if you hydrate it now — so an adopter who skips `/test-on-gh`
+strips that clause from the `## Related` section, or
+`scripts/check-skill-catalog.sh` reports the dangling pointer.
 
 ### G6 — Stack stubs
 

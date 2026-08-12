@@ -4,7 +4,7 @@ Boilerplate for projects where Claude Code is a first-class collaborator.
 Language- and framework-agnostic.
 
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
-stack, **25 skills** (18 working out of the box, 7 stubs awaiting hydration) that
+stack, **26 skills** (19 working out of the box, 7 stubs awaiting hydration) that
 compose into a plan → implement → PR → land loop, the path-scoped `.claude/rules/`
 mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
 scripts behind it all.
@@ -19,7 +19,7 @@ per skill, script and file, grouped so you can tell how much of it you need:
 | **G2** | The PR loop: `/plan`, `/implement`, `/pr`, `/finalize` and the mechanical pieces they compose. |
 | **G3** | Issue & backlog: `/issue`, `/propose-issue`, `/audit-github-backlog`. |
 | **G4** | Remote-session plumbing — the `gh` shim that makes the rest work on the web. |
-| **G5** | CI & landing: `/watch-ci` and its polling scripts. |
+| **G5** | CI & landing: `/bootstrap-workflow-dispatch`, `/watch-ci`, and its polling scripts. |
 | **G6** | Seven stack-bound stubs — hydrate the ones you need, delete the rest. |
 
 The Python scripts are stdlib-only (3.9+) and use `$GH_TOKEN` or `gh auth token`;

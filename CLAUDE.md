@@ -146,7 +146,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 **Mechanical pieces**, individually invocable and composed by the loop above:
 
-- **`/branch-rename`**, **`/squash-message`**, **`/qa-checklist`**, **`/check-merge`**, **`/sync-branch`**, **`/watch-ci`**.
+- **`/branch-rename`**, **`/squash-message`**, **`/qa-checklist`**, **`/check-merge`**, **`/sync-branch`**, **`/watch-ci`**, **`/bootstrap-workflow-dispatch`**.
 
 ### Stubs awaiting hydration
 
