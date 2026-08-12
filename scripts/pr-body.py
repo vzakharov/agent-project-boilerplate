@@ -6,7 +6,8 @@ Usage:
   python3 scripts/pr-body.py push <pr-number> [--repo OWNER/REPO]
 
 `pull` writes docs/pr/<n>/body.md; `push` PATCHes the PR body from that file and
-deletes docs/pr/<n>/.
+deletes it, plus docs/pr/<n>/ itself when nothing else lives there. The directory
+is shared with `scripts/export-github-item.py`, which writes docs/pr/<n>/pr.md.
 
 Editing happens on the local file between pull and push — agents don't
 reconstruct the whole body inline (cheap on tokens, and the rest of the body is
@@ -27,7 +28,6 @@ from __future__ import annotations
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
 import urllib.error
@@ -156,7 +156,12 @@ def push(pr: int, repo: str, token: str) -> None:
         method="PATCH",
         payload={"body": path.read_text(encoding="utf-8")},
     )
-    shutil.rmtree(path.parent, ignore_errors=True)
+    path.unlink()
+    try:
+        path.parent.rmdir()
+    except OSError:
+        pass  # a co-resident export (pr.md) keeps the directory alive
+
     print(view.get("html_url") or f"PR #{pr} body updated.")
 
 
