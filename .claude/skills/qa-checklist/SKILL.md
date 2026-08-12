@@ -71,7 +71,7 @@ python3 scripts/pr-body.py pull <n>      # writes docs/pr/<n>/body.md (pass --re
 
 Open `docs/pr/<n>/body.md` and locate a verification-checklist section — a `## QA Checklist` heading (also recognize legacy `## Manual QA` and `## Test plan` headings):
 
-- **A conforming checklist already exists** (under one of those headings, a proper `- [ ]` checklist that already covers the change, with its slug-keyed classification table) → leave it. Nothing to push; remove the transient dir (`rm -rf docs/pr/<n>`) and report.
+- **A conforming checklist already exists** (under one of those headings, a proper `- [ ]` checklist that already covers the change, with its slug-keyed classification table) → leave it. Nothing to push; remove the transient file (`rm -f docs/pr/<n>/body.md` — not the whole directory, which may also hold a `pr.md` export) and report.
 - **A section exists but is stale/empty/malformed** → replace that section in place with the freshly derived `## QA Checklist` checklist.
 - **No such section exists** → insert a new `## QA Checklist` section **after the Summary section and before** any trailing `Closes #N` / `Fixes #N` line and the `https://claude.ai/code/session_…` attribution line.
 
