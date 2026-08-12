@@ -1,5 +1,5 @@
 ---
-description: Plan on disk instead of in the plan-mode UI — write the plan to a reviewable, git-tracked file under docs/plans/ whose name doubles as the approval gate, and ask clarifying questions as numbered prose instead of AskUserQuestion. Use whenever you would otherwise enter plan mode or call AskUserQuestion (ExitPlanMode); mandatory in a remote/web session, where both of those UIs also lose answers.
+description: Plan on disk instead of in the plan-mode UI — write the plan to a reviewable, git-tracked file under docs/plans/ whose name doubles as the approval gate, and ask clarifying questions as numbered prose instead of AskUserQuestion. Use whenever you would otherwise enter plan mode or call AskUserQuestion (ExitPlanMode); mandatory in a remote/web session, where both of those UIs lose answers.
 ---
 
 ## Why this skill exists
@@ -12,9 +12,9 @@ A plan on disk is a different artifact from a plan in an approval dialog:
 - **Approval carries into the next session.** The turn ends with a copyable `/implement <branch>` line, so implementation starts from a recorded decision instead of re-litigating it.
 - **Questions as numbered prose stay in the transcript** — tersely answerable ("1b, 2a"), and re-readable after a context wipe.
 
-None of that depends on plan mode being broken — the skill is worth running where plan mode works fine.
+**Origin.** The skill began as a workaround for a bug in Claude Code's web/remote sessions, which is why web/remote is where this path is *mandatory* rather than merely better: there, plan mode and `AskUserQuestion` silently lose the answers given to prompts they re-emit after a session idles, and the stack grows with the idle. Operators run many concurrent web sessions, so prompts idle routinely — the loss is the normal case, not an edge one. CLAUDE.md § "Plan mode & questions in web sessions" describes the failure and owns where this skill is mandatory vs. optional; the tracking issue carries its exact wording and current status: **https://github.com/anthropics/claude-code/issues/72704**
 
-**Origin.** It nonetheless started as a workaround for a bug in Claude Code's web/remote sessions, which is why web/remote is where this path is *mandatory* rather than merely better: there, plan mode and `AskUserQuestion` silently lose the answers given to prompts they re-emit after a session idles, and the stack grows with the idle. Operators run many concurrent web sessions, so prompts idle routinely — the loss is the normal case, not an edge one. CLAUDE.md § "Plan mode & questions in web sessions" describes the failure and owns where this skill is mandatory vs. optional; the tracking issue carries its exact wording and current status: **https://github.com/anthropics/claude-code/issues/72704**
+None of the value above depends on that bug, so fixing it upstream does not retire the skill.
 
 ## Part 1 — Plan instead of plan mode
 
