@@ -65,27 +65,38 @@ case "${1:-}" in
   -h | --help) usage ;;
 esac
 
+# Split one check argument into the `label` and `cmd` globals, and record in
+# `labelled` which form it was — only an explicit label is constrained, since a
+# bare command labels itself and may contain anything. Both passes below go
+# through here so the argument that gets validated is the one that gets run.
+parse_check() {
+  case "$1" in
+    *=*)
+      label=${1%%=*}
+      cmd=${1#*=}
+      labelled=1
+      ;;
+    *)
+      label=$1
+      cmd=$1
+      labelled=0
+      ;;
+  esac
+}
+
 # Validate every argument before launching anything, so a typo in the last
 # check doesn't leave the first half of the run already going.
 for arg in "$@"; do
-  case "$arg" in
-    '')
-      die "empty argument"
-      ;;
-    =*)
-      die "empty label in argument: $arg"
-      ;;
-    *=*)
-      label=${arg%%=*}
-      cmd=${arg#*=}
-      case "$label" in
-        *[!A-Za-z0-9_.:-]*)
-          die "label '$label' has characters outside [A-Za-z0-9_.:-] — did an unquoted command get split? (argument: $arg)"
-          ;;
-      esac
-      [ -n "$cmd" ] || die "empty command for label '$label'"
+  [ -n "$arg" ] || die "empty argument"
+  parse_check "$arg"
+  [ "$labelled" = "1" ] || continue
+  [ -n "$label" ] || die "empty label in argument: $arg"
+  case "$label" in
+    *[!A-Za-z0-9_.:-]*)
+      die "label '$label' has characters outside [A-Za-z0-9_.:-] — did an unquoted command get split? (argument: $arg)"
       ;;
   esac
+  [ -n "$cmd" ] || die "empty command for label '$label'"
 done
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -111,16 +122,7 @@ PIDS=""
 idx=0
 for arg in "$@"; do
   idx=$((idx + 1))
-  case "$arg" in
-    *=*)
-      label=${arg%%=*}
-      cmd=${arg#*=}
-      ;;
-    *)
-      label=$arg
-      cmd=$arg
-      ;;
-  esac
+  parse_check "$arg"
 
   printf '%s\n' "$label" >"$RUN_DIR/$idx.label"
 
