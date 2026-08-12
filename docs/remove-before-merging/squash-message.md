@@ -19,8 +19,11 @@ fact lives in exactly one of the three. Adoption is decided per group
 against criteria an agent can evaluate by inspecting the target repo,
 and dispositions are three rather than two: `rewrite` covers the files
 whose contents are per-repo by definition, which is what stops an
-adopter inheriting a watermark it cannot resolve. `/sync-upstream`
-becomes the universal re-sync path in the same move — "upstream" is
+adopter inheriting a watermark it cannot resolve. One step is human-only
+by nature — the environment setup script that puts `gh` on the machine
+is set outside the repo — so the procedure hands the operator text to
+paste rather than pretending the agent can apply it. `/sync-upstream`
+becomes the universal re-sync path in the same move: "upstream" is
 relative to the repo you stand in, so only the watermark was parochial
 and direction becomes data.
 
@@ -31,7 +34,10 @@ could not load; an unhydrated stub fails the same way, reading as a
 working skill against a project it was never written for.
 `scripts/check-skill-catalog.sh` catches both, and those are the two
 assertions that still run downstream, where there is no catalog to
-check against.
+check against. Working-artifact trees are the deliberate exception: the
+catalog names them, `/finalize` sweeps them, and their absence from a
+trunk is the correct state — which is why two file-based plans that
+reached `main` unswept are deleted here.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
