@@ -275,6 +275,11 @@ def download_attachments(
     return url_to_relative
 
 
+def login_of(holder: Any, default: str = "?") -> str:
+    """Login of a `user`/`actor`/`requested_reviewer`-shaped nested object."""
+    return (holder or {}).get("login") or default
+
+
 _STATIC_TIMELINE_SUFFIXES = {
     "reopened": "reopened {noun}.",
     "locked": "locked {noun}.",
@@ -295,7 +300,7 @@ _TIMELINE_SKIP = frozenset({"committed", "commented"})
 
 
 def _reviewer_name(ev: dict[str, Any]) -> str:
-    reviewer = (ev.get("requested_reviewer") or {}).get("login")
+    reviewer = login_of(ev.get("requested_reviewer"), "")
     if reviewer:
         return f"@{reviewer}"
     team = (ev.get("requested_team") or {}).get("name")
@@ -361,11 +366,7 @@ def format_timeline_line(ev: dict[str, Any], noun: str) -> str:
         return ""
     # `reviewed` events are review payloads: they carry `user`/`submitted_at`
     # where every other event carries `actor`/`created_at`.
-    who = (
-        ((ev.get("actor") or {}).get("login"))
-        or ((ev.get("user") or {}).get("login"))
-        or "unknown"
-    )
+    who = login_of(ev.get("actor") or ev.get("user"), "unknown")
     when = ev.get("created_at") or ev.get("submitted_at") or ""
     return f"- **{when}** @{who} {_timeline_suffix(ev, noun)}"
 
@@ -424,7 +425,7 @@ def review_section(
 
     for review in bodied:
         state = (review.get("state") or "COMMENTED").upper()
-        who = (review.get("user") or {}).get("login") or "?"
+        who = login_of(review.get("user"))
         chunks.extend(
             [
                 f"### Review by @{who} — {state}",
@@ -444,7 +445,7 @@ def review_section(
         if hunk:
             chunks.extend(["```diff", hunk, "```", ""])
         for comment in chain:
-            who = (comment.get("user") or {}).get("login") or "?"
+            who = login_of(comment.get("user"))
             chunks.extend(
                 [
                     f"**@{who}** — {comment.get('created_at', '')}",
@@ -470,7 +471,7 @@ def comments_section(
         text = rewrite_attachment_refs(c.get("body") or "_empty_", url_to_relative)
         chunks.extend(
             [
-                f"### Comment by @{(c.get('user') or {}).get('login') or '?'} on {c.get('created_at', '')}",
+                f"### Comment by @{login_of(c.get('user'))} on {c.get('created_at', '')}",
                 "",
                 f"[{c.get('html_url', '')}]({c.get('html_url', '')})",
                 "",
@@ -496,7 +497,7 @@ def header_section(item: dict[str, Any], pr: dict[str, Any] | None) -> str:
         "",
         f"- **State:** {item['state']}{state_suffix}",
         f"- **URL:** {item['html_url']}",
-        f"- **Author:** @{(item.get('user') or {}).get('login') or '?'}",
+        f"- **Author:** @{login_of(item.get('user'))}",
     ]
     if pr:
         base_ref = pr.get("base") or {}
