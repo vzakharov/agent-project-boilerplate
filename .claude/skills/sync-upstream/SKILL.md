@@ -49,7 +49,13 @@ what applies.
   "repo": "<owner>/<repo>",
   "lastSyncedSha": "<source HEAD at the last sync>",
   "lastSyncedAt": "<YYYY-MM-DD>",
-  "adopted": ["CLAUDE.md", "README.md", ".claude/", "scripts/"],
+  "adopted": [
+    "CLAUDE.md",
+    "README.md",
+    ".claude/",
+    "scripts/",
+    { "scripts/run-parallel.py": "taken as a POSIX sh port, scripts/run-parallel.sh" }
+  ],
   "declined": { ".claude/skills/issue/": "we track work in Linear, not GitHub issues" }
 }
 ```
@@ -60,6 +66,17 @@ what applies.
   a handful of candidates.
 - **`declined`** — path → why-not. This is what keeps re-sync quiet: without it,
   every sync re-offers every skill the repo already refused.
+
+**An `adopted` entry may be a bare path or a single-key `{path: note}` object.**
+Both are adopted and both filter the log identically — read the key when an entry
+is an object. The note records *how* the path lives here when that is not
+verbatim: ported to another language, split across files, generalized past the
+source's interface. It is not a soft decline. A path taken with a note still
+surfaces every upstream commit that touches it, which is the point — the local
+version is a re-expression, so upstream's later changes to the original are worth
+reading for the idea even though the file itself never lands. Expect `translate`
+rather than `take` on those commits, and treat the note as the standing statement
+of what the local re-expression already does differently.
 
 **A declined path is not declined forever.** Most reasons are conditions that can
 flip — *no CI yet*, *work isn't tracked as issues yet* — which is why the map
@@ -159,6 +176,9 @@ every command that needs to be inside it.
 cd <scratchpad>/up && git log --oneline <lastSyncedSha>..HEAD -- <adopted paths>
 ```
 
+`<adopted paths>` is every entry in `adopted`, taking the single key of any entry
+written as an object.
+
 Record `git rev-parse HEAD` **now**, before triage — that value is the next
 watermark regardless of how the triage goes.
 
@@ -204,7 +224,8 @@ source's inventory, read from the clone and never vendored, so it is current by
 construction — and surface the decision **with its criteria attached** rather than
 as a bare "upstream added `/foo`, want it?".
 
-- **Taken** → add the path to `adopted`, and **re-run the closure check**: a new
+- **Taken** → add the path to `adopted` — as a `{path: note}` entry if it landed
+  as anything other than a verbatim copy — and **re-run the closure check**: a new
   skill can `@`-reference a sibling this repo declined. `bash
   scripts/check-skill-catalog.sh` is that check where it was adopted.
 - **Declined** → add the path to `declined` with the reason.

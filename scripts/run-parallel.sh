@@ -8,10 +8,9 @@
 #   scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck'
 #   scripts/run-parallel.sh 'cargo clippy --all-targets -- -D warnings' 'cargo test'
 #
-# Splitting at the first `=` means a leading environment assignment survives
-# when the check is labelled (`test='CI=1 pnpm test'`) and misparses when it is
-# bare (`CI=1 pnpm test` reads as label `CI`). Label everything and the edge
-# never comes up.
+# Splitting at the first `=` keeps a leading environment assignment working when
+# the check is labelled (`test='CI=1 pnpm test'`); bare, `CI=1 pnpm test` reads
+# as label `CI`. Label everything and the edge never comes up.
 #
 # Output is buffered per check under `tmp/run-parallel/` and printed only for
 # the ones that failed, each line prefixed `[<label>] `. Lines containing the
