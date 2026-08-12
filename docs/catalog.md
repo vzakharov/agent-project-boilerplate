@@ -187,11 +187,12 @@ The group's three CI-facing skills partition one timeline and do not overlap.
 it is listed under [G6](#g6--stack-stubs) with the other stubs — one row, one
 group; `/watch-ci` watches the run a successful dispatch produces.
 
-**G4 is a `/watch-ci` requirement, not a group-wide one.** `gh run watch`
-long-polls, which the agent proxy blocks outright, so that skill is unavailable
-on the web without the shim. `/bootstrap-workflow-dispatch` dispatches over REST
-(`POST /repos/{owner}/{repo}/actions/workflows/{id}/dispatches`) and needs no
-shim.
+**G4 is a `/watch-ci` requirement, not a group-wide one** — it is `gh run
+watch`'s long-polling that the proxy blocks, counted among the costs of
+declining G4 in [that group](#g4--remote-session-plumbing).
+`/bootstrap-workflow-dispatch` dispatches over REST
+(`POST /repos/{owner}/{repo}/actions/workflows/{id}/dispatches`) and works
+unshimmed.
 
 **Taking this group without G6 means editing one reference.**
 `/bootstrap-workflow-dispatch` `@`-references `/test-on-gh`, and G6's rule is to
