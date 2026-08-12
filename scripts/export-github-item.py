@@ -160,13 +160,9 @@ def api_get(path: str, token: str) -> Any:
 
 
 def api_paginated(path: str, token: str) -> list[Any]:
-    """Fetch every page of a list endpoint.
-
-    Pages are addressed by an explicit `page=` on the caller's path rather than
-    by following the Link header's URL: GitHub phrases those in the numeric-ID
-    form (`repositories/{id}/…`), which the agent proxy in Claude Code web
-    sessions rejects with 403. The header is still what says whether more pages
-    exist.
+    """Paginate with an explicit `page=` rather than the Link header's URL:
+    GitHub phrases those as `repositories/{id}/…`, which the agent proxy in
+    Claude Code web sessions rejects with 403.
     """
     items: list[Any] = []
     page = 1
@@ -578,8 +574,8 @@ def main() -> None:
     body_md = rewrite_attachment_refs(body_md, url_to_relative)
     noun = "this pull request" if is_pr else "this issue"
 
-    # The review section is omitted rather than joined as "" so an issue export
-    # is byte-identical to what the issue-only script produced.
+    # The review section is dropped rather than joined as "" — an empty element
+    # would leave a stray blank line in every issue export.
     sections = [
         header_section(item, pr),
         body_md,

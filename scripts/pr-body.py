@@ -5,9 +5,9 @@ Usage:
   python3 scripts/pr-body.py pull <pr-number> [--repo OWNER/REPO]
   python3 scripts/pr-body.py push <pr-number> [--repo OWNER/REPO]
 
-`pull` writes docs/pr/<n>/body.md; `push` PATCHes the PR body from that file and
-deletes it, plus docs/pr/<n>/ itself when nothing else lives there. The directory
-is shared with `scripts/export-github-item.py`, which writes docs/pr/<n>/pr.md.
+`pull` writes docs/pr/<n>/body.md; `push` PATCHes the PR body from that file,
+deletes it, and removes docs/pr/<n>/ if empty — `scripts/export-github-item.py`
+writes pr.md into the same directory.
 
 Editing happens on the local file between pull and push — agents don't
 reconstruct the whole body inline (cheap on tokens, and the rest of the body is
