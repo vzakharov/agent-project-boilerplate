@@ -1,12 +1,20 @@
 ---
-description: File-based stand-in for plan mode and AskUserQuestion, for web/remote sessions where those UIs are buggy. Write the plan to a reviewable file under docs/plans/ instead of using ExitPlanMode, and ask clarifying questions as numbered prose instead of AskUserQuestion. Use in a remote/web session whenever you would otherwise enter plan mode or call AskUserQuestion.
+description: Plan on disk instead of in the plan-mode UI — write the plan to a reviewable, git-tracked file under docs/plans/ whose name doubles as the approval gate, and ask clarifying questions as numbered prose instead of AskUserQuestion. Use whenever you would otherwise enter plan mode or call AskUserQuestion (ExitPlanMode); mandatory in a remote/web session, where both of those UIs also lose answers.
 ---
 
 ## Why this skill exists
 
-In Claude Code **web/remote** sessions, the plan-mode approval UI and the `AskUserQuestion` tool are unreliable: after a session sits idle, the backend appears to re-wake it and re-emit the pending plan/question prompt repeatedly, so on return the operator sees the plan (or question) stacked several times, answers given to the superseded prompts are silently lost, and the count scales with idle duration. Since operators run many concurrent web sessions, prompts routinely sit idle — so these two UIs can't be trusted here. This skill routes around both: a plan becomes a file the operator can pull and review at their leisure, and questions become prose that survives in the transcript.
+A plan on disk is a different artifact from a plan in an approval dialog, and the differences are the point:
 
-Tracking issue (check here for exact wording / current status): **https://github.com/anthropics/claude-code/issues/72704**
+- **Reviewable on another machine, on the operator's schedule.** The plan rides the branch, so it is pulled and read in the same tools as code, hours later.
+- **Room for sections plan mode has nowhere to put** — notably the mandatory `## DRY notes`, which forces the reuse-vs-duplication call to be argued before any code exists rather than discovered in review.
+- **The filename is the approval gate.** `*.draft.do-not-implement.md` says in every `ls`, tool-call path and `git status` that nothing is cleared, and the `git mv` that clears it is a commit — so *when* approval arrived and *in whose words* outlives the session.
+- **Approval carries into the next session.** The turn ends with a copyable `/implement <branch>` line, so implementation starts from a recorded decision instead of re-litigating it.
+- **Questions as numbered prose stay in the transcript** — tersely answerable ("1b, 2a"), and re-readable after a context wipe.
+
+None of that depends on plan mode being broken; the skill stands whatever the state of the bug it came from.
+
+**Origin.** That bug is why web/remote is the case where this path is *mandatory* rather than merely better. There, the plan-mode approval UI and the `AskUserQuestion` tool are unreliable: after a session sits idle, the backend appears to re-wake it and re-emit the pending plan/question prompt repeatedly, so on return the operator sees the plan (or question) stacked several times, answers given to the superseded prompts are silently lost, and the count scales with idle duration. Operators run many concurrent web sessions, so prompts routinely sit idle. CLAUDE.md § "Plan mode & questions in web sessions" owns where the skill is mandatory vs. optional; the tracking issue carries the bug's exact wording and current status: **https://github.com/anthropics/claude-code/issues/72704**
 
 ## Part 1 — Plan instead of plan mode
 
