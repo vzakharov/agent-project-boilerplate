@@ -26,11 +26,8 @@
 # POSIX `/bin/sh` on purpose: `scripts/vet.sh` is the one entrypoint every
 # adopter must have, so its helper must not add an interpreter to the floor.
 #
-# The log directory is wiped at startup, so two concurrent invocations fight
-# over it. Running one at a time is the supported use.
-#
-# Usage:
-#   scripts/run-parallel.sh <label=command> [<label=command> ...]
+# The log directory is wiped at startup, so only one invocation at a time is
+# supported.
 #
 # Exit codes:
 #   0  - every check passed.
@@ -64,10 +61,9 @@ case "${1:-}" in
   -h | --help) usage ;;
 esac
 
-# Split one check argument into the `label` and `cmd` globals, and record in
-# `labelled` which form it was — only an explicit label is constrained, since a
-# bare command labels itself and may contain anything. Both passes below go
-# through here so the argument that gets validated is the one that gets run.
+# Sets `label`, `cmd` and `labelled`. Both passes parse through here, so the
+# label that gets validated is the one that gets run. Only an explicit label is
+# constrained — a bare command labels itself and may contain anything.
 parse_check() {
   case "$1" in
     *=*)
@@ -112,10 +108,9 @@ RUN_DIR="$ROOT/tmp/run-parallel"
 rm -rf "$RUN_DIR"
 mkdir -p "$RUN_DIR"
 
-# Per-check bookkeeping lives in files keyed by index rather than in variables:
-# a bare command labels itself, so labels contain spaces and cannot be held in
-# a word-split list. The index also keeps two checks with the same label from
-# sharing a log.
+# Bookkeeping lives in files keyed by index, not variables: labels contain
+# spaces (a bare command labels itself) and so cannot be held in a word-split
+# list, and the index keeps two same-labelled checks from sharing a log.
 INDICES=""
 PIDS=""
 idx=0
@@ -126,9 +121,8 @@ for arg in "$@"; do
   printf '%s\n' "$label" >"$RUN_DIR/$idx.label"
 
   # The status file is written under a temporary name and renamed, so its
-  # *existence* means "finished" — the poller can never read a half-written
-  # exit code. `set +e` keeps a failing check from killing the subshell before
-  # it records that code.
+  # *existence* means "finished" and the poller can never read a half-written
+  # code. `set +e` keeps a failing check from killing the subshell first.
   (
     set +e
     sh -c "$cmd" >"$RUN_DIR/$idx.log" 2>&1
@@ -142,10 +136,9 @@ done
 
 TOTAL=$idx
 
-# Poll for status files rather than running a background ticker: no trap to
-# install, no `sleep` loop that can outlive the script. `ticks` counts polls,
-# so the reported age is approximate — enough to tell a slow run from a hung
-# one, which is all it is for.
+# Poll for status files rather than run a background ticker: no trap to install,
+# no `sleep` loop that can outlive the script. `ticks` counts polls, so the
+# reported age is approximate — enough to tell a slow run from a hung one.
 ticks=0
 while :; do
   finished=0
