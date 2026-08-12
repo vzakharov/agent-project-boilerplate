@@ -9,7 +9,7 @@ description: >-
 
 This skill is the **execution phase** — what you do once a plan has the operator's go-ahead. It assumes approval already happened: invoking `/implement` (or reaching it via the `/plan` approval gate, or `/from-branch … implement`) **is** the go-ahead, so there's no plan cycle to open here. If you're mid-planning and the operator hasn't approved yet, that gate lives in `@.claude/skills/plan/SKILL.md` — resolve it there first, don't start coding.
 
-Because that approval is an assumption, Step 1 puts it on the record before anything else: a `git mv` out of `*.draft.do-not-implement.md` whose commit message quotes the operator's literal go-ahead. Performed retroactively it records nothing — by then the history does not separate an approved plan from one somebody just started implementing — which is why the flip precedes the first source edit instead of following it as cleanup.
+Because that approval is an assumption, Step 1 puts it on the record: a `git mv` out of `*.draft.do-not-implement.md` whose commit message quotes the operator's literal go-ahead. Done retroactively it records nothing, so it precedes the first source edit rather than following it as cleanup.
 
 ## Branch-name form
 

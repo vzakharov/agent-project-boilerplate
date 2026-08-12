@@ -12,9 +12,9 @@ A plan on disk is a different artifact from a plan in an approval dialog:
 - **Approval carries into the next session.** The turn ends with a copyable `/implement <branch>` line, so implementation starts from a recorded decision instead of re-litigating it.
 - **Questions as numbered prose stay in the transcript** — tersely answerable ("1b, 2a"), and re-readable after a context wipe.
 
-None of that depends on plan mode being broken, so the skill outlives the bug it came from.
+None of that depends on plan mode being broken — the skill is worth running where plan mode works fine.
 
-**Origin.** That bug is why web/remote is the case where this path is *mandatory* rather than merely better: there, plan mode and `AskUserQuestion` silently lose the answers given to prompts they re-emit after a session idles, and the stack grows with the idle. Operators run many concurrent web sessions, so prompts idle routinely — the loss is the normal case, not an edge one. CLAUDE.md § "Plan mode & questions in web sessions" describes the failure and owns where this skill is mandatory vs. optional; the tracking issue carries its exact wording and current status: **https://github.com/anthropics/claude-code/issues/72704**
+**Origin.** It nonetheless started as a workaround for a bug in Claude Code's web/remote sessions, which is why web/remote is where this path is *mandatory* rather than merely better: there, plan mode and `AskUserQuestion` silently lose the answers given to prompts they re-emit after a session idles, and the stack grows with the idle. Operators run many concurrent web sessions, so prompts idle routinely — the loss is the normal case, not an edge one. CLAUDE.md § "Plan mode & questions in web sessions" describes the failure and owns where this skill is mandatory vs. optional; the tracking issue carries its exact wording and current status: **https://github.com/anthropics/claude-code/issues/72704**
 
 ## Part 1 — Plan instead of plan mode
 
