@@ -122,7 +122,7 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 | `/issue` | Take a GitHub issue end-to-end: export the thread, optionally split, implement, open a draft PR. | G2, `gh`, `scripts/export-github-issue.py` | `/finalize`, `/pr` (G2) | adopt |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. | G2, `gh`, `jq` | `/plan` (G2) | adopt |
 | `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
-| `scripts/export-github-issue.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`. Issues only; a PR thread is not a supported argument. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token` | — | adopt |
+| `scripts/export-github-issue.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token` | — | adopt |
 
 ### G4 — Remote-session plumbing
 
