@@ -160,9 +160,7 @@ a real decision rather than a mechanical rewrite:
 - **The entire `search/*` path** — which `/propose-issue`'s dedupe uses. The
   refusal is worded as a repository-scope message but is a path-level block: a
   search restricted to the session's own repo is refused too. Substitute
-  `repos/{owner}/{repo}/issues` and match the terms yourself against the returned
-  JSON — remembering that it includes pull requests and offers no relevance
-  ranking. `ADOPTING.md` § "If you decline G4" carries the query.
+  `repos/{owner}/{repo}/issues` and filter locally.
 
 All three come back with the shim installed; they are the price of declining G4,
 not standing defects.

@@ -182,27 +182,8 @@ downstream is scoped and stated:
 - **The whole `search/*` API path is blocked**, which `/propose-issue`'s dedupe
   reaches for. The refusal reads *"sessions are bound to their configured
   repositories"*, which sounds like a scope check and is not one: a search
-  restricted to the session's **own** repo is refused too.
-
-  The substitute is to stop asking GitHub's search index to match and do the
-  matching yourself — list the open issues and filter the JSON:
-
-  ```bash
-  gh api "repos/$R/issues?state=open&per_page=100" --paginate \
-    --jq '.[] | select(.pull_request|not)
-             | select((.title + " " + (.body // "")) | ascii_downcase
-                      | test("<term>|<other-term>"))
-             | "#\(.number) \(.title)"'
-  ```
-
-  Two things that endpoint does which search doesn't. **It returns pull requests
-  as well as issues** — GitHub models a PR as an issue, so without
-  `select(.pull_request|not)` your dedupe matches open PRs and reports one as a
-  duplicate issue. And it has **no relevance ranking and no stemming**: you get a
-  substring test where search gave you scored matches, so "authorization" will not
-  find "authorize". Dedupe therefore gets cruder as the backlog grows — on a repo
-  with hundreds of open issues, expect to widen the term list and read the
-  candidates rather than trusting a top hit.
+  restricted to the session's **own** repo is refused too. Substitute
+  `gh api repos/{owner}/{repo}/issues` and filter locally.
 
 Making those skills proxy-safe at the source — which would remove this dependency
 and this decision entirely — is tracked separately; see
