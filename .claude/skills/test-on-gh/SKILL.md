@@ -20,4 +20,7 @@ Running the tests the agent's own machine cannot run — the ones needing real c
 
 ## Related
 
-`/finalize` Step 6 decides from the diff whether to dispatch, and its attestation comment names what ran and what didn't. `/qa-checklist` marks rows whose backing tests live in a CI-only bucket, so a cluster of them is the signal to dispatch. `/watch-ci` re-attaches to a dispatch left running.
+`/finalize` Step 6 decides from the diff whether to dispatch, and its attestation comment names what ran and what didn't. `/qa-checklist` marks rows whose backing tests live in a CI-only bucket, so a cluster of them is the signal to dispatch. `/watch-ci` re-attaches to a dispatch left running. If the first dispatch of a
+freshly written workflow fails with `workflow ... not found on the default
+branch`, that is GitHub's metadata, not your hydration —
+`/bootstrap-workflow-dispatch` clears it.
