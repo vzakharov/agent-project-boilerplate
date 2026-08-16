@@ -248,6 +248,13 @@ ruff check . && mypy . && pytest -q                       # Python
 go vet ./... && go test -short ./...                      # Go
 ```
 
+Or fan them out with the runner that ships alongside it, which prints output
+only for the checks that failed:
+
+```bash
+exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
+```
+
 The shipped stub **exits `1` by design**, so skipping this step leaves the PR
 loop stopping loudly — it is a
 [`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for

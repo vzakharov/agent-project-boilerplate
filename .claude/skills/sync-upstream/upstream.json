@@ -2,6 +2,14 @@
   "repo": "Playgramai/playgramapp",
   "lastSyncedSha": "4cd68a75aacff81442e6d0dc9d5219f3b6015de6",
   "lastSyncedAt": "2026-08-11",
-  "adopted": ["CLAUDE.md", "README.md", ".claude/", "scripts/"],
+  "adopted": [
+    "CLAUDE.md",
+    "README.md",
+    ".claude/",
+    "scripts/",
+    {
+      "scripts/run-parallel.py": "taken as a POSIX sh port, scripts/run-parallel.sh, generalized from pnpm script names to <label>=<command> pairs — vet.sh is not escapable, so it must not require python3. Read later upstream changes for the orchestration idea and port by hand; the file itself never lands here."
+    }
+  ],
   "declined": {}
 }

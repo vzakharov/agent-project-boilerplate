@@ -27,6 +27,8 @@ ruff check . && mypy . && pytest -q                 # Python
 go vet ./... && go test -short ./...                # Go
 ```
 
+The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typecheck='…' test='…'`, which prints output only for the ones that failed.
+
 Until it's implemented, skills that depend on it (notably `/finalize`) will stop loudly.
 
 **Keep it current** as tooling evolves. If a CI job catches something `vet.sh` should have caught, that's a signal to extend it.
