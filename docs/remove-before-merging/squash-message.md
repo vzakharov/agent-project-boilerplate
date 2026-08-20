@@ -16,11 +16,10 @@ They now live in `scripts/lib/github.py`, imported as `from lib.github
 import …`. The import mechanism is the load-bearing part: running a
 script as `python3 scripts/<name>.py` puts `scripts/` on `sys.path[0]`,
 so `lib.github` resolves as a PEP 420 namespace package from any working
-directory — no `__init__.py`, no `sys.path` manipulation. Both scripts
-write output relative to the caller's cwd while living elsewhere, and
-`export-github-item.py` is routinely run against a checkout other than
-the one it sits in, so an import that needed the repo root would break
-them. `scripts/lib/` already held the shell equivalent.
+directory — no `__init__.py`, no `sys.path` manipulation. Anything that
+needed the repo root would break them: both scripts write output
+relative to the caller's cwd while living elsewhere, and
+`export-github-item.py` is routinely run against a foreign checkout.
 
 `USER_AGENT` stays local to each script — they differ, which is how
 the two are told apart server-side — as do the `DOCS_*_ROOT` paths.
