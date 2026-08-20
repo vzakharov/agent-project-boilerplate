@@ -23,13 +23,14 @@ from __future__ import annotations
 import json
 import os
 import re
-import subprocess
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+from lib.github import detect_origin_repo, die, gh_token
 
 ATTACHMENT_URL_RE = re.compile(
     r"https://(?:"
@@ -44,41 +45,6 @@ ATTACHMENT_URL_RE = re.compile(
 DOCS_ISSUE_ROOT = Path("docs") / "issue"
 DOCS_PR_ROOT = Path("docs") / "pr"
 USER_AGENT = "export-github-item.py"
-
-
-def die(msg: str, code: int = 1) -> None:
-    print(msg, file=sys.stderr)
-    sys.exit(code)
-
-
-def gh_token() -> str:
-    env = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    if env:
-        return env.strip()
-    try:
-        out = subprocess.check_output(["gh", "auth", "token"], text=True)
-    except FileNotFoundError:
-        die("No GitHub token: set $GH_TOKEN or install `gh` and run `gh auth login`.")
-    except subprocess.CalledProcessError:
-        die("`gh auth token` failed; run `gh auth login` or set $GH_TOKEN.")
-    token = out.strip()
-    if not token:
-        die("Empty token from `gh auth token`; run `gh auth login`.")
-    return token
-
-
-def detect_origin_repo() -> str | None:
-    try:
-        url = subprocess.check_output(
-            ["git", "remote", "get-url", "origin"], text=True
-        ).strip()
-    except (FileNotFoundError, subprocess.CalledProcessError):
-        return None
-    m = re.match(
-        r"^(?:https://github\.com/|git@github\.com:)([^/]+)/([^/]+?)(?:\.git)?/?$",
-        url,
-    )
-    return f"{m.group(1)}/{m.group(2)}" if m else None
 
 
 def parse_args(argv: list[str]) -> tuple[int, str]:
