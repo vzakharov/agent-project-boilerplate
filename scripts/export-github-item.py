@@ -130,7 +130,50 @@ def parse_args(argv: list[str]) -> tuple[int, str]:
     return nums[0], repo_flag
 
 
-def _request(url: str, token: str, accept: str) -> tuple[bytes, dict[str, str]]:
+class _DropAuthOnHostChange(urllib.request.HTTPRedirectHandler):
+    """Strip `Authorization` when a redirect crosses to another host.
+
+    An attachment URL redirects to a pre-signed S3 URL, and S3 rejects a
+    request that carries both its signature and an `Authorization` header with
+    `400 InvalidArgument: Only one auth mechanism allowed`. urllib re-sends
+    every header across a redirect, so without this the download always fails.
+    """
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        new = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if new is not None and _host(newurl) != _host(req.full_url):
+            new.remove_header("Authorization")
+        return new
+
+
+def _host(url: str) -> str:
+    return urllib.parse.urlsplit(url).netloc.lower()
+
+
+def _openers() -> list[urllib.request.OpenerDirector]:
+    """Proxy-honoring opener first, then one that bypasses the proxy.
+
+    Claude Code's remote-session egress proxy refuses
+    `github.com/user-attachments/…` with 403 — it admits only
+    repository-scoped paths on `github.com` — while a direct connection to
+    that same host succeeds, which is why `.claude/hooks/session-start.sh`
+    shims `gh` around it too. Keeping the proxy-honoring opener first means
+    an environment where the proxy is the only route out still works.
+    """
+    return [
+        urllib.request.build_opener(_DropAuthOnHostChange),
+        urllib.request.build_opener(
+            _DropAuthOnHostChange, urllib.request.ProxyHandler({})
+        ),
+    ]
+
+
+def _request(
+    url: str,
+    token: str,
+    accept: str,
+    opener: urllib.request.OpenerDirector | None = None,
+) -> tuple[bytes, dict[str, str]]:
     req = urllib.request.Request(
         url,
         headers={
@@ -140,7 +183,8 @@ def _request(url: str, token: str, accept: str) -> tuple[bytes, dict[str, str]]:
             "User-Agent": USER_AGENT,
         },
     )
-    with urllib.request.urlopen(req) as resp:
+    open_url = opener.open if opener is not None else urllib.request.urlopen
+    with open_url(req) as resp:
         return resp.read(), {k.lower(): v for k, v in resp.headers.items()}
 
 
@@ -233,13 +277,22 @@ def extension_for_bytes(buf: bytes, content_type: str | None) -> str:
 
 
 def download_asset(url: str, dest: Path, token: str) -> str | None:
-    try:
-        buf, headers = _request(url, token, "application/octet-stream")
-    except urllib.error.HTTPError as exc:
-        print(f"Failed to download {url}: {exc.code} {exc.reason}", file=sys.stderr)
-        return None
-    except urllib.error.URLError as exc:
-        print(f"Failed to download {url}: {exc}", file=sys.stderr)
+    buf: bytes | None = None
+    headers: dict[str, str] = {}
+    failures: list[str] = []
+    for opener in _openers():
+        try:
+            buf, headers = _request(url, token, "application/octet-stream", opener)
+            break
+        except urllib.error.HTTPError as exc:
+            failures.append(f"{exc.code} {exc.reason}")
+        except urllib.error.URLError as exc:
+            failures.append(str(exc))
+    if buf is None:
+        print(
+            f"Failed to download {url}: {'; then '.join(failures)}",
+            file=sys.stderr,
+        )
         return None
 
     ext = extension_for_bytes(buf, headers.get("content-type"))

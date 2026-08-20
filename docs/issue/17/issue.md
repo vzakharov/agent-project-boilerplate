@@ -87,3 +87,4 @@ Sample attachment to see if the diagnosis is correct:
 ## Timeline (status, references, and other events)
 
 - **2026-08-20T23:16:31Z** @claude[bot] cross-referenced this issue from [#5 feat: adopt the /issue skill from the agent boilerplate](https://github.com/vzakharov/vovazakharov.com/pull/5).
+- **2026-08-20T23:22:54Z** @vzakharov cross-referenced this issue from [#18 export-github-item.py and pr-body.py duplicate their GitHub plumbing byte-for-byte](https://github.com/vzakharov/agent-project-boilerplate/issues/18).
