@@ -10,6 +10,9 @@ either — the type comes from the API, not from the argument. A PR export also
 carries its review threads: review bodies, inline comments grouped into reply
 chains, and the diff hunk each chain hangs off.
 
+Exit status is non-zero when any attachment fails to download; the Markdown is
+still written, with the failed attachments still linked remotely.
+
 Auth: uses $GH_TOKEN (or $GITHUB_TOKEN) if set, otherwise falls back to
 `gh auth token`. A token is required to download GitHub's private user-image
 attachment URLs (private-user-images.githubusercontent.com), which auth-gate
@@ -28,7 +31,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from lib.github import detect_origin_repo, die, gh_token
 
@@ -242,7 +245,16 @@ def extension_for_bytes(buf: bytes, content_type: str | None) -> str:
     return ""
 
 
-def download_asset(url: str, dest: Path, token: str) -> str | None:
+class AttachmentDownloadError(Exception):
+    """Every opener failed for one attachment.
+
+    The message carries each attempt's status line and nothing else: S3's
+    rejection body echoes the offending header value — i.e. the bearer token in
+    full — so no response body ever reaches it.
+    """
+
+
+def download_asset(url: str, dest: Path, token: str) -> str:
     buf: bytes | None = None
     headers: dict[str, str] = {}
     failures: list[str] = []
@@ -255,11 +267,7 @@ def download_asset(url: str, dest: Path, token: str) -> str | None:
         except urllib.error.URLError as exc:
             failures.append(str(exc))
     if buf is None:
-        print(
-            f"Failed to download {url}: {'; then '.join(failures)}",
-            file=sys.stderr,
-        )
-        return None
+        raise AttachmentDownloadError("; then ".join(failures))
 
     ext = extension_for_bytes(buf, headers.get("content-type"))
     write_path = dest if dest.suffix else (Path(str(dest) + ext) if ext else dest)
@@ -267,13 +275,21 @@ def download_asset(url: str, dest: Path, token: str) -> str | None:
     return f"./attachments/{write_path.name}"
 
 
+class AttachmentDownloads(NamedTuple):
+    """One thread's attachment URLs split by outcome, both halves keyed by URL."""
+
+    url_to_relative: dict[str, str]
+    failures: dict[str, str]
+
+
 def download_attachments(
     urls: list[str], attachments_dir: Path, token: str
-) -> dict[str, str]:
+) -> AttachmentDownloads:
     if not urls:
-        return {}
+        return AttachmentDownloads({}, {})
     attachments_dir.mkdir(parents=True, exist_ok=True)
     url_to_relative: dict[str, str] = {}
+    failures: dict[str, str] = {}
     used: set[str] = set()
     for idx, url in enumerate(urls, start=1):
         base_name = slug_from_url(url, idx)
@@ -283,11 +299,14 @@ def download_attachments(
             while f"{stem}-{n}{ext}" in used:
                 n += 1
             base_name = f"{stem}-{n}{ext}"
-        rel = download_asset(url, attachments_dir / base_name, token)
-        if rel is not None:
-            used.add(os.path.basename(rel))
-            url_to_relative[url] = rel
-    return url_to_relative
+        try:
+            rel = download_asset(url, attachments_dir / base_name, token)
+        except AttachmentDownloadError as exc:
+            failures[url] = str(exc)
+            continue
+        used.add(os.path.basename(rel))
+        url_to_relative[url] = rel
+    return AttachmentDownloads(url_to_relative, failures)
 
 
 def login_of(holder: Any, default: str = "?") -> str:
@@ -586,9 +605,10 @@ def main() -> None:
         *(r.get("body") or "" for r in reviews),
         *(rc.get("body") or "" for rc in review_comments),
     ]
-    url_to_relative = download_attachments(
+    downloads = download_attachments(
         collect_attachment_urls("\n\n".join(prose)), attachments_dir, token
     )
+    url_to_relative = downloads.url_to_relative
 
     body_md = rewrite_attachment_refs(body_md, url_to_relative)
     noun = "this pull request" if is_pr else "this issue"
@@ -611,9 +631,21 @@ def main() -> None:
     md_path.write_text(full_md, encoding="utf-8")
 
     print(f"Wrote {md_path}")
-    if url_to_relative:
+    total = len(url_to_relative) + len(downloads.failures)
+    if total:
         print(
-            f"Downloaded {len(url_to_relative)} attachment(s) under {attachments_dir}"
+            f"Downloaded {len(url_to_relative)}/{total} attachment(s) "
+            f"under {attachments_dir}"
+        )
+    for url, reason in downloads.failures.items():
+        print(f"Failed to download {url}: {reason}", file=sys.stderr)
+    if downloads.failures:
+        # The prose is worth having without its images, so the export stays
+        # written and the exit code carries the failure — the Markdown still
+        # points at whatever did not download.
+        die(
+            f"{len(downloads.failures)} of {total} attachment(s) failed; "
+            f"{md_path} still links to them remotely."
         )
 
 
