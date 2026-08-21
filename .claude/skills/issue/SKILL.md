@@ -22,7 +22,7 @@ Note: IN PLAN MODE,
 
 **Repo:** if `--repo OWNER/REPO` is omitted and the argument isn't a full issue URL, the script reads `origin` from the current git checkout. Pass `--repo` explicitly when exporting an issue from a different repo than the one you're working in.
 
-If the export fails (auth, network, repo not found, attachment-download errors that the script reports), **stop and report** — do not start solving the task from the title alone. Tell the user what failed and how to proceed.
+If the export fails, **stop and report** — do not start solving the task from the title alone. Tell the user what failed and how to proceed. The script exits non-zero on every failure — auth, network, repo not found, or an attachment that wouldn't download — so check the status, not just the last line. A partial attachment failure still writes the Markdown and prints `Downloaded 2/3 attachment(s)` plus each URL it missed: the thread is there, but you'd be reading it with pixels missing.
 
 For quick metadata checks (labels, assignees, linked PRs) without a full export, `gh issue view <n> --json title,body,labels,assignees,state,url` is fine — but the export remains the default path for this skill so the thread, timeline, and attachments stay complete and local.
 
