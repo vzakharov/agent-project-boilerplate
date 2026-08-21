@@ -1,31 +1,41 @@
 Proposed squash title/body:
 
 ```
-docs: record that the GitHub exporter is a Python port of a TS original (pr #21)
+fix: #22 report attachment download failures (pr #21)
 ```
 
 ```
-/sync-upstream reads upstream.json to learn how each adopted path lives
-here. It listed scripts/ as taken wholesale and singled out only
-run-parallel.py as a hand port, so nothing recorded that upstream ships
-scripts/export-github-item.ts in TypeScript while this repo ships a
-Python port of it. Read literally, the file said the exporter was a
-verbatim copy of something that does not exist.
+Downloading a thread's attachments is what this exporter is for, and a
+failed download was treated as a skip: one stderr line, a success count
+with no denominator, a guard that printed nothing at all when every
+download failed, and exit 0. A thread whose screenshots never arrived
+read exactly like a clean export, which is how the user-attachments bug
+in #17 went unnoticed for as long as it did.
 
-The omission already cost a wrong diagnosis. Working out why the
-user-attachments download bug did not reproduce upstream, an agent took
-this repo's own earliest commit of the script for upstream's copy,
-concluded the two were identical, and went looking for a difference in
-the attachments instead of the client. Both failure modes that bug fixed
-are properties of stdlib urllib -- undici strips Authorization across a
-cross-host redirect and ignores HTTPS_PROXY -- so upstream cannot have
-either, and no amount of comparing algorithms would have shown it.
+download_asset now raises instead of reporting for itself,
+download_attachments returns failures alongside successes, and the run
+prints the count as a fraction of the whole set, names every URL that
+failed, and exits non-zero. The choice is reported-and-continue rather
+than fatal: a thread's prose is worth having without its images, so the
+Markdown is still written and the exit code is what says it still points
+at attachments that never downloaded. The failure text stays body-free,
+code and reason only, because S3's rejection echoes the offending header
+value -- i.e. the bearer token in full. /issue Step 1's "stop and
+report" now has an exit status to check rather than a stderr line to
+notice.
 
-The entry follows the contract the skill already documents for a
-{path: note} adoption: the key is the upstream path, so the log filter
-keeps surfacing TS-side commits for triage as translate rather than
-take, and the note states what the port does differently. Docs only --
-nothing under scripts/ changes.
+The branch also lands the upstream.json entry recording that upstream
+ships scripts/export-github-item.ts in TypeScript while this repo ships
+a Python port. upstream.json listed scripts/ as adopted wholesale, so
+read literally it claimed the exporter was a verbatim copy of something
+that does not exist -- an omission that already cost a wrong diagnosis
+of #17, whose two failure modes are both properties of stdlib urllib
+that undici cannot have. The entry is newly load-bearing: the reporting
+change above is another divergence upstream does not carry. Its key is
+the upstream path, so /sync-upstream keeps surfacing TS-side commits and
+triages them translate rather than take.
+
+Closes #22
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
