@@ -7,33 +7,23 @@ fix: #22 report attachment download failures (pr #21)
 ```
 Downloading a thread's attachments is what this exporter is for, and a
 failed download was treated as a skip: one stderr line, a success count
-with no denominator, a guard that printed nothing at all when every
-download failed, and exit 0. A thread whose screenshots never arrived
-read exactly like a clean export, which is how the user-attachments bug
-in #17 went unnoticed for as long as it did.
+with no denominator, nothing printed at all when every download failed,
+and exit 0. A thread whose screenshots never arrived read exactly like a
+clean export, which is how the #17 bug went unnoticed for as long as it
+did.
 
-download_asset now raises instead of reporting for itself,
-download_attachments returns failures alongside successes, and the run
-prints the count as a fraction of the whole set, names every URL that
-failed, and exits non-zero. The choice is reported-and-continue rather
-than fatal: a thread's prose is worth having without its images, so the
+download_asset now raises, download_attachments returns failures
+alongside successes, and the run prints the count as a fraction, names
+every URL that failed, and exits non-zero. Reported-and-continue rather
+than fatal: the prose is worth having without the images, so the
 Markdown is still written and the exit code is what says it still points
 at attachments that never downloaded. The failure text stays body-free,
-code and reason only, because S3's rejection echoes the offending header
-value -- i.e. the bearer token in full. /issue Step 1's "stop and
-report" now has an exit status to check rather than a stderr line to
-notice.
+code and reason only, because S3's rejection echoes the bearer token in
+full.
 
-The branch also lands the upstream.json entry recording that upstream
-ships scripts/export-github-item.ts in TypeScript while this repo ships
-a Python port. upstream.json listed scripts/ as adopted wholesale, so
-read literally it claimed the exporter was a verbatim copy of something
-that does not exist -- an omission that already cost a wrong diagnosis
-of #17, whose two failure modes are both properties of stdlib urllib
-that undici cannot have. The entry is newly load-bearing: the reporting
-change above is another divergence upstream does not carry. Its key is
-the upstream path, so /sync-upstream keeps surfacing TS-side commits and
-triages them translate rather than take.
+upstream.json also gains the entry recording that upstream ships this
+script as TypeScript -- newly load-bearing, since the reporting change
+is a divergence no file-level diff across two languages can show.
 
 Closes #22
 
