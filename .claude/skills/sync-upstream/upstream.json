@@ -8,10 +8,10 @@
     ".claude/",
     "scripts/",
     {
-      "scripts/run-parallel.py": "taken as a POSIX sh port, scripts/run-parallel.sh, generalized from pnpm script names to <label>=<command> pairs \u2014 vet.sh is not escapable, so it must not require python3. Read later upstream changes for the orchestration idea and port by hand; the file itself never lands here."
+      "scripts/run-parallel.py": "taken as a POSIX sh port, scripts/run-parallel.sh, generalized from pnpm script names to <label>=<command> pairs — vet.sh is not escapable, so it must not require python3. Read later upstream changes for the orchestration idea and port by hand; the file itself never lands here."
     },
     {
-      "scripts/export-github-item.ts": "taken as a Python port, scripts/export-github-item.py \u2014 the algorithm tracks upstream, the HTTP client does not. undici strips Authorization across a cross-host redirect and ignores HTTPS_PROXY; stdlib urllib does neither, so _DropAuthOnHostChange and the proxy-bypass opener here answer failure modes upstream cannot have. Port behavior changes by hand \u2014 a file-level diff compares two languages and says nothing."
+      "scripts/export-github-item.ts": "taken as a Python port, scripts/export-github-item.py — the algorithm tracks upstream, the HTTP client does not. undici strips Authorization across a cross-host redirect and ignores HTTPS_PROXY; stdlib urllib does neither, so _DropAuthOnHostChange and the proxy-bypass opener here answer failure modes upstream cannot have. Port behavior changes by hand — a file-level diff compares two languages and says nothing."
     }
   ],
   "declined": {}
