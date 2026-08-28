@@ -5,13 +5,6 @@ docs: sync agent infrastructure from upstream through dd0632d3e (pr #23)
 ```
 
 ```
-This repo vendors its agent infrastructure from
-Playgramai/playgramapp and had drifted 53 commits behind the
-watermark. Eighteen touched an adopted path; three carried
-something this repo can use, and the PR body records why the other
-fifteen do not — the watermark advances past them and nothing else
-would say.
-
 /issue is rescoped to the issue side. It had restated the whole
 lifecycle — export, split, implement, open a draft PR — so a session
 could conclude, correctly per the text, that it owned
