@@ -233,12 +233,10 @@ then close the original as `duplicate` and name the replacement in the closing
 comment.** A refile is a `duplicate` rather than a `not_planned` because the work
 was not dropped — it moved, and a reader arriving at the old issue has to be
 carried to the live one instead of reaching a dead end. Pass `duplicate_of` too —
-it costs nothing and it is what sets `state_reason` — but do not assume it
-renders the link: it did not emit a `MarkedAsDuplicateEvent` in the repo this
-procedure comes from, from either the REST parameter or GraphQL's
-`closeIssue(duplicateIssueId:)`, so the bolded `#<n>` in the comment is the link
-a reader is actually guaranteed. Analysts are not told any of this: they judge
-that an item needs re-framing, and the mechanism is execution's business.
+it costs nothing and it is what sets `state_reason` — but the bolded `#<n>` in
+the comment is the link a reader is actually guaranteed (see § "Verified CLI
+traps"). Analysts are not told any of this: they judge that an item needs
+re-framing, and the mechanism is execution's business.
 
 Two rules do the heavy lifting, and both are rules rather than preferences:
 
