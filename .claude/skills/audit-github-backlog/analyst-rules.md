@@ -50,6 +50,42 @@ Two rules, not preferences:
    it" is `KEEP`. `REFILE` is for an item whose named paths, symbols, or
    architecture are gone.
 
+## Priority — on every item that survives
+
+A verdict says whether an item is still true; a priority says when it should be
+worked. Without one the sweep hands back a backlog of the same size in the same
+undifferentiated order, so **every `KEEP` and every `REFILE` carries a tier** —
+for a `REFILE` it is the tier the replacement issue should be filed at. The
+closing verdicts and `UNSURE` carry none: `—` in the column, since a schedule for
+work nobody will do is noise, and an `UNSURE` cannot be scheduled before a human
+resolves it.
+
+| Tier | Meaning                                                                                                                                                                               |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `P0` | Harm is happening now and will not stop on its own — users hitting a broken path in production, data being corrupted or lost, a security or billing hole, a deploy lane that is down. |
+| `P1` | A real defect or a cost the team pays repeatedly, but the app works: a bug with a workaround, a recurring incident source, debt actively slowing changes in code touched weekly.      |
+| `P2` | A genuine improvement with a bounded payoff and no clock on it — consistency, coverage, cleanup in code nobody is currently fighting. Worth doing when someone is already there.      |
+| `P3` | Worth keeping on the record, but nobody would schedule it deliberately. Would not be missed if it sat another year.                                                                   |
+
+Five rules, and the first is the one that goes wrong:
+
+1. **Priority is the consequence of _not_ doing it** — not effort, not how
+   interesting it is, and never how old the issue is. A ten-minute cosmetic
+   alignment fix is `P3`; a hard-to-fix data-loss bug is `P0`.
+2. **`P0` is rare** — a handful across a whole backlog. More than one or two in
+   your bucket means you are grading on interest. Every `P0` must name the harm
+   and say what makes it ongoing.
+3. **Do not inherit the tier from the item itself.** An existing priority label,
+   a `critical` in the title, or an urgent-sounding author is a claim to verify
+   against the code, not a tier to copy.
+4. **A bucket that comes back all one tier is a failed judgement.** Expect a
+   spread. If your items genuinely do cluster — single-occurrence auto-filed
+   error reports are mostly `P3`, for instance — say so in your report, so the
+   flat distribution reads as a finding rather than as sloppiness.
+5. **Sanity-check your own ladder before you write the summary.** Read your tiers
+   back as one ordered list and ask whether you would really pick every `P1`
+   ahead of every `P2`. Move whatever fails that.
+
 ## Evidence standard — a verdict without evidence is discarded
 
 Cite a path, a line, a grep result, or a commit SHA. Establish, concretely: do
@@ -89,26 +125,28 @@ that is what your verdict is for.
 
 Write to the report path your prompt gave you. Two parts, in this order:
 
-1. One `###` section per item: `### #<n> — <title>`, then your verdict, the
-   evidence you established (with paths/lines/SHAs), and anything the
-   coordinator needs to know.
+1. One `###` section per item: `### #<n> — <title>`, then your verdict, its
+   priority if it survives, the evidence you established (with paths/lines/SHAs),
+   and anything the coordinator needs to know.
 
 2. A **final `## Summary` table**, the last thing in the file, in exactly this shape:
 
 ```
 ## Summary
 
-| Item | Verdict | Reason |
-|---|---|---|
-| #123 | CLOSE_DUPLICATE | Duplicate of #99; `src/foo/bar.ts:12` is the gap both name. |
-| #124 | KEEP | `src/x.ts:40` still hand-rolls the parser. |
+| Item | Verdict | Priority | Reason |
+|---|---|---|---|
+| #123 | CLOSE_DUPLICATE | — | Duplicate of #99; `src/foo/bar.ts:12` is the gap both name. |
+| #124 | KEEP | P1 | `src/x.ts:40` still hand-rolls the parser. |
 ```
 
 The table is parsed mechanically, so: one row per item you were given and no
-others; `#<number>` in the first column; the verdict verbatim in caps; a
-one-line reason citing evidence. Escape any literal `|` inside a reason as `\|`.
-If you write more than one `## Summary` heading, the **last** one is taken as
-your settled position.
+others; `#<number>` in the first column; the verdict verbatim in caps; the
+priority as `P0`–`P3` on a `KEEP` or `REFILE` and `—` on everything else; a
+one-line reason citing evidence. All four columns are required — a three-column
+row is rejected, as is a `KEEP` without a tier or a close with one. Escape any
+literal `|` inside a reason as `\|`. If you write more than one `## Summary`
+heading, the **last** one is taken as your settled position.
 
 ---
 

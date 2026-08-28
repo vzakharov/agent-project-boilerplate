@@ -1,11 +1,12 @@
 ---
-description: Sweep the whole open GitHub backlog — every open issue and PR — judging each against today's code, and produce a reviewable close/refile/keep plan. Fans out one analyst per bucket over locally-dumped threads, holds the cross-cutting sweeps centrally, and asserts coverage before reporting. Closes and comments on nothing. Use when the user says "audit the backlog", "triage the backlog", "sweep the issues", "/audit-github-backlog", or asks what in the backlog is still worth keeping.
+description: Sweep the whole open GitHub backlog — every open issue and PR — judging each against today's code, and produce a reviewable close/refile/keep plan that also assigns a P0–P3 priority to everything it keeps. Fans out one analyst per bucket over locally-dumped threads, holds the cross-cutting sweeps centrally, and asserts coverage before reporting. Closes and comments on nothing. Use when the user says "audit the backlog", "triage the backlog", "sweep the issues", "prioritise the backlog", "/audit-github-backlog", or asks what in the backlog is still worth keeping.
 ---
 
 # `/audit-github-backlog` — the whole-backlog sweep
 
 Judge **every** open issue and PR against the code as it is today, and leave a
-reviewable plan saying what to close, refile, or keep — with the evidence.
+reviewable plan saying what to close, refile, or keep — with the evidence, and
+with a priority on everything that survives.
 
 This is a read-and-decide pass. It closes, comments on, relabels, and edits
 **nothing** on GitHub.
@@ -154,7 +155,10 @@ When an operator decision changes verdicts wholesale — as "never close a paren
 with an open sub-issue" does — write it into
 `docs/plans/backlog-audit/00-overrides.md` and re-merge. Overrides are applied
 last and win. Recording the decision once and regenerating beats hand-editing it
-into every report it touches.
+into every report it touches. An override row takes the analyst's four-column
+`| Item | Verdict | Priority | Reason |` shape (`analyst-rules.md` § "Reporting"),
+priority column included — an override that drops it silently unprioritizes
+whatever it touches.
 
 ## Step 5 — Write the plan (this skill's output)
 
@@ -165,13 +169,20 @@ themes and process findings worth a decision, the guard list of items **not** to
 close and why, and a pointer to the merged verdict table for the per-item detail.
 Do not restate the taxonomy or the guards — they live here.
 
-The plan's execution section is a close list, so it must say **how** each item
-closes, not just that it does: carry the `state_reason` from each verdict (see the
-taxonomy below) and the `duplicate_of` target for every `CLOSE_DUPLICATE`.
+The plan's execution section is a close list _and_ a relabel list, so it must say
+**how** each item closes and **what** each survivor becomes: carry the
+`state_reason` from each verdict (see the taxonomy below), the `duplicate_of`
+target for every `CLOSE_DUPLICATE`, and for every `KEEP` and `REFILE` the
+priority label to apply and the stale priority label to remove. Carry a
+priority-by-bucket table alongside the verdict counts, and name the `P0`s and
+`P1`s in the plan body — at a backlog's worth of surviving items those two tiers
+are the part an operator will actually read, and burying them in the appendix
+wastes the sweep's most useful output.
 
 Require one thing of the PR that eventually executes the plan: **its body lists
 every issue and PR the sweep touches**, as a bullet list of `#<n> — <title>`
-grouped by verdict, wrapped in a `<details>` block. Each `#<n>` becomes a
+grouped by verdict — the `KEEP` and `REFILE` groups subgrouped by priority —
+wrapped in a `<details>` block. Each `#<n>` becomes a
 GitHub-native mention, so an item carries a link back to the sweep that judged it,
 and the operator can read what is about to close without opening the plan. Numbers
 and titles only — no per-item descriptions; at ~200 items that list is already most
@@ -190,14 +201,14 @@ yours and the ones analysts flagged. See § "This is a living document".
 Every verdict carries a one-line reason naming the commit, PR, or verified
 absence behind it.
 
-| Verdict             | Meaning                                                    | Closes as     |
-| ------------------- | ---------------------------------------------------------- | ------------- |
-| `CLOSE_DONE`        | The work described is done.                                | `completed`   |
-| `CLOSE_NOT_PLANNED` | Obsolete or abandoned — real once, nobody will do it now.   | `not_planned` |
-| `CLOSE_DUPLICATE`   | Another issue covers it; the reason names it as `#<n>`.     | `duplicate`   |
-| `REFILE`            | Close **and** open a fresh re-framed issue.                | `duplicate`   |
-| `KEEP`              | Still reads true against today's code.                     | —             |
-| `UNSURE`            | Needs a human. Say precisely what you could not establish.  | —             |
+| Verdict             | Meaning                                                    | Closes as     | Priority |
+| ------------------- | ---------------------------------------------------------- | ------------- | -------- |
+| `CLOSE_DONE`        | The work described is done.                                | `completed`   | —        |
+| `CLOSE_NOT_PLANNED` | Obsolete or abandoned — real once, nobody will do it now.   | `not_planned` | —        |
+| `CLOSE_DUPLICATE`   | Another issue covers it; the reason names it as `#<n>`.     | `duplicate`   | —        |
+| `REFILE`            | Close **and** open a fresh re-framed issue.                | `duplicate`   | required |
+| `KEEP`              | Still reads true against today's code.                     | —             | required |
+| `UNSURE`            | Needs a human. Say precisely what you could not establish.  | —             | —        |
 
 **A close carries its modality.** GitHub's close reason is an enum —
 `completed`, `not_planned`, `duplicate` — and `mcp__github__issue_write` takes it
@@ -209,13 +220,25 @@ leaving the modality to the reason prose: the verdict is the only field parsed
 mechanically, so anything outside it is a suggestion the executing agent can drop
 — and in the first run, did.
 
+**The enum is issues-only, so a PR's modality lives in prose.** A pull request
+accepts no close reason — it reads back `state_reason: null` however it was
+closed, including the ones closed deliberately with written rationales. For the
+PRs in a sweep, the verdict's mapped reason is what the **closing comment** has
+to say, and there is no `duplicate_of` link to be had — name the issue inline
+instead. Don't let a plan instruct `state_reason` on a PR; it silently does
+nothing.
+
 `REFILE` is the one with an ordering constraint: **open the replacement first,
-then close the original as `duplicate` with `duplicate_of` pointing at the new
-number.** A refile is a `duplicate` rather than a `not_planned` because the work
-was not dropped — it moved — and `duplicate_of` is what makes GitHub render the
-link, so a reader arriving at the old issue is carried to the live one instead of
-reaching a dead end. Analysts are not told any of this: they judge that an item
-needs re-framing, and the mechanism is execution's business.
+then close the original as `duplicate` and name the replacement in the closing
+comment.** A refile is a `duplicate` rather than a `not_planned` because the work
+was not dropped — it moved, and a reader arriving at the old issue has to be
+carried to the live one instead of reaching a dead end. Pass `duplicate_of` too —
+it costs nothing and it is what sets `state_reason` — but do not assume it
+renders the link: it did not emit a `MarkedAsDuplicateEvent` in the repo this
+procedure comes from, from either the REST parameter or GraphQL's
+`closeIssue(duplicateIssueId:)`, so the bolded `#<n>` in the comment is the link
+a reader is actually guaranteed. Analysts are not told any of this: they judge
+that an item needs re-framing, and the mechanism is execution's business.
 
 Two rules do the heavy lifting, and both are rules rather than preferences:
 
@@ -227,6 +250,37 @@ Two rules do the heavy lifting, and both are rules rather than preferences:
 - **`REFILE` is a framing mismatch, not a wish.** "Still a good idea, nobody did
   it" is `KEEP`. `REFILE` is for an item whose named paths, symbols, or
   architecture are gone.
+
+## Every surviving item carries a priority
+
+A sweep that only decides what survives hands back a backlog of the same size in
+the same undifferentiated order — the thing that made it unreadable in the first
+place. So `KEEP` and `REFILE` also carry a **`P0`–`P3`** tier: for a `REFILE`, the
+tier its replacement is filed at. Closing verdicts and `UNSURE` carry none.
+
+The tier definitions and the calibration rules that make independent analysts
+comparable — priority is the consequence of _not_ doing it, `P0` is rare, a
+uniform bucket is a failed judgement — live in `analyst-rules.md` § "Priority",
+the file the analysts author against. Don't restate them here or in the plan.
+
+The tier is required-or-forbidden per verdict rather than optional, and the
+Step 4 merge rejects a row that breaks either half: an optional column is one
+every analyst fills differently, and an unprioritized `KEEP` is exactly the
+undifferentiated backlog this exists to break up. Map each tier onto one of the
+repo's existing priority labels rather than minting a parallel set beside them,
+and record the mapping wherever the merged verdict table is written, so the plan
+and its execution read the same one.
+
+Two things follow for the plan and its execution:
+
+- **A kept item is relabelled, not merely left alone.** Execution applies the
+  mapped label and removes any priority label the item already carries — a
+  backlog's existing priority labels are usually near-synonyms and barely used,
+  so an item keeping a stale one alongside a fresh one is worse than either.
+- **Priority is the operator's most likely override.** It is a judgement call in a
+  way "does this file still exist" is not, so expect tier disagreements at review
+  and take them through `00-overrides.md` like any other — the override row
+  carries the priority column too.
 
 ## The evidence standard
 
@@ -290,7 +344,9 @@ Each of these was hit for real. **All but the first fail quietly.**
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Shallow clone → `git merge-base` exits 1 with empty output, and downstream rot numbers are fiction | `git fetch --unshallow`, then assert — never proceed on the numbers it would otherwise print       |
 | `mergeable` / `mergeStateStatus` are `UNKNOWN` until GitHub computes them lazily                   | compute locally with `git merge-tree --write-tree`                                                |
-| `gh issue view/list --json stateReason` → `Unknown JSON field`                                     | valid fields are `state`, `closed`, `closedAt`; the close **reason** lives in the closing comment |
+| `gh issue view/list --json stateReason` → `Unknown JSON field`                                     | valid fields are `state`, `closed`, `closedAt`; read the reason from `gh api /repos/…/issues/<n>`  |
+| `gh pr view --json closingIssuesReferences` → `Unknown JSON field`                                 | issue↔PR links are GraphQL-only: query `repository.pullRequests.closingIssuesReferences`           |
+| `duplicate_of` set `state_reason` but recorded no `MarkedAsDuplicateEvent` — neither the REST parameter nor GraphQL's `closeIssue(duplicateIssueId:)` rendered a link | name the canonical issue in the closing comment, in bold; treat the field as write-only            |
 | `gh pr list --search 'issue/1647'` does not index branch names                                     | `gh api '/repos/<owner>/<repo>/pulls?head=<owner>:<branch>'`, or scan the paginated history        |
 | `gh pr list --limit 500` silently truncates                                                        | `gh api --paginate`                                                                               |
 | `gh api --paginate` emits one JSON array **per page**, concatenated — so a single `JSON.parse` reads page 1 and drops the rest | `--slurp` (gh ≥ 2.52) flattens them; below that, split the concatenated arrays yourself           |

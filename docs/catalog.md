@@ -123,7 +123,7 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 | --- | --- | --- | --- | --- |
 | `/issue` | Export and read a GitHub issue, split it into natively-linked sub-issues when the scope demands, then hand the work to `/pr`. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr`, `/plan` (G2) | adopt |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. | G2, `gh`, `jq` | `/plan` (G2) | adopt |
-| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
+| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan, prioritising `P0`–`P3` everything it keeps. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
 | `scripts/export-github-item.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`, or a PR (plus review threads and diff hunks) into `docs/pr/<n>/`. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` (G2) | — | adopt |
 
 ### G4 — Remote-session plumbing
