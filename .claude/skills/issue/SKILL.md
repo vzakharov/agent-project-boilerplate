@@ -26,7 +26,7 @@ python3 scripts/export-github-item.py <issue-number|https://github.com/OWNER/REP
 
 The script writes `docs/issue/<n>/issue.md` (body + comments + timeline) and downloads any image / file attachments referenced in the thread to `docs/issue/<n>/attachments/`.
 
-Consult the issue only through the export — never `gh issue view`, the GitHub MCP tools, or `WebFetch` in its place. `gh issue view` alone does **not** fetch attachments: GitHub's `private-user-images.githubusercontent.com` URLs require an authenticated request even when the issue is public, which is why the export script exists. `WebFetch` on a github.com issue page often fails outright in isolated environments. Only the export makes the attachments readable as pixels. For a quick metadata check unrelated to the task at hand — labels, assignees, linked PRs — `gh issue view <n> --json title,body,labels,assignees,state,url` is still fine.
+Consult the issue only through the export — never `gh issue view`, the GitHub MCP tools, or `WebFetch` in its place. `gh issue view` alone does **not** fetch attachments: GitHub's `private-user-images.githubusercontent.com` URLs require an authenticated request even when the issue is public, which is why the export script exists. `WebFetch` on a github.com issue page often fails outright in isolated environments. For a quick metadata check unrelated to the task at hand — labels, assignees, linked PRs — `gh issue view <n> --json title,body,labels,assignees,state,url` is still fine.
 
 **Then read** `docs/issue/<n>/issue.md` end to end, and **open the files under** `docs/issue/<n>/attachments/` when you need pixels (screenshots, mockups, design references).
 

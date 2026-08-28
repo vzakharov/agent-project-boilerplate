@@ -155,10 +155,9 @@ When an operator decision changes verdicts wholesale — as "never close a paren
 with an open sub-issue" does — write it into
 `docs/plans/backlog-audit/00-overrides.md` and re-merge. Overrides are applied
 last and win. Recording the decision once and regenerating beats hand-editing it
-into every report it touches. An override row takes the analyst's four-column
-`| Item | Verdict | Priority | Reason |` shape (`analyst-rules.md` § "Reporting"),
-priority column included — an override that drops it silently unprioritizes
-whatever it touches.
+into every report it touches. An override row takes the analyst's
+`| Item | Verdict | Priority | Reason |` shape (`analyst-rules.md` § "Reporting");
+one that drops the priority column silently unprioritizes what it touches.
 
 ## Step 5 — Write the plan (this skill's output)
 
