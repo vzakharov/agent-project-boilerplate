@@ -9,6 +9,7 @@ End state of this skill: a draft PR exists against `<base>`, targeting a semanti
 An outer skill may pass these; a bare `/pr` takes the defaults, so the ordinary path reads as if they weren't there.
 
 - **`<base>`** — the branch the PR merges into, and the left side of every diff range below (`origin/<base>..HEAD`). Defaults to the repo default branch (`main` in most projects). When a PR already exists, its `baseRefName` wins over what the caller said.
+- **`<issue>`** — the issue number this PR closes, passed by `@.claude/skills/issue/SKILL.md`. Absent, Step 4's inference from the commits stands. Explicit beats inference for a split issue, where a stray reference to the parent in a commit body would otherwise close the umbrella.
 - **A pre-created PR** — when the caller already opened the PR, Step 1b treats it as satisfying the duplicate check rather than tripping it, and Step 5 fills it in instead of creating one.
 
 ## Environment note (read this before running gh)
@@ -19,7 +20,7 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 
 ### Step 1a — Plan gate (do this FIRST, before any git command)
 
-**Any arguments after `/pr` are a task to implement** — work to plan, code, and commit before drafting the PR. So if the invocation has args, **STOP: do not run the PR steps yet.** Plan the task first — in a web/remote session invoke the `plan` skill (per CLAUDE.md "Plan mode & questions in web sessions"); in a local CLI session use native plan mode — get it reviewed, implement it, commit, and only then run `/pr` from the top over the finished work.
+**Any arguments after `/pr` are a task to implement** — work to plan, code, and commit before drafting the PR. A caller skill's task text counts as arguments exactly as a user's does: a handover from `/issue` hits this gate rather than sliding past it as "internal". So if the invocation has args, **STOP: do not run the PR steps yet.** Plan the task first — in a web/remote session invoke the `plan` skill (per CLAUDE.md "Plan mode & questions in web sessions"); in a local CLI session use native plan mode — get it reviewed, implement it, commit, and only then run `/pr` from the top over the finished work.
 
 The **only** waiver is the args themselves explicitly saying no plan is needed (e.g. "no plan"). Nothing else exempts the task: not `/pr` (it is not a plan-skill exemption), not the branch already carrying commits (that does not make new args "continued work"), and not the task looking small, well-specified, or like a tweak to existing work — plan it anyway.
 
@@ -67,7 +68,7 @@ git diff --stat origin/<base>..HEAD
 - **Summary** — 2-4 bullets explaining _what_ changed and _why_. Pull from commit bodies, not just subjects.
 - **QA Checklist** — a `## QA Checklist` markdown checklist of how to verify the change end-to-end, derived over `origin/<base>..HEAD`. For how to derive it, follow the "Derive the checklist" guidance in `@.claude/skills/qa-checklist/SKILL.md`.
 
-If the PR or any commit references a GitHub issue, end the body with `Closes #N` (for `feat`/`refactor`/etc.) or `Fixes #N` (for `fix`).
+End the body with `Closes #N` (for `feat`/`refactor`/etc.) or `Fixes #N` (for `fix`), where `N` is the caller's `<issue>` when one was passed, and otherwise any issue the PR or a commit references.
 
 Append the session attribution line: `https://claude.ai/code/session_<id>` (the actual session id from the system prompt).
 

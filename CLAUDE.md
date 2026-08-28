@@ -134,7 +134,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 **Entry points and support:**
 
-- **`/issue`** — take a GitHub issue end-to-end (export, optionally split, implement, open a draft PR).
+- **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/pr`.
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
