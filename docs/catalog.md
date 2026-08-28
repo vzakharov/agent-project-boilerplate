@@ -121,9 +121,9 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/issue` | Take a GitHub issue end-to-end: export the thread, optionally split, implement, open a draft PR. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr` (G2) | adopt |
+| `/issue` | Export and read a GitHub issue, split it into natively-linked sub-issues when the scope demands, then hand the work to `/pr`. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr`, `/plan` (G2) | adopt |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. | G2, `gh`, `jq` | `/plan` (G2) | adopt |
-| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
+| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan, prioritising `P0`–`P3` everything it keeps. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
 | `scripts/export-github-item.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`, or a PR (plus review threads and diff hunks) into `docs/pr/<n>/`. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` (G2) | — | adopt |
 
 ### G4 — Remote-session plumbing
@@ -268,9 +268,9 @@ Four closure facts are counter-intuitive enough to state outright:
 - **`scripts/vet.sh` is not optional within G2.** `/finalize`, `/sync-branch` and
   `/watch-ci` run it, and `/finalize` stops loudly without it. Hence its
   **rewrite** disposition rather than a choice: there is no version of G2 that
-  does not run your checks. (Four more skills *name* it — `/implement` and
-  `/issue` to say vetting is not their job, `/sync-upstream` and `/test-on-gh` as
-  an example — so a grep overcounts the dependency.)
+  does not run your checks. (Three more skills *name* it — `/implement` to say vetting is
+  not its job, `/sync-upstream` and `/test-on-gh` as an example — so a grep
+  overcounts the dependency.)
 - **`/finalize` reaches into G3 and G5 conditionally.** Its working-artifact
   sweep cites `/issue`, and its CI steps cite `/watch-ci`. Both citations are
   guarded by prose conditions ("if a workflow runs on PRs"), so the behavior

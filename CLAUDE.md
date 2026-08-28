@@ -118,6 +118,7 @@ The proposed squash title/body goes up when the PR opens and is kept in sync as 
 
 - **Plan drift**: When work deviates significantly from your plan docs, update them to reflect actual progress and revised ordering. The plan is a living document, not a stale ideal.
 - **Decision-doc consistency**: When revising a decision (e.g., renaming a convention, changing a tool choice), update all docs that reference the old convention.
+- **A decision doc records decisions, not implementation.** A line belongs there if it answers _why we chose this_ or _what constraint we accepted_; if it answers _how it works_, it belongs in the code. Don't name a function, module path or column unless the decision is _about_ that name. A named trap ("changing X silently breaks Y") goes in a comment beside X — the person about to break it is reading the code, not the doc. A superseded decision compresses to what was rejected and the one-line why, not a paragraph of mechanics that have since been deleted; a settled fork compresses to the decision it reached, not the comparison that reached it. A decisions index or summary takes the same test: a row is the decision's précis, never its mechanics. The cost isn't only the context every agent spends reading them — a decision survives a refactor and a description of how it works does not, so implementation detail goes stale invisibly and leaves the doc untrustworthy rather than merely long.
 - **Plan-item voice**: Plan checklist items should read as forward-looking intent (how you'd phrase them _before_ doing the work), not as retrospective reports.
 - **Retiring a doc leaves a tombstone.** Don't just `rm` a doc that other files, comments, or history cite — leave a file recording the last commit that contained it and the `git show <sha>:<path>` recipe to read it, so every surviving citation still resolves, plus a pointer to where any still-live content went. **One tombstone per retirement, not per file**: docs retired together get a single tombstone with a row each. A tombstone standing in for a whole retired directory is `retired.md` at that directory's root; one standing in for a single file is `<name>.retired.md` beside its siblings — so every tombstone matches `*retired.md`.
 
@@ -134,7 +135,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 **Entry points and support:**
 
-- **`/issue`** — take a GitHub issue end-to-end (export, optionally split, implement, open a draft PR).
+- **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/pr`.
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
