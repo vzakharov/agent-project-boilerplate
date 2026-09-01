@@ -8,24 +8,25 @@ fix: #24 route the stdlib scripts around a proxy that refuses api.github.com (pr
 `export-github-item.py` and `pr-body.py` reached the GitHub API through
 a bare `urlopen`, which honors `HTTPS_PROXY`. A Claude Code remote
 session's egress proxy refuses `api.github.com` with its own 403, so the
-first API call killed both scripts outright and the only way to run
-either was under `env -u HTTPS_PROXY`.
+first API call killed both scripts outright; the only way to run either
+was under `env -u HTTPS_PROXY`.
 
-The proxy-then-direct ladder that works around this already existed in
-the exporter, scoped to attachment downloads. It moves into
-`scripts/lib/github.py` and now serves all three call sites through one
-`fetch`. The proxy rung is still first, so a session where the proxy is
-the only route out is unaffected; the cost is a second request per rung,
-on the failure path only.
+The proxy-then-direct ladder already existed in the exporter, scoped to
+attachment downloads. It moves into `scripts/lib/github.py`, now serving
+all three call sites through one `fetch`. The proxy rung is still first,
+so a session where the proxy is the only route out is unaffected; the
+cost is a second request per rung on the failure path.
 
 Two shapes are load bearing. `fetch` takes a request *factory* because
 `ProxyHandler.proxy_open` rewrites a request's host in place — reuse one
-`Request` and every rung aims at the proxy. And the failure renderings
-are two functions rather than one with a flag: `format_route_statuses`
-omits bodies for the attachment path, where S3 quotes the offending
-header back — the bearer token in full — while
+`Request` and every rung aims at the proxy. And the two failure
+renderings are separate functions: `format_route_statuses` omits bodies
+for the attachment path, where S3 quotes the bearer token back in full;
 `format_route_statuses_and_bodies` keeps them for the API paths, where
 the proxy's 403 names itself as the refuser.
+
+ADOPTING.md claimed everything but `gh` keeps the proxy; these scripts
+don't, shim or no shim, and it now says so.
 
 Fixes #24
 
