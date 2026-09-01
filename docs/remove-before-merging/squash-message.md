@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-docs: never resolve GitHub comment threads (pr #26)
+fix: never resolve GitHub comment threads (pr #26)
 ```
 
 ```
