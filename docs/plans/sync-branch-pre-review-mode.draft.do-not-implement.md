@@ -40,11 +40,13 @@ Add a second mode to `/sync-branch`, selected by an explicit flag:
 The flag is a token in the argument, order-insensitive against the optional
 `<branch>` target, exactly as `/finalize` treats `no vet` alongside its target.
 
-**The premise is verified, not taken on the operator's word.** Invoking the mode
-is a claim about the world ("nobody has reviewed this yet"), and the operator
-can be wrong — a reviewer may have left a review five minutes ago. So the mode
-opens with a gate that checks it, and refuses rather than silently destroying
-review anchoring.
+**The premise is checked, not taken on the invocation's word.** Invoking the
+mode is a claim about the world ("nobody has reviewed this yet"), and the
+operator can be wrong — a reviewer may have left a review five minutes ago. So
+the mode opens with a gate that checks it and stops by default. The gate is
+overridable, because the operator sometimes knows something the API doesn't (the
+review is their own, or the reviewer asked for the rebase) — but the override is
+theirs to give, not the agent's to assume.
 
 ## Files to change
 
@@ -71,6 +73,12 @@ so the invariants can be scoped against it:
 - *pre-review* — legible-first-diff mode. Preconditions, the rewrite it
   performs, and what it costs (every branch SHA changes; anyone holding the
   branch must reset).
+- **One line disambiguating this from `/implement`'s "never force-push".** That
+  rule governs the agent advancing a branch on its own initiative while the
+  operator reads it; `pre-review` is the operator asking for the rewrite, from
+  outside the implementation loop. Stating it here rather than editing
+  `/implement` keeps the clarification on the mode that needs it — see "Not in
+  scope" for why the reverse costs more.
 
 **`## Invariants` — scope the existing ones per mode rather than deleting them.**
 This is the delicate edit: the "never rebase" line is load-bearing for the
@@ -88,27 +96,44 @@ default path and must not weaken there. Rewrite the three invariants as:
   lease — the pinned form is what keeps the guard meaningful after a fetch.
 - *Never force-push a shared long-lived branch* — unchanged, and now doubles as a
   hard refusal condition for `pre-review`: the mode is for a feature branch with
-  a PR, not the trunk, a promotion branch, or anything others build on.
+  a PR, not the trunk, a promotion branch, or anything others build on. This one
+  is **not** overridable by the operator in-flight; it is the invariant the
+  override below explicitly does not reach.
 
 **New section: `## The pre-review gate`.** Three checks, run before touching git
-history. All are cheap; the first is the hard one:
+history. All are cheap; the first is the one with judgment in it:
 
 1. **No review exists** — `gh pr view --json reviews,reviewDecision,isDraft`. Any
    entry in `reviews` authored by someone other than the PR author means a human
-   (or a review bot) has anchored feedback to the current SHAs. → **Refuse**,
-   name the reviewers, and tell the operator to run the default `/sync-branch`
-   instead. Do not offer to proceed anyway; a rebase past this point orphans
-   exactly the thing the operator would want to keep.
+   (or a review bot) has anchored feedback to the current SHAs. → **Stop and
+   report**: name the reviewers and what a rebase would de-anchor, and offer the
+   default merge mode. This is a stop, not a hard refusal — see the override
+   below.
 2. **Not a shared long-lived branch** — the branch has an open PR and is not the
    resolved target itself, the repo default branch, or a promotion branch. →
-   **Refuse** otherwise.
+   **Refuse** otherwise. Not overridable.
 3. **Draft state** — advisory only, not a gate. A non-draft PR means review has
    been *invited* even if nobody has looked; report it in the run's output so the
    operator sees what state they rebased in, and continue.
 
 Conversation comments are deliberately **not** a gate: the PR already carries our
 own `Proposed squash title/body:` and attestation comments, so treating comments
-as review would refuse on every PR the loop itself produced.
+as review would stop on every PR the loop itself produced.
+
+**Sub-section: `### Overriding check 1`.** The reviews check protects the
+operator from a fact they may not have; it does not overrule them once they have
+it. Proceed past it when **either**:
+
+- the invocation already carries a rationale for rebasing despite the reviews
+  (e.g. `/from-branch <pr> /sync-branch pre-review — rebase, the only review is
+  my own`), which pre-empts the round-trip entirely; **or**
+- the operator, shown the stop and the named reviewers, says to go ahead anyway.
+
+Bare repetition of the flag after a stop counts as insisting. What does **not**
+count is the agent deciding the reviews look ignorable — the override is the
+operator's to give. When taken, the report must name every review that got
+de-anchored, so the operator can tell those reviewers rather than discovering it
+from a silent diff. Check 2 stays unreachable by any of this.
 
 **`## Steps` — branch Step 3 onward by mode.** Steps 1–2 (`/check-merge`
 delegation, act on the result) are mode-independent and stay as they are.
@@ -158,7 +183,7 @@ delegation, act on the result) are mode-independent and stay as they are.
   range, the **pre-rebase tip** (the revert target — load-bearing here in a way it
   isn't for a merge, since the old history is otherwise unreachable), the
   per-commit conflict/resolution table, the vet result, the draft-state advisory,
-  and the recourse.
+  any reviews de-anchored by an override, and the recourse.
 
 **`## Why one merge commit keeps reviewability`.** Keep it as-is and re-title it
 so it reads as the default mode's rationale rather than the skill's — then add a
@@ -174,23 +199,14 @@ then `git push --force-with-lease` — and note that this mode is *already* a
 sanctioned force-push, so the "only sanctioned force-push here" line moves to
 being about the shared-branch prohibition rather than a blanket count.
 
-### 2. `.claude/skills/implement/SKILL.md` — resolve the contradiction
-
-Line 62 reads **"Never force-push."** as an unqualified rule, and `/implement`
-drives exactly the branches `pre-review` targets. Left alone, an agent running
-both would have to adjudicate the conflict mid-run. Add one sentence carving out
-the operator-invoked mode by name, keeping the rule's default force intact: the
-prohibition is on *you* rewriting history the operator is reading, not on the
-operator asking for a rewrite.
-
-### 3. `docs/catalog.md` — the `/sync-branch` row
+### 2. `docs/catalog.md` — the `/sync-branch` row
 
 The "What it does" cell currently ends at "in one merge commit", which is now
 only the default. Rewrite the one-liner to cover both modes. Requires and Pulls
 in are unchanged (`gh`, `scripts/vet.sh`; `/check-merge`) — the gate uses the
 `gh` that is already declared.
 
-### 4. Verification
+### 3. Verification
 
 `bash scripts/check-skill-catalog.sh` — no skill is added or renamed, so this is
 a regression check that the edits didn't dangle an `@`-reference or disturb the
@@ -199,6 +215,16 @@ one-row-per-skill invariant. `./scripts/vet.sh` is a stub in this repo (exits
 
 ## Explicitly not in scope
 
+- **`/implement` is not edited.** Its unqualified "never force-push" cannot
+  actually collide with this mode: `/implement` never invokes `/sync-branch`
+  (only `/from-branch` and the operator do), and the rule is scoped to its own
+  Step 2 loop — the agent advancing a branch while the operator reads it — which
+  `pre-review` sits outside by construction. Editing it would also give
+  `/implement` a new **Pulls in** edge on `/sync-branch` in `docs/catalog.md`
+  that every adopter then has to resolve. The residual case (a session that ran
+  `/implement` still holding its text in context when a sync is later requested)
+  is handled by the one disambiguating line in `## Modes` above, which adds no
+  cross-skill reference.
 - **`/finalize` Step 2 stays a merge.** By the time `/finalize` runs, the branch
   is being flipped to ready and is about to be reviewed or merged — the moment
   rebasing stops being cheap. Adding a rebase path there would put the rewrite
@@ -226,16 +252,20 @@ one-row-per-skill invariant. `./scripts/vet.sh` is a stub in this repo (exits
   `/check-merge`, and this change reuses them untouched. Both modes enter at the
   same Step 1 and act on the same five outcomes; the mode only decides what
   Step 3 does with an `advanced` result. No new detection logic is written.
-- **The verification step is shared, with one addition, not forked.** Steps 4's
+- **The verification step is shared, with one addition, not forked.** Step 4's
   marker grep and `./scripts/vet.sh` are identical in both modes; only the
   commit-count check is `pre-review`-only. Keeping Step 4 as one section with a
   single conditional line beats two near-identical verify sections.
+- **The force-push rule is stated once, in `/sync-branch`, not mirrored into
+  `/implement`.** Two copies of a force-push policy in two skills is exactly the
+  duplication that drifts, and the mirror would buy a catalog edge for a
+  collision that cannot occur — see "Not in scope".
 - **The `gh` review lookup is not extracted into a script.** It is one
   `gh pr view --json reviews,reviewDecision,isDraft` call used at exactly one
   call site. `scripts/check-merge.sh` exists because its logic is multi-step,
   exit-code-encoded, and invoked from three skills; a single `gh` call with a
-  refusal attached has none of those properties, and giving it a script would
-  add a file, a catalog row and an adoption decision to buy nothing.
+  stop attached has none of those properties, and giving it a script would add a
+  file, a catalog row and an adoption decision to buy nothing.
 - **No shared "modes" abstraction across skills.** `/finalize` (`no vet`),
   `/squash-message` (`update-only`), `/branch-rename` (`force`) and now
   `/sync-branch` (`pre-review`) all take a flag token, but they are prose
@@ -246,12 +276,12 @@ one-row-per-skill invariant. `./scripts/vet.sh` is a stub in this repo (exits
 ## Rejected alternatives
 
 **Auto-detecting the mode** (rebase whenever the PR is draft with no reviews,
-merge otherwise) was considered and dropped. It reads as an ergonomic win, but it
-makes the destructive path the *implicit* one: an operator running a routine
-`/sync-branch` would get a force-push and rewritten SHAs without having asked,
-and the heuristic's inputs (draft state, review presence) can change between the
-check and the push. The one-line cost of typing `pre-review` buys an explicit,
-attributable decision, which is the right trade for an irreversible-from-the-remote
-operation. `rebase`-only as the flag name was also dropped: it names the mechanism
-rather than the condition that makes the mechanism safe, and the condition is the
-part an agent needs to check.
+merge otherwise) was considered and dropped: it makes the destructive path the
+implicit one, and the heuristic's inputs can change between the check and the
+push. **`rebase` as the canonical flag name** was dropped because it names the
+mechanism rather than the condition that makes the mechanism safe, and the
+condition is the part an agent needs to check — it survives as an alias. **A hard,
+un-overridable refusal when reviews exist** was dropped because the operator
+sometimes holds a fact the API doesn't (the review is their own, the reviewer
+asked for the rebase); the stop-then-override shape keeps the protection without
+making the agent the final word.
