@@ -106,7 +106,7 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | `/sync-branch` | Bring a branch up to date with its merge target, resolving mechanically and logically in one merge commit. | `gh`, `scripts/vet.sh` | `/check-merge` | adopt |
 | `scripts/check-merge.sh` | The git/GitHub polling behind `/check-merge`. | `gh`, `jq`, `git` | — | adopt |
 | `scripts/pr-body.py` | Pull a PR body to `docs/pr/<n>/body.md` for local editing and PATCH it back. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` | — | adopt |
-| `scripts/lib/github.py` | Shared GitHub plumbing for the stdlib-only Python scripts: token resolution, `origin` repo detection, and the `die` they report through. | `python3` ≥3.9 | — | adopt |
+| `scripts/lib/github.py` | Shared GitHub plumbing for the stdlib-only Python scripts: the proxy-then-direct `fetch` ladder every request goes through, token resolution, `origin` repo detection, and the `die` they report through. | `python3` ≥3.9 | — | adopt |
 | `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | — | **rewrite** |
 | `scripts/run-parallel.sh` | Optional helper for `scripts/vet.sh`: run the checks concurrently, print output only for the ones that failed, and name files an autofix step rewrote. POSIX `sh`. | `sh`; `git` for the autofix check only | — | adopt |
 

@@ -1,46 +1,33 @@
 Proposed squash title/body:
 
 ```
-feat: #24 route the stdlib scripts around a proxy that refuses api.github.com (pr #25)
+fix: #24 route the stdlib scripts around a proxy that refuses api.github.com (pr #25)
 ```
 
 ```
 `export-github-item.py` and `pr-body.py` reached the GitHub API through
 a bare `urlopen`, which honors `HTTPS_PROXY`. A Claude Code remote
-session's egress proxy refuses `api.github.com` with its own synthetic
-403 — independent of the URL shape, the token and the User-Agent — so
-the first API call killed both scripts outright, and the only way to run
-either was to prefix it with `env -u HTTPS_PROXY`. The proxy-then-direct
-ladder that works around exactly this already existed in the exporter,
-scoped to attachment downloads.
+session's egress proxy refuses `api.github.com` with its own 403, so the
+first API call killed both scripts outright and the only way to run
+either was under `env -u HTTPS_PROXY`.
 
-The ladder moves into `scripts/lib/github.py` and now serves all three
-call sites — the exporter's API reads, its attachment downloads, and
-`pr-body.py`'s REST calls — through one `fetch` that owns both the walk
-and the accumulation of each rung's refusal. Rung one is still the
-proxy-honoring opener, so a session where the proxy is the only route
-out is unaffected. The accepted cost is that a genuine error now makes
-each request twice before reporting; that was already the attachment
-path's behavior, and it only happens on the failure path.
+The proxy-then-direct ladder that works around this already existed in
+the exporter, scoped to attachment downloads. It moves into
+`scripts/lib/github.py` and now serves all three call sites through one
+`fetch`. The proxy rung is still first, so a session where the proxy is
+the only route out is unaffected; the cost is a second request per rung,
+on the failure path only.
 
-`fetch` takes a request *factory*, not a `Request`, and that is load
-bearing rather than stylistic: `ProxyHandler.proxy_open` calls
-`req.set_proxy(...)`, which rewrites the request's host in place, so a
-single `Request` reused across the ladder aims at the proxy on every
-rung and every later route fails identically to the first. Anything that
-"simplifies" the factory back into a plain argument silently collapses
-the ladder to one rung.
+Two shapes are load bearing. `fetch` takes a request *factory* because
+`ProxyHandler.proxy_open` rewrites a request's host in place — reuse one
+`Request` and every rung aims at the proxy. And the failure renderings
+are two functions rather than one with a flag: `format_route_statuses`
+omits bodies for the attachment path, where S3 quotes the offending
+header back — the bearer token in full — while
+`format_route_statuses_and_bodies` keeps them for the API paths, where
+the proxy's 403 names itself as the refuser.
 
-How a failure is rendered depends on what the remote echoes back, so the
-two renderings are separate functions rather than one with a flag.
-`format_route_statuses` emits status lines only, for the attachment
-path: S3 rejects a download by quoting the offending header, which is
-the bearer token in full. `format_route_statuses_and_bodies` adds the
-bodies for the API paths, where they are the whole diagnostic — the
-proxy's 403 names itself as the refuser, which its status alone does
-not.
-
-Closes #24
+Fixes #24
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 ```
