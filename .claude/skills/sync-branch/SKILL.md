@@ -201,6 +201,7 @@ worth nothing once history has already moved. Then:
 git fetch origin <target>
 PRE_REBASE_TIP=$(git rev-parse HEAD)                    # revert target
 PRE_REBASE_REMOTE_SHA=$(git rev-parse origin/<branch>)  # the Step 5 lease pin
+PRE_REBASE_BASE=$(git merge-base HEAD origin/<target>)  # the Step 4 count anchor
 git rebase origin/<target>
 ```
 
@@ -229,10 +230,11 @@ pulled in changes on a surface the vet run doesn't cover (a bucket that only run
 CI), dispatch that bucket too — `/test-on-gh`, if the project has hydrated it.
 
 In `pre-review` mode, one check more: **no branch commit vanished.** Compare
-`git rev-list --count $PRE_REBASE_TIP ^<the target tip the branch was on before>`
-against `git rev-list --count HEAD ^origin/<target>`. A rebase legitimately drops
-commits it finds already upstream by patch-id, so a mismatch is not automatically a
-bug — but it must be **explained before pushing**, never noticed afterwards.
+`git rev-list --count $PRE_REBASE_TIP ^$PRE_REBASE_BASE` — the branch's own commits
+before the replay — against `git rev-list --count HEAD ^origin/<target>` after it. A
+rebase legitimately drops commits it finds already upstream by patch-id, so a
+mismatch is not automatically a bug, but it must be **explained before pushing**,
+never noticed afterwards.
 
 ### Step 5 — Push, then report for after-the-fact review
 
@@ -273,13 +275,14 @@ by resetting the branch to the reported pre-merge tip and re-pushing.
 git reset --hard <pre-rebase-tip>
 ```
 
-Either way the re-push is:
+Either way the re-push is a lease pinned to the SHA the sync reported as pushed —
+the same pinned form the invariants require, for the same reason: a fetch re-arms a
+bare `--force-with-lease` against whatever the remote holds now.
 
 ```bash
-git push --force-with-lease
+git push --force-with-lease=<branch>:<the SHA the sync reported>
 ```
 
-Use `--force-with-lease` (not `--force`) so a concurrent advance aborts instead of
-being clobbered. The prohibition this is an exception to is the **shared
-long-lived branch** one above: a force-push there needs the operator's explicit
-say-so, whichever mode produced the state being undone.
+The prohibition this is an exception to is the **shared long-lived branch** one
+above: a force-push there needs the operator's explicit say-so, whichever mode
+produced the state being undone.
