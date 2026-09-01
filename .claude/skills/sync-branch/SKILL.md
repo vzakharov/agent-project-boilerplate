@@ -27,9 +27,8 @@ after the fact rather than through a pre-push gate.
   shape `/check-merge` and `/finalize` accept. Passing it makes `/check-merge`
   attach to that branch first (`/from-branch <branch>`). No argument → sync the
   current branch.
-- **`pre-review`** (optional flag): rebase instead of merging. Reach for it when
-  the next person to open the PR will be seeing it for the first time, so
-  `origin/<target>..HEAD` should hold the branch's own commits and nothing else.
+- **`pre-review`** (optional flag): rebase instead of merging — reach for it when
+  the next person to open the PR will be seeing it for the first time.
   `rebase` is an accepted spelling. The flag is a token in the argument and is
   order-insensitive against `<branch>`, exactly as `/finalize` treats `no vet`
   alongside its target.
@@ -225,7 +224,7 @@ git grep -nE '^(<<<<<<<|>>>>>>>) ' || echo clean     # no conflict markers survi
 
 Fix real errors before pushing. **Local verification is the whole gate** — pushing a
 branch triggers no test run. That is why the full vet run happens here and not just a
-type-check: a merge can type-check cleanly and still behave differently. If the sync
+type-check: a sync can type-check cleanly and still behave differently. If the sync
 pulled in changes on a surface the vet run doesn't cover (a bucket that only runs in
 CI), dispatch that bucket too — `/test-on-gh`, if the project has hydrated it.
 
@@ -257,9 +256,8 @@ to `--force`. Then report:
 - the conflict/resolution table — per file under a merge, per replayed commit under
   a rebase (or "clean, no resolution needed"),
 - the vet result, plus the commit-count reconciliation in `pre-review` mode,
-- the **pre-merge / pre-rebase branch tip**, the revert target for the recourse
-  below. It is load-bearing under `pre-review` in a way it isn't for a merge: once
-  the branch is force-pushed, the old history has no other name.
+- the **pre-merge / pre-rebase branch tip** — the revert target for the recourse
+  below, and under `pre-review` the only name the pre-rebase history still has,
 - **`pre-review` only:** the PR's draft state at the time of the rebase, and every
   review de-anchored if check 1 was overridden,
 - the recourse below.
@@ -275,9 +273,7 @@ by resetting the branch to the reported pre-merge tip and re-pushing.
 git reset --hard <pre-rebase-tip>
 ```
 
-Either way the re-push is a lease pinned to the SHA the sync reported as pushed —
-the same pinned form the invariants require, for the same reason: a fetch re-arms a
-bare `--force-with-lease` against whatever the remote holds now.
+Either way the re-push takes the pinned lease the invariants require:
 
 ```bash
 git push --force-with-lease=<branch>:<the SHA the sync reported>
