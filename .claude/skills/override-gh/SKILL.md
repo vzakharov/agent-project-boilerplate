@@ -6,4 +6,6 @@ This skill is a no-op marker. Its sole purpose is the description above — surf
 
 **`gh` already bypasses the egress proxy.** In remote/web sessions the SessionStart hook (`.claude/hooks/session-start.sh`) installs a `gh` shim at `$HOME/.local/bin/gh` (first on `PATH`) that runs the real binary under `env -u HTTPS_PROXY -u https_proxy`. The agent proxy's egress policy blocks some `api.github.com` operations — notably long-polling ones like `gh run watch` — so without this, simple actions (watching a CI run, the `/watch-ci` and `/finalize` flows, `scripts/ci-watch-tick.sh`) stall. With the shim, just call `gh` normally — no `env -u …` prefix needed, the unproxying is transparent and applies to every `gh` invocation (scripts, skills, ad-hoc). git keeps the proxy.
 
+**The stdlib Python scripts carry their own way around it.** `scripts/export-github-item.py` and `scripts/pr-body.py` route every request through `lib.github.fetch`, which tries the proxy first and falls back to a direct connection — so they need no shim and no `env -u` prefix either.
+
 Take no action when invoked.

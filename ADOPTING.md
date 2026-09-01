@@ -147,7 +147,10 @@ case for it:
   surface, which is what breaks the skills — not a security property you would
   want to preserve.
 - The shim scopes the unproxying to `gh`, which talks only to GitHub hosts. git
-  keeps the proxy. Everything else keeps the proxy.
+  keeps the proxy, and so does everything else bar one: the stdlib Python
+  scripts try the proxy first and fall back to a direct GitHub connection per
+  request, so they carry the token past the proxy whether or not you take the
+  shim.
 - It is checked-in, reviewable configuration owned by the repo, not a runtime
   argument you are being talked into.
 
