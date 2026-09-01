@@ -86,12 +86,10 @@ def _host(url: str) -> str:
 def _openers() -> list[urllib.request.OpenerDirector]:
     """Proxy-honoring opener first, then one that bypasses the proxy.
 
-    Claude Code's remote-session egress proxy refuses `api.github.com` outright,
-    and on `github.com` admits only repository-scoped paths — so
-    `github.com/user-attachments/…` is 403 too — while a direct connection to
-    either host succeeds. That is also why `.claude/hooks/session-start.sh` shims
-    `gh` around it. Keeping the proxy-honoring opener first means an environment
-    where the proxy is the only route out still works.
+    Claude Code's remote-session egress proxy refuses `api.github.com` outright
+    and admits only repository-scoped paths on `github.com`, while a direct
+    connection to either host succeeds. The order is load-bearing: it keeps an
+    environment where the proxy is the only route out working.
     """
     return [
         urllib.request.build_opener(_DropAuthOnHostChange),
@@ -104,9 +102,8 @@ def _openers() -> list[urllib.request.OpenerDirector]:
 class RouteFailure(NamedTuple):
     """One rung's refusal; `body` is `""` when the failure carried none.
 
-    Both fields are captured eagerly at the point of failure: an `HTTPError`'s
-    body is readable exactly once, off a file object whose lifetime does not
-    survive the rest of the ladder.
+    Captured eagerly: an `HTTPError`'s body reads exactly once, off a file
+    object that does not outlive the rung.
     """
 
     status: str
@@ -116,8 +113,8 @@ class RouteFailure(NamedTuple):
 class AllRoutesFailed(Exception):
     """Every rung of the ladder refused one request.
 
-    `str()` renders the statuses only. Bodies stay on `failures` so a call site
-    opts into them by choosing a formatter below.
+    `str()` renders the statuses only; `failures` carries the bodies, so a call
+    site opts into them via `format_route_statuses_and_bodies`.
     """
 
     def __init__(self, failures: list[RouteFailure]) -> None:
@@ -126,22 +123,21 @@ class AllRoutesFailed(Exception):
 
 
 def format_route_statuses(failures: list[RouteFailure]) -> str:
-    """Render the rungs' status lines in ladder order, and nothing else.
+    """Every rung's status, in ladder order, and nothing else.
 
-    The rendering for a remote that echoes request headers back: S3 rejects an
-    attachment download by quoting the offending header, i.e. the bearer token
-    in full, so its body must never reach a message.
+    Required wherever the remote echoes request headers back: S3 rejects an
+    attachment download by quoting the offending header — the bearer token in
+    full — so its body must never reach a message.
     """
     return "; then ".join(f.status for f in failures)
 
 
 def format_route_statuses_and_bodies(failures: list[RouteFailure]) -> str:
-    """Render each rung as its status plus its response body, in ladder order.
+    """Every rung's status and response body, one per line, in ladder order.
 
-    Only for a remote that answers with its own JSON: the proxy and
-    `api.github.com` both do, and their two bodies are the whole diagnostic —
-    `403 "GitHub access is not enabled for this session"` then `404 Not Found`
-    reads very differently from either half alone.
+    Safe only where the remote answers with its own JSON, as the proxy and
+    `api.github.com` do — and there the body is the diagnostic: the proxy's 403
+    names itself as the refuser, which its status alone does not.
     """
     return "\n".join(
         f"- {f.status}: {f.body.strip()}" if f.body.strip() else f"- {f.status}"
@@ -152,12 +148,12 @@ def format_route_statuses_and_bodies(failures: list[RouteFailure]) -> str:
 def fetch(
     build_request: Callable[[], urllib.request.Request],
 ) -> tuple[bytes, dict[str, str]]:
-    """Walk the opener ladder, returning the first success as (body, headers).
+    """Walk the opener ladder; return the first success as (body, headers).
 
-    Takes a factory rather than a `Request` because `ProxyHandler.proxy_open`
-    calls `req.set_proxy(...)`, which rewrites the request's host in place: a
-    `Request` that has been through the proxy rung aims at the proxy on every
-    later rung too. Building one per rung is what keeps the direct route direct.
+    Takes a factory, not a `Request`: `ProxyHandler.proxy_open` rewrites the
+    request's host in place, so one `Request` reused across rungs aims at the
+    proxy on every rung. Building one per rung is what keeps the direct rung
+    direct.
     """
     failures: list[RouteFailure] = []
     for opener in _openers():

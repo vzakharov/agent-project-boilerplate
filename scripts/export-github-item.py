@@ -210,11 +210,10 @@ def extension_for_bytes(buf: bytes, content_type: str | None) -> str:
 
 
 class AttachmentDownloadError(Exception):
-    """Every opener failed for one attachment.
+    """Every route failed for one attachment.
 
-    The message carries each attempt's status line and nothing else: S3's
-    rejection body echoes the offending header value — i.e. the bearer token in
-    full — so no response body ever reaches it.
+    Built from `format_route_statuses` — see there for why no response body may
+    reach this message.
     """
 
 
