@@ -33,11 +33,12 @@ from pathlib import Path
 from typing import Any
 
 from lib.github import (
+    GITHUB_API_VERSION,
     AllRoutesFailed,
     detect_origin_repo,
     die,
     fetch,
-    format_route_failures,
+    format_route_statuses_and_bodies,
     gh_token,
 )
 
@@ -96,7 +97,7 @@ def api(path: str, token: str, method: str = "GET", payload: Any = None) -> Any:
                 "Authorization": f"Bearer {token}",
                 "Accept": "application/vnd.github+json",
                 "Content-Type": "application/json",
-                "X-GitHub-Api-Version": "2022-11-28",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
                 "User-Agent": USER_AGENT,
             },
         )
@@ -106,7 +107,7 @@ def api(path: str, token: str, method: str = "GET", payload: Any = None) -> Any:
         # never reached GitHub, and a body PATCH is idempotent under a repeat.
         body, _ = fetch(build)
     except AllRoutesFailed as exc:
-        die(f"{method} {path} failed:\n{format_route_failures(exc.failures)}")
+        die(f"{method} {path} failed:\n{format_route_statuses_and_bodies(exc.failures)}")
     return json.loads(body)
 
 

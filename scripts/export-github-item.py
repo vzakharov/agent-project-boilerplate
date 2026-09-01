@@ -33,11 +33,13 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 from lib.github import (
+    GITHUB_API_VERSION,
     AllRoutesFailed,
     detect_origin_repo,
     die,
     fetch,
-    format_route_failures,
+    format_route_statuses,
+    format_route_statuses_and_bodies,
     gh_token,
 )
 
@@ -112,7 +114,7 @@ def _request(url: str, token: str, accept: str) -> tuple[bytes, dict[str, str]]:
             headers={
                 "Authorization": f"Bearer {token}",
                 "Accept": accept,
-                "X-GitHub-Api-Version": "2022-11-28",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
                 "User-Agent": USER_AGENT,
             },
         )
@@ -221,7 +223,7 @@ def download_asset(url: str, dest: Path, token: str) -> str:
         buf, headers = _request(url, token, "application/octet-stream")
     except AllRoutesFailed as exc:
         raise AttachmentDownloadError(
-            "; then ".join(f.status for f in exc.failures)
+            format_route_statuses(exc.failures)
         ) from exc
 
     ext = extension_for_bytes(buf, headers.get("content-type"))
@@ -554,7 +556,7 @@ def main() -> None:
     except AllRoutesFailed as exc:
         die(
             f"GitHub API request for #{number} failed on every route:\n"
-            f"{format_route_failures(exc.failures)}"
+            f"{format_route_statuses_and_bodies(exc.failures)}"
         )
 
     out_dir = (DOCS_PR_ROOT if is_pr else DOCS_ISSUE_ROOT) / str(number)

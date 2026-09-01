@@ -23,6 +23,10 @@ import urllib.parse
 import urllib.request
 from typing import Callable, NamedTuple, NoReturn
 
+# Both scripts pin the same REST API version, and a bump has to move them
+# together — unlike `USER_AGENT`, which is deliberately per-script.
+GITHUB_API_VERSION = "2022-11-28"
+
 
 def die(msg: str, code: int = 1) -> NoReturn:
     print(msg, file=sys.stderr)
@@ -112,24 +116,32 @@ class RouteFailure(NamedTuple):
 class AllRoutesFailed(Exception):
     """Every rung of the ladder refused one request.
 
-    `str()` renders the status lines only. Bodies stay on `failures` so a call
-    site opts into them — the attachment path must not print them, because S3's
-    rejection echoes the offending header, i.e. the bearer token in full.
+    `str()` renders the statuses only. Bodies stay on `failures` so a call site
+    opts into them by choosing a formatter below.
     """
 
     def __init__(self, failures: list[RouteFailure]) -> None:
-        super().__init__("; then ".join(f.status for f in failures))
+        super().__init__(format_route_statuses(failures))
         self.failures = failures
 
 
-def format_route_failures(failures: list[RouteFailure]) -> str:
+def format_route_statuses(failures: list[RouteFailure]) -> str:
+    """Render the rungs' status lines in ladder order, and nothing else.
+
+    The rendering for a remote that echoes request headers back: S3 rejects an
+    attachment download by quoting the offending header, i.e. the bearer token
+    in full, so its body must never reach a message.
+    """
+    return "; then ".join(f.status for f in failures)
+
+
+def format_route_statuses_and_bodies(failures: list[RouteFailure]) -> str:
     """Render each rung as its status plus its response body, in ladder order.
 
-    Only for call sites whose remote answers with its own JSON: the proxy and
+    Only for a remote that answers with its own JSON: the proxy and
     `api.github.com` both do, and their two bodies are the whole diagnostic —
     `403 "GitHub access is not enabled for this session"` then `404 Not Found`
-    reads very differently from either half alone. The attachment path must not
-    use this; S3's rejection body quotes the bearer token back.
+    reads very differently from either half alone.
     """
     return "\n".join(
         f"- {f.status}: {f.body.strip()}" if f.body.strip() else f"- {f.status}"
