@@ -27,13 +27,21 @@ import json
 import os
 import re
 import sys
-import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any, NamedTuple
 
-from lib.github import detect_origin_repo, die, gh_token
+from lib.github import (
+    GITHUB_API_VERSION,
+    AllRoutesFailed,
+    detect_origin_repo,
+    die,
+    fetch,
+    format_route_statuses,
+    format_route_statuses_and_bodies,
+    gh_token,
+)
 
 ATTACHMENT_URL_RE = re.compile(
     r"https://(?:"
@@ -99,62 +107,18 @@ def parse_args(argv: list[str]) -> tuple[int, str]:
     return nums[0], repo_flag
 
 
-class _DropAuthOnHostChange(urllib.request.HTTPRedirectHandler):
-    """Strip `Authorization` when a redirect crosses to another host.
-
-    An attachment URL redirects to a pre-signed S3 URL, and S3 rejects a
-    request that carries both its signature and an `Authorization` header with
-    `400 InvalidArgument: Only one auth mechanism allowed`. urllib re-sends
-    every header across a redirect, so without this the download always fails.
-    """
-
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        new = super().redirect_request(req, fp, code, msg, headers, newurl)
-        if new is not None and _host(newurl) != _host(req.full_url):
-            new.remove_header("Authorization")
-        return new
-
-
-def _host(url: str) -> str:
-    return urllib.parse.urlsplit(url).netloc.lower()
-
-
-def _openers() -> list[urllib.request.OpenerDirector]:
-    """Proxy-honoring opener first, then one that bypasses the proxy.
-
-    Claude Code's remote-session egress proxy refuses
-    `github.com/user-attachments/…` with 403 — it admits only
-    repository-scoped paths on `github.com` — while a direct connection to
-    that same host succeeds, which is why `.claude/hooks/session-start.sh`
-    shims `gh` around it too. Keeping the proxy-honoring opener first means
-    an environment where the proxy is the only route out still works.
-    """
-    return [
-        urllib.request.build_opener(_DropAuthOnHostChange),
-        urllib.request.build_opener(
-            _DropAuthOnHostChange, urllib.request.ProxyHandler({})
-        ),
-    ]
-
-
-def _request(
-    url: str,
-    token: str,
-    accept: str,
-    opener: urllib.request.OpenerDirector | None = None,
-) -> tuple[bytes, dict[str, str]]:
-    req = urllib.request.Request(
-        url,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Accept": accept,
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": USER_AGENT,
-        },
+def _request(url: str, token: str, accept: str) -> tuple[bytes, dict[str, str]]:
+    return fetch(
+        lambda: urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": accept,
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
+                "User-Agent": USER_AGENT,
+            },
+        )
     )
-    open_url = opener.open if opener is not None else urllib.request.urlopen
-    with open_url(req) as resp:
-        return resp.read(), {k.lower(): v for k, v in resp.headers.items()}
 
 
 def api_json(path_or_url: str, token: str) -> tuple[Any, dict[str, str]]:
@@ -246,28 +210,20 @@ def extension_for_bytes(buf: bytes, content_type: str | None) -> str:
 
 
 class AttachmentDownloadError(Exception):
-    """Every opener failed for one attachment.
+    """Every route failed for one attachment.
 
-    The message carries each attempt's status line and nothing else: S3's
-    rejection body echoes the offending header value — i.e. the bearer token in
-    full — so no response body ever reaches it.
+    Built from `format_route_statuses` — see there for why no response body may
+    reach this message.
     """
 
 
 def download_asset(url: str, dest: Path, token: str) -> str:
-    buf: bytes | None = None
-    headers: dict[str, str] = {}
-    failures: list[str] = []
-    for opener in _openers():
-        try:
-            buf, headers = _request(url, token, "application/octet-stream", opener)
-            break
-        except urllib.error.HTTPError as exc:
-            failures.append(f"{exc.code} {exc.reason}")
-        except urllib.error.URLError as exc:
-            failures.append(str(exc))
-    if buf is None:
-        raise AttachmentDownloadError("; then ".join(failures))
+    try:
+        buf, headers = _request(url, token, "application/octet-stream")
+    except AllRoutesFailed as exc:
+        raise AttachmentDownloadError(
+            format_route_statuses(exc.failures)
+        ) from exc
 
     ext = extension_for_bytes(buf, headers.get("content-type"))
     write_path = dest if dest.suffix else (Path(str(dest) + ext) if ext else dest)
@@ -521,7 +477,9 @@ def comments_section(
 def header_section(item: dict[str, Any], pr: dict[str, Any] | None) -> str:
     labels = item.get("labels") or []
     labels_md = (
-        ", ".join(f"`{(l.get('name') or '')}`" for l in labels) if labels else "_none_"
+        ", ".join(f"`{(lab.get('name') or '')}`" for lab in labels)
+        if labels
+        else "_none_"
     )
     state_reason = item.get("state_reason") or ""
     state_suffix = f" ({state_reason})" if state_reason else ""
@@ -578,21 +536,27 @@ def main() -> None:
     token = gh_token()
     base = f"repos/{repo}/issues/{number}"
 
-    # The issues endpoint serves PRs too, and is the only one carrying the
-    # conversation comments and timeline.
-    item = api_get(base, token)
-    is_pr = item.get("pull_request") is not None
-    comments = api_paginated(f"{base}/comments", token)
-    timeline = api_paginated(f"{base}/timeline", token)
-
     pr: dict[str, Any] | None = None
     reviews: list[dict[str, Any]] = []
     review_comments: list[dict[str, Any]] = []
-    if is_pr:
-        pr_base = f"repos/{repo}/pulls/{number}"
-        pr = api_get(pr_base, token)
-        reviews = api_paginated(f"{pr_base}/reviews", token)
-        review_comments = api_paginated(f"{pr_base}/comments", token)
+    try:
+        # The issues endpoint serves PRs too, and is the only one carrying the
+        # conversation comments and timeline.
+        item = api_get(base, token)
+        is_pr = item.get("pull_request") is not None
+        comments = api_paginated(f"{base}/comments", token)
+        timeline = api_paginated(f"{base}/timeline", token)
+
+        if is_pr:
+            pr_base = f"repos/{repo}/pulls/{number}"
+            pr = api_get(pr_base, token)
+            reviews = api_paginated(f"{pr_base}/reviews", token)
+            review_comments = api_paginated(f"{pr_base}/comments", token)
+    except AllRoutesFailed as exc:
+        die(
+            f"GitHub API request for #{number} failed on every route:\n"
+            f"{format_route_statuses_and_bodies(exc.failures)}"
+        )
 
     out_dir = (DOCS_PR_ROOT if is_pr else DOCS_ISSUE_ROOT) / str(number)
     attachments_dir = out_dir / "attachments"
