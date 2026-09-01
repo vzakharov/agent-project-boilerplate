@@ -28,12 +28,18 @@ from __future__ import annotations
 import json
 import re
 import sys
-import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
 
-from lib.github import detect_origin_repo, die, gh_token
+from lib.github import (
+    AllRoutesFailed,
+    detect_origin_repo,
+    die,
+    fetch,
+    format_route_failures,
+    gh_token,
+)
 
 DOCS_PR_ROOT = Path("docs") / "pr"
 USER_AGENT = "pr-body.py"
@@ -80,23 +86,28 @@ def parse_args(argv: list[str]) -> tuple[str, int, str]:
 
 def api(path: str, token: str, method: str = "GET", payload: Any = None) -> Any:
     data = json.dumps(payload).encode() if payload is not None else None
-    req = urllib.request.Request(
-        f"https://api.github.com/{path.lstrip('/')}",
-        data=data,
-        method=method,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "Content-Type": "application/json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": USER_AGENT,
-        },
-    )
+
+    def build() -> urllib.request.Request:
+        return urllib.request.Request(
+            f"https://api.github.com/{path.lstrip('/')}",
+            data=data,
+            method=method,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "Content-Type": "application/json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "User-Agent": USER_AGENT,
+            },
+        )
+
     try:
-        with urllib.request.urlopen(req) as resp:
-            return json.loads(resp.read())
-    except urllib.error.HTTPError as exc:
-        die(f"{method} {path} failed: {exc.code} {exc.reason}\n{exc.read().decode(errors='replace')}")
+        # Re-issuing a PATCH on the direct route is safe: a rung that refused
+        # never reached GitHub, and a body PATCH is idempotent under a repeat.
+        body, _ = fetch(build)
+    except AllRoutesFailed as exc:
+        die(f"{method} {path} failed:\n{format_route_failures(exc.failures)}")
+    return json.loads(body)
 
 
 def body_file(pr: int) -> Path:
