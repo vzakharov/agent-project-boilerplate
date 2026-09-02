@@ -23,11 +23,10 @@ genuinely spans files, and must name that scope explicitly.
 Two sub-bullets carry the corollaries: a file-level suppression is the
 point-of-use form when every occurrence in the file shares one reason,
 and a permanent exemption states its invariant where a temporary one
-names the issue tracking its removal. The section is otherwise flat —
-the parent is already at its length bound and both corollaries are
-conditionals that read as run-ons inlined. No `.claude/rules/` file was
-added: rules load only when a matching path is touched, and this
-applies wherever a linter runs.
+names the issue tracking its removal. They nest where the rest of the
+section is flat because the parent already sits at its length bound. No
+`.claude/rules/` file was added: rules load only when a matching path is
+touched, and this applies wherever a linter runs.
 
 Closes #27
 
