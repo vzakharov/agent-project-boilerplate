@@ -34,14 +34,10 @@ Read/Edit/Write in every permission mode, and a hydrated /preview
 shoots every colour scheme the app serves rather than inheriting
 the machine's.
 
-The 711-line exporter splits into scripts/gh_export/ — one module each
-for argument parsing, the REST/GraphQL client, attachments, and the
-three renderers — along its own seams rather than upstream's, so a
-future port lands by hand and not by filename; the entrypoint keeps
-the path six skills name. The watermark advances to source HEAD rather
-than the last commit taken, so those four stay skipped; `.github/` is
-recorded as declined and the two TypeScript exporter modules as
-ported-by-hand, so neither comes back as an open question.
+The watermark advances to source HEAD rather than the last commit
+taken, so those four stay skipped; `.github/` is recorded as declined
+and the two TypeScript exporter modules as ported-by-hand, so neither
+comes back as an open question.
 
 Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_01NXJmidsm8VyZg5HGNL89qr
