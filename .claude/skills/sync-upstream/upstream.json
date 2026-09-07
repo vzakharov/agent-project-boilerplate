@@ -1,7 +1,7 @@
 {
   "repo": "Playgramai/playgramapp",
-  "lastSyncedSha": "dd0632d3e839ed7cac54e4c722bd26e1c76db2a6",
-  "lastSyncedAt": "2026-08-28",
+  "lastSyncedSha": "2e6902f30a0fe6df122a4ea1d4ef188ca2ea9041",
+  "lastSyncedAt": "2026-09-07",
   "adopted": [
     "CLAUDE.md",
     "README.md",
@@ -12,7 +12,15 @@
     },
     {
       "scripts/export-github-item.ts": "taken as a Python port, scripts/export-github-item.py — the algorithm tracks upstream, the HTTP client does not. undici strips Authorization across a cross-host redirect and ignores HTTPS_PROXY; stdlib urllib does neither, so _DropAuthOnHostChange and the proxy-bypass opener here answer failure modes upstream cannot have. Port behavior changes by hand — a file-level diff compares two languages and says nothing."
+    },
+    {
+      "scripts/gh-export/": "upstream's exporter is split across these modules; the Python port keeps the whole algorithm in the single scripts/export-github-item.py. Same standing as the export-github-item.ts note: read a commit here for the behavior change and port it by hand, never vendor the files."
+    },
+    {
+      "scripts/lib/gh-api.ts": "taken as scripts/lib/github.py, which shares only the job (one `gh`/HTTP wrapper for every stdlib script). Upstream shells out to `gh api`; the port speaks HTTP itself through the proxy-then-direct fetch ladder, so pagination and GraphQL are written differently by necessity."
     }
   ],
-  "declined": {}
+  "declined": {
+    ".github/": "the source's workflows are its own stack's — pnpm CI, a release gate, Railway deploys — and this repo ships no CI at all, leaving it to the adopting project: /test-on-gh and /bootstrap-workflow-dispatch are the stubs it hydrates against its own workflows. Re-offer any workflow that turns out to be stack-agnostic."
+  }
 }
