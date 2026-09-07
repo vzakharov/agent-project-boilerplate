@@ -8,7 +8,7 @@ Issues land in docs/issue/<n>/issue.md, pull requests in docs/pr/<n>/pr.md; both
 put downloaded attachments under <out-dir>/attachments/. A bare number works for
 either — the type comes from the API, not from the argument. A PR export also
 carries its review threads: review bodies, inline comments grouped into reply
-chains, and the diff hunk each chain hangs off.
+chains, the diff hunk each chain hangs off, and whether the reviewer resolved it.
 
 Exit status is non-zero when any attachment fails to download; the Markdown is
 still written, with the failed attachments still linked remotely.
@@ -155,6 +155,87 @@ def api_paginated(path: str, token: str) -> list[Any]:
         if not has_next_page(headers.get("link")):
             return items
         page += 1
+
+
+THREAD_RESOLUTION_QUERY = """
+query($owner: String!, $repo: String!, $pr: Int!, $cursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      reviewThreads(first: 100, after: $cursor) {
+        pageInfo { hasNextPage endCursor }
+        nodes {
+          isResolved
+          comments(first: 100) { nodes { databaseId } }
+        }
+      }
+    }
+  }
+}
+"""
+
+
+class GraphqlError(Exception):
+    """A GraphQL response carrying an `errors` array.
+
+    GitHub answers those with HTTP 200, so `fetch`'s ladder sees a success and
+    the payload has to be checked instead.
+    """
+
+
+def api_graphql(query: str, variables: dict[str, Any], token: str) -> Any:
+    """POST one GraphQL query and return its `data`.
+
+    Goes through `lib.github.fetch` rather than `gh api graphql` because the
+    remote-session proxy blocks most of `gh`'s GraphQL surface, while the
+    ladder's direct rung reaches `api.github.com`.
+    """
+    payload = json.dumps({"query": query, "variables": variables}).encode()
+    body, _ = fetch(
+        lambda: urllib.request.Request(
+            "https://api.github.com/graphql",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "Content-Type": "application/json",
+                "X-GitHub-Api-Version": GITHUB_API_VERSION,
+                "User-Agent": USER_AGENT,
+            },
+        )
+    )
+    parsed = json.loads(body)
+    if parsed.get("errors"):
+        raise GraphqlError(json.dumps(parsed["errors"]))
+    return parsed["data"]
+
+
+def fetch_thread_resolution(repo: str, number: int, token: str) -> dict[int, bool]:
+    """`isResolved` keyed by **every** comment id in the thread, not just its root.
+
+    Whether a reviewer resolved a thread is the one fact no REST comment payload
+    carries, hence the GraphQL read. The export reconstructs threads from REST
+    `in_reply_to_id` chains, which root on a different comment than GraphQL does
+    when the parent falls off the page — so every id in the thread maps to the
+    same verdict.
+    """
+    owner, name = repo.split("/", 1)
+    resolved_by_comment_id: dict[int, bool] = {}
+    cursor: str | None = None
+    while True:
+        data = api_graphql(
+            THREAD_RESOLUTION_QUERY,
+            {"owner": owner, "repo": name, "pr": number, "cursor": cursor},
+            token,
+        )
+        threads = data["repository"]["pullRequest"]["reviewThreads"]
+        for thread in threads["nodes"]:
+            for comment in thread["comments"]["nodes"]:
+                comment_id = comment.get("databaseId")
+                if comment_id is not None:
+                    resolved_by_comment_id[comment_id] = thread["isResolved"]
+        if not threads["pageInfo"]["hasNextPage"]:
+            return resolved_by_comment_id
+        cursor = threads["pageInfo"]["endCursor"]
 
 
 def has_next_page(link_header: str | None) -> bool:
@@ -400,10 +481,23 @@ def review_threads(comments: list[dict[str, Any]]) -> list[list[dict[str, Any]]]
     )
 
 
+def resolution_label(
+    chain: list[dict[str, Any]], resolved_by_comment_id: dict[int, bool]
+) -> str:
+    """A thread the resolution query didn't return reads as `resolution unknown`
+    rather than silently as open — a reader acts on this word."""
+    for comment in chain:
+        resolved = resolved_by_comment_id.get(comment.get("id"))
+        if resolved is not None:
+            return "resolved" if resolved else "unresolved"
+    return "resolution unknown"
+
+
 def review_section(
     reviews: list[dict[str, Any]],
     comments: list[dict[str, Any]],
     url_to_relative: dict[str, str],
+    resolved_by_comment_id: dict[int, bool],
 ) -> str:
     """Render review bodies and inline comment threads, or "" if there are none."""
     bodied = [r for r in reviews if (r.get("body") or "").strip()]
@@ -430,7 +524,8 @@ def review_section(
     for chain in threads:
         root = chain[0]
         line = root.get("line") or root.get("original_line") or "?"
-        chunks.extend([f"### `{root.get('path', '?')}`:{line}", ""])
+        label = resolution_label(chain, resolved_by_comment_id)
+        chunks.extend([f"### `{root.get('path', '?')}`:{line} — {label}", ""])
         hunk = root.get("diff_hunk")
         if hunk:
             chunks.extend(["```diff", hunk, "```", ""])
@@ -539,6 +634,7 @@ def main() -> None:
     pr: dict[str, Any] | None = None
     reviews: list[dict[str, Any]] = []
     review_comments: list[dict[str, Any]] = []
+    resolved_by_comment_id: dict[int, bool] = {}
     try:
         # The issues endpoint serves PRs too, and is the only one carrying the
         # conversation comments and timeline.
@@ -552,11 +648,14 @@ def main() -> None:
             pr = api_get(pr_base, token)
             reviews = api_paginated(f"{pr_base}/reviews", token)
             review_comments = api_paginated(f"{pr_base}/comments", token)
+            resolved_by_comment_id = fetch_thread_resolution(repo, number, token)
     except AllRoutesFailed as exc:
         die(
             f"GitHub API request for #{number} failed on every route:\n"
             f"{format_route_statuses_and_bodies(exc.failures)}"
         )
+    except GraphqlError as exc:
+        die(f"GitHub GraphQL query for #{number}'s review threads failed: {exc}")
 
     out_dir = (DOCS_PR_ROOT if is_pr else DOCS_ISSUE_ROOT) / str(number)
     attachments_dir = out_dir / "attachments"
@@ -586,7 +685,14 @@ def main() -> None:
         "---",
         "",
         comments_section(comments, url_to_relative),
-        *filter(None, [review_section(reviews, review_comments, url_to_relative)]),
+        *filter(
+            None,
+            [
+                review_section(
+                    reviews, review_comments, url_to_relative, resolved_by_comment_id
+                )
+            ],
+        ),
         timeline_section(timeline, noun),
     ]
     full_md = "\n".join(sections)
