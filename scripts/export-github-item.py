@@ -107,18 +107,19 @@ def parse_args(argv: list[str]) -> tuple[int, str]:
     return nums[0], repo_flag
 
 
-def _request(url: str, token: str, accept: str) -> tuple[bytes, dict[str, str]]:
-    return fetch(
-        lambda: urllib.request.Request(
-            url,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Accept": accept,
-                "X-GitHub-Api-Version": GITHUB_API_VERSION,
-                "User-Agent": USER_AGENT,
-            },
-        )
-    )
+def _request(
+    url: str, token: str, accept: str, data: bytes | None = None
+) -> tuple[bytes, dict[str, str]]:
+    """A `data` body makes it a POST, and the only bodies sent here are JSON."""
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": accept,
+        "X-GitHub-Api-Version": GITHUB_API_VERSION,
+        "User-Agent": USER_AGENT,
+    }
+    if data is not None:
+        headers["Content-Type"] = "application/json"
+    return fetch(lambda: urllib.request.Request(url, data=data, headers=headers))
 
 
 def api_json(path_or_url: str, token: str) -> tuple[Any, dict[str, str]]:
@@ -189,19 +190,11 @@ def api_graphql(query: str, variables: dict[str, Any], token: str) -> Any:
     remote-session proxy blocks most of `gh`'s GraphQL surface, while the
     ladder's direct rung reaches `api.github.com`.
     """
-    payload = json.dumps({"query": query, "variables": variables}).encode()
-    body, _ = fetch(
-        lambda: urllib.request.Request(
-            "https://api.github.com/graphql",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Accept": "application/vnd.github+json",
-                "Content-Type": "application/json",
-                "X-GitHub-Api-Version": GITHUB_API_VERSION,
-                "User-Agent": USER_AGENT,
-            },
-        )
+    body, _ = _request(
+        "https://api.github.com/graphql",
+        token,
+        "application/vnd.github+json",
+        data=json.dumps({"query": query, "variables": variables}).encode(),
     )
     parsed = json.loads(body)
     if parsed.get("errors"):
