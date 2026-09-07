@@ -38,6 +38,14 @@ Read/Edit/Write in every permission mode, and a hydrated /preview
 shoots every colour scheme the app serves rather than inheriting
 the machine's.
 
+The exporter, 711 lines carrying six concerns at once, splits into
+scripts/gh_export/ — argument parsing, the REST/GraphQL client,
+attachment download, and a renderer each for the header and comments,
+the review threads, and the timeline — along its own seams rather than
+upstream's, so a future port lands by hand and not by filename. The
+entrypoint keeps its path, which six skills name, and is now
+orchestration only.
+
 The watermark advances to source HEAD rather than the last commit
 taken, so the four skipped commits stay skipped; `.github/` is
 recorded as declined and the two TypeScript exporter modules as
