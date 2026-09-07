@@ -5,12 +5,8 @@ feat: add /handle, pause-able plans and resolved-thread export (pr #30)
 ```
 
 ```
-The agent infrastructure here is vendored from the repo it was
-extracted from, and /sync-upstream is what keeps that link live
-rather than a snapshot. Of the seven commits touching an adopted
-path since the last watermark, four were the source's own stack —
-env preflight, a CRM diagnostic, its nightly-alert plumbing, its
-Railway log scoping — and three carried something portable.
+One /sync-upstream pass carried these; four of the commits it triaged
+were the source's own stack and were skipped.
 
 /handle is a front-end over continuing an existing branch: it
 attaches, reads off whether the branch holds an unimplemented plan
@@ -38,16 +34,12 @@ Read/Edit/Write in every permission mode, and a hydrated /preview
 shoots every colour scheme the app serves rather than inheriting
 the machine's.
 
-The exporter, 711 lines carrying six concerns at once, splits into
-scripts/gh_export/ — argument parsing, the REST/GraphQL client,
-attachment download, and a renderer each for the header and comments,
-the review threads, and the timeline — along its own seams rather than
-upstream's, so a future port lands by hand and not by filename. The
-entrypoint keeps its path, which six skills name, and is now
-orchestration only.
-
-The watermark advances to source HEAD rather than the last commit
-taken, so the four skipped commits stay skipped; `.github/` is
+The 711-line exporter splits into scripts/gh_export/ — one module each
+for argument parsing, the REST/GraphQL client, attachments, and the
+three renderers — along its own seams rather than upstream's, so a
+future port lands by hand and not by filename; the entrypoint keeps
+the path six skills name. The watermark advances to source HEAD rather
+than the last commit taken, so those four stay skipped; `.github/` is
 recorded as declined and the two TypeScript exporter modules as
 ported-by-hand, so neither comes back as an open question.
 

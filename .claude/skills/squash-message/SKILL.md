@@ -174,10 +174,17 @@ intermediate steps and "added a test for it"; process meta; benefit padding; and
 the linked issue's own symptom and repro re-filed here, which `Closes #N` already
 points at.
 
-This is `@.claude/skills/tighten-docs/SKILL.md`'s **Lens B (bloat)** applied to a
-commit body. Its Lens A (narration) does **not** apply — narrating the change is
-a commit message's whole job, which is why that skill's Step 4 excludes commit
-messages and PR bodies from its own sweep.
+This is `@.claude/skills/tighten-docs/SKILL.md`'s **Lens A (existence)** and
+**Lens C (bloat)** applied to a commit body. Only its Lens B (narration) is
+inapplicable — narrating the change is a commit message's whole job, which is why
+that skill's Step 4 excludes commit messages and PR bodies from its own sweep.
+
+Lens A bites hardest on the **opening paragraph**, where a draft reliably reaches
+for standing context over this change's own reason: what the project is, what
+the tooling is for, how the work is normally done. A reader who wants that has
+the repo; what only this commit can tell them is why it exists. The same lens
+cuts an inventory of what the change **declined** to do — commits skipped,
+options rejected — which leaves no trace in the tree for the record to explain.
 
 Scope is the caller's call, not this step's, and it cuts both ways. If the project
 has hydrated a release lane, a release body is deliberately long (a paragraph per
