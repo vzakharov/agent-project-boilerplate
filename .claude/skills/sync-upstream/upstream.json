@@ -14,7 +14,7 @@
       "scripts/export-github-item.ts": "taken as a Python port, scripts/export-github-item.py — the algorithm tracks upstream, the HTTP client does not. undici strips Authorization across a cross-host redirect and ignores HTTPS_PROXY; stdlib urllib does neither, so _DropAuthOnHostChange and the proxy-bypass opener here answer failure modes upstream cannot have. Port behavior changes by hand — a file-level diff compares two languages and says nothing."
     },
     {
-      "scripts/gh-export/": "upstream's exporter is split across these modules; the Python port keeps the whole algorithm in the single scripts/export-github-item.py. Same standing as the export-github-item.ts note: read a commit here for the behavior change and port it by hand, never vendor the files."
+      "scripts/gh-export/": "upstream's exporter is split across these modules; the Python port splits too, as scripts/gh_export/ (underscore — a hyphen is not importable), but along its own module boundaries, so a change here rarely lands in the same-named file. Same standing as the export-github-item.ts note: read a commit here for the behavior change and port it by hand, never vendor the files."
     },
     {
       "scripts/lib/gh-api.ts": "taken as scripts/lib/github.py, which shares only the job (one `gh`/HTTP wrapper for every stdlib script). Upstream shells out to `gh api`; the port speaks HTTP itself through the proxy-then-direct fetch ladder, so pagination and GraphQL are written differently by necessity."
