@@ -179,7 +179,7 @@ This is `@.claude/skills/tighten-docs/SKILL.md`'s **Lens A (existence)** and
 inapplicable — narrating the change is a commit message's whole job, which is why
 that skill's Step 4 excludes commit messages and PR bodies from its own sweep.
 
-Three things fail Lens A no matter how well written they are:
+Three things a draft reaches for fail Lens A, however well written:
 
 - **Standing context**, which a draft reaches for in the opening paragraph —
   what the project is, what the tooling is for, how the work is normally done. A
@@ -188,10 +188,13 @@ Three things fail Lens A no matter how well written they are:
 - **An inventory of what the change declined to do** — commits skipped, options
   rejected. It leaves no trace in the tree for the record to explain.
 - **Internal restructuring that changed no behavior and no contract** — a split,
-  a move, a rename, a file that got smaller. The tree already shows where the
-  code lives; the record is for what a reader has to carry away before they open
-  it. Say it only where the arrangement is itself the point, as when a module
-  boundary is now load-bearing for someone extending it.
+  a move, a rename, a file that got smaller — **where it rides along with other
+  work**. The tree already shows where the code lives; the record is for what a
+  reader carries away before opening it. This is the one of the three with an
+  exception: where the restructuring is what the PR was *for*, it is the record,
+  and the body says why the old arrangement stopped holding and what the new one
+  buys — still not a module-by-module tour. The same goes for a new boundary
+  that is load-bearing for whoever extends it next.
 
 Scope is the caller's call, not this step's, and it cuts both ways. If the project
 has hydrated a release lane, a release body is deliberately long (a paragraph per
