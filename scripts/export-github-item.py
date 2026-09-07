@@ -23,7 +23,7 @@ The pieces live in `scripts/gh_export/`; running this file as
 both `gh_export` and `lib` resolve as PEP 420 namespace packages from any
 working directory — no `__init__.py`, no `sys.path` manipulation.
 
-Stdlib only — no third-party deps. Python 3.9+.
+Stdlib only — no third-party deps, here or under `gh_export/`. Python 3.9+.
 """
 
 from __future__ import annotations

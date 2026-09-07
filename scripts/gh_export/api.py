@@ -2,8 +2,6 @@
 
 Every request goes through `lib.github.fetch`, so both the proxy and the direct
 route are tried before anything is reported as failed.
-
-Stdlib only — no third-party deps. Python 3.9+.
 """
 
 from __future__ import annotations

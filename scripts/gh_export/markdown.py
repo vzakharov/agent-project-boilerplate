@@ -1,7 +1,5 @@
 """The sections every export carries: the header block and the conversation
 comments, plus the login helper the review and timeline renderers share.
-
-Stdlib only — no third-party deps. Python 3.9+.
 """
 
 from __future__ import annotations

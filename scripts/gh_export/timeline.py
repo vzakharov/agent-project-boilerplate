@@ -1,7 +1,4 @@
-"""The timeline section: one line per status, reference and other event.
-
-Stdlib only — no third-party deps. Python 3.9+.
-"""
+"""The timeline section: one line per status, reference and other event."""
 
 from __future__ import annotations
 

@@ -1,7 +1,4 @@
-"""Attachment discovery, download and link rewriting for the export.
-
-Stdlib only — no third-party deps. Python 3.9+.
-"""
+"""Attachment discovery, download and link rewriting for the export."""
 
 from __future__ import annotations
 

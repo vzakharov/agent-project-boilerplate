@@ -1,7 +1,4 @@
-"""Argument parsing for `scripts/export-github-item.py`.
-
-Stdlib only — no third-party deps. Python 3.9+.
-"""
+"""Argument parsing for `scripts/export-github-item.py`."""
 
 from __future__ import annotations
 

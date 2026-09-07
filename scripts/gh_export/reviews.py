@@ -1,7 +1,5 @@
 """The PR-only review section: review bodies, inline comment threads grouped
 into reply chains, and each thread's resolved state.
-
-Stdlib only — no third-party deps. Python 3.9+.
 """
 
 from __future__ import annotations
