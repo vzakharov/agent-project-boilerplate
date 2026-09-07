@@ -13,26 +13,30 @@ attaches, reads off whether the branch holds an unimplemented plan
 or unanswered review feedback, and runs that lane, with land-prep
 opt-in via `and finalize` anywhere in the argument. It owns only
 the fork — /from-branch attaches, both lanes land in /implement,
-/finalize land-preps. The plan lifecycle gains `*.paused.md` to
-make the plan lane readable: `*.in-progress.md` meant both "a
-session holds this now" and "resume here", so two sessions could
-claim one plan and overwrite each other's commits. It is a claim
-only, released as `*.paused.md` by a session told to stop partway,
-and /implement counts only actionable suffixes instead of stopping
-to ask on every sibling.
+/finalize land-preps. Its review lane has to know which threads are
+still open, so the PR export now labels each one resolved,
+unresolved or resolution-unknown, read from GraphQL because no REST
+comment payload carries it and keyed by every comment id in the
+thread. The plan lifecycle gains `*.paused.md` to make the plan lane
+readable: `*.in-progress.md` meant both "a session holds this now"
+and "resume here", so two sessions could claim one plan and
+overwrite each other's commits. It is a claim only, released as
+`*.paused.md` by a session told to stop partway, and /implement
+counts only actionable suffixes instead of stopping to ask on every
+sibling.
 
 /tighten-docs gains a lens ahead of its two — whether the prose
 should exist at all — carrying the ordered homes and the
 rule-vs-README test, plus a single-lens mode; CLAUDE.md keeps only
 the threshold and names the skill as the long version, since a rule
-loads in full every time its glob matches. The PR export now labels
-each review thread resolved, unresolved or resolution-unknown, read
-from GraphQL because no REST comment payload carries it and keyed
-by every comment id in the thread, which /handle's review lane
-selects on. Two conventions ride along: reads and edits stay on
-Read/Edit/Write in every permission mode, and a hydrated /preview
-shoots every colour scheme the app serves rather than inheriting
-the machine's.
+loads in full every time its glob matches. /squash-message imported
+those lenses by letter, so inserting one inverted its Step 3: that
+step now names existence and bloat as the two a commit body answers
+to, says what fails existence however well written, and exempts the
+refactor PR whose subject is the restructuring. Two conventions ride
+along: reads and edits stay on Read/Edit/Write in every permission
+mode, and a hydrated /preview shoots every colour scheme the app
+serves rather than inheriting the machine's.
 
 The watermark advances to source HEAD rather than the last commit
 taken, so those four stay skipped; `.github/` is recorded as declined
