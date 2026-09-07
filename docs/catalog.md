@@ -83,7 +83,7 @@ there is no condition under which it fails to apply.
 | `CLAUDE.md` | The always-loaded conventions: key principles, docstring policy, derive-types-from-source-of-truth, doc-sync rules, commit conventions. | — | — | adopt — **merge, don't overwrite** |
 | `.claude/rules/` | The path-scoped convention mechanism: a rule file loads only when a session touches the paths it declares. Ships with a README and no rules. | — | — | adopt |
 | `/dry` | Review the session's diff for DRY opportunities; apply the obvious wins, surface the ambiguous ones. | — | — | adopt |
-| `/tighten-docs` | Rewrite prose that narrates a change into present-tense contracts, and cut what names and types already say. | — | — | adopt |
+| `/tighten-docs` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
@@ -99,6 +99,7 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | `/pr` | Rename the auto-branch, push, open the draft PR, post the squash proposal. | `gh` | `/branch-rename`, `/implement`, `/qa-checklist`, `/squash-message` | adopt |
 | `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. | `gh`, `scripts/vet.sh` | `/check-merge`, `/from-branch`, `/plan`, `/squash-message`; **conditionally** `/issue` (G3), `/watch-ci` (G5) | adopt |
 | `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. | `gh` | `/finalize`, `/implement` | adopt |
+| `/handle` | Pick up a branch and do what it needs: attach, read off whether it carries an unimplemented plan or unanswered review feedback, run that lane, land-prep only if asked. | `gh`; `scripts/export-github-item.py` (G3) for the review lane's thread export | `/from-branch`, `/implement`, `/finalize` | adopt |
 | `/branch-rename` | Rename a harness auto-branch (`claude/<adjective>-<noun>-<hash>`) to a semantic name, keeping the random suffix. | `gh` | `/pr` | adopt |
 | `/squash-message` | Produce and post the copy-ready squash title/body for a PR; owns the format and the draft-then-tighten discipline. | `gh`, `jq` | `/tighten-docs` (G1) | adopt |
 | `/qa-checklist` | Generate a QA checklist from the branch's change and write it into the PR body, with each step classified for automatability. | `gh`, `python3` ≥3.9, `scripts/pr-body.py` | — | adopt |

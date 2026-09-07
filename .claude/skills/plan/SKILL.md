@@ -62,10 +62,11 @@ This gate applies to the **initial** transition from planning to implementing. O
 The plan file carries its state in its name, and moves through it by `git mv` (the base slug never changes):
 
 1. `docs/plans/<slug>.draft.do-not-implement.md` — written here, awaiting the operator's go-ahead.
-2. `docs/plans/<slug>.in-progress.md` — flipped as the first post-go-ahead action (above); `@.claude/skills/implement/SKILL.md` owns implementing against it.
-3. `docs/plans/<slug>.completed.md` — flipped by `/implement` once implementation and its quality passes are done, just before the draft PR.
+2. `docs/plans/<slug>.in-progress.md` — flipped as the first post-go-ahead action (above). **The name is a claim: a session has this plan open right now**, so it is not a file another session may pick up. `@.claude/skills/implement/SKILL.md` owns implementing against it, and owns the one escape hatch for a session that died still holding it.
+3. `docs/plans/<slug>.paused.md` — a session stopped partway, recorded what is done and what is left, and released the plan. This is the resumable state, and the one a later `/implement` continues from.
+4. `docs/plans/<slug>.completed.md` — flipped by `/implement` once implementation and its quality passes are done, just before the draft PR.
 
-Every state still matches `docs/plans/*.md`, so consumers that glob the directory (`/implement`, `/from-branch`, `/finalize`, `/tighten-docs`) keep working unchanged.
+Every state still matches `docs/plans/*.md`, so consumers that glob the directory (`/implement`, `/from-branch`, `/handle`, `/finalize`, `/tighten-docs`) keep working unchanged.
 
 The plan file is a working artifact, not a deliverable: it rides the branch for review but must **never land on the trunk**. `@.claude/skills/finalize/SKILL.md` deletes the entire `docs/plans/` tree in the last commit before `gh pr ready` (any suffix — `git rm -r docs/plans/`), so the add-then-delete pair cancels out in the squash — the same lifecycle as `docs/issue/`. Do **not** delete it yourself mid-task; leave that to finalization.
 
@@ -89,4 +90,4 @@ Then commit and push the rewritten plan (this refresh is explicitly wanted, so i
 
 This is a **web/remote-session** workaround, and it applies to **new** sessions — see CLAUDE.md ("Plan mode & questions in web sessions") for exactly when it's mandatory vs. optional. It is **not** for continued work: once a plan has been approved and you're implementing, handle the operator's follow-ups directly — answer their questions in chat **and implement any code changes they ask for** — without re-writing the plan file or reopening a plan cycle.
 
-A `/from-branch` launch counts as continued work, not a new session: the skill attaches to an existing branch or PR to resume work started elsewhere, so **do not open a plan cycle for it** — even though it's the first message of the session. Follow its embedded follow-up (or wait for the operator's) directly. The only exception is if that follow-up explicitly asks you to plan a fresh, separable piece of work.
+A `/from-branch` or `/handle` launch counts as continued work, not a new session: both attach to an existing branch or PR to resume work started elsewhere, so **do not open a plan cycle for them** — even though it's the first message of the session. Follow the embedded follow-up (or wait for the operator's) directly. The only exception is if that follow-up explicitly asks you to plan a fresh, separable piece of work.

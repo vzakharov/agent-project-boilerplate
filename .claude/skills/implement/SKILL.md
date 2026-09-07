@@ -41,15 +41,18 @@ Planless is not gateless: locating a plan is the only thing this entry skips.
 
 The primary target is a `/plan` stand-in file:
 
-- `ls docs/plans/*.md`. A `/plan` session writes exactly one and sweeps it at finalize, so **one file** is the normal case → read it fully; that's the plan.
-- **More than one, or none** → don't guess; ask which plan to implement (numbered prose, per `@.claude/skills/plan/SKILL.md`). More than one means an earlier session forgot to sweep — list the candidates. None means either the file was never written or this is the rare plain-approved-plan case where the plan lives in the conversation (native plan mode / agreed in chat) — ask the operator which, and let them point you at it. Never author a fresh plan in this mode.
+- `ls docs/plans/*.md`, and tally only the **actionable** files — `*.draft.do-not-implement.md` (never started) and `*.paused.md` (started, stopped partway, released). Neither a `*.completed.md` nor an `*.in-progress.md` counts: the first is inert, the second is another session's claim (below). So a plan carried across sessions leaves either kind of sibling beside the actionable one without making the choice ambiguous.
+- **Exactly one actionable** → the normal case; read it fully, that's the plan.
+- **Several actionable** → don't guess; ask which plan to implement (numbered prose, per `@.claude/skills/plan/SKILL.md`), listing the candidates. This genuinely is an unswept branch.
+- **None actionable** → either the file was never written or this is the rare plain-approved-plan case where the plan lives in the conversation (native plan mode / agreed in chat) — ask the operator which, and let them point you at it. Say which of the two inert states you found instead, because each is its own answer rather than "no plan was ever written": only `*.completed.md` means the work already ran, and an `*.in-progress.md` means a session holds it. Never author a fresh plan in this mode.
 
 **A plan that still lists open questions is implementable when they carry recommendations.** `/plan` writes the recommended option into the plan as its single approach (`@.claude/skills/plan/SKILL.md` § Part 2), so the file is executable exactly as it stands and unanswered questions mean the recommendations hold. Implement it as written, and say in your turn which recommendations you took so the operator can correct any of them. Stop and ask only for a fork the plan text leaves genuinely open — no recommendation, nothing executable to fall back on.
 
 The plan file's name encodes its lifecycle state (see `@.claude/skills/plan/SKILL.md` § "Plan file lifecycle"). Act on it **before writing any code**:
 
 - `*.draft.do-not-implement.md` — not yet cleared. Reaching this skill **is** the go-ahead (the operator invoked `/implement`, approved at `/plan`'s gate, or launched `/from-branch … implement`), so **`git mv` it to `*.in-progress.md` as your first action**. In the **same commit**, also **delete the line-1 ⛔ draft banner** — once the file is `in-progress`, a banner that still says "DO NOT IMPLEMENT" contradicts its own state — and quote the operator's literal go-ahead in the commit message (e.g. `chore: begin implementing <slug> (go-ahead: "…")`). Do this before editing source — a file still named `do-not-implement`, or still carrying the banner, means you have not been cleared, and writing the go-ahead out verbatim is the moment to catch a misread. When the plain-approved-plan case has no file at all, there's nothing to flip; the operator's in-chat go-ahead stands.
-- `*.in-progress.md` — already flipped (resumed work) → just continue.
+- `*.in-progress.md` — **a session has this plan open.** The name is a claim, not a resume point: picking it up unasked puts two agents on the same plan and the same branch at once, each overwriting the other's commits. **Report it and ask** — unless the operator's own invocation says to take it over ("continue where the last session left off", "the last session died, pick it up"), which is the escape hatch for a session that ended without the chance to release the file. On that go-ahead only, treat it exactly as a `*.paused.md`.
+- `*.paused.md` — released partway through by an earlier session → yours to continue. `git mv` it to `*.in-progress.md` as your first action (it is claimed now), then read the record of what is done and what is left and continue from there, rather than re-running finished work.
 - `*.completed.md` — implementation already finished → don't silently re-run; report and ask.
 
 ## Step 2 — Implement
@@ -62,6 +65,8 @@ Commit/push discipline is already governed by CLAUDE.md — don't reinvent it he
 - **Never force-push.** The operator may be following the branch as you work and needs the sequence of changes to read cleanly; force-pushing rewrites that history out from under them. Only ever advance the branch with new commits.
 - Conventional-commit subjects; descriptive bodies.
 - **Do not** run `./scripts/vet.sh` per commit on a feature branch — that's `/finalize`'s job once the operator has reviewed.
+
+**Stopping partway releases the plan.** When the operator asks you to stop where you've reached, record in the plan file what is done and what is left, `git mv` it to `docs/plans/<slug>.paused.md`, and commit. No format is prescribed for that record — a next session only has to be able to tell finished work from remaining work. The rename is what makes the work resumable: left as `*.in-progress.md` it still reads as claimed, and Step 1 stops on it.
 
 ## Step 3 — Mandatory quality passes
 
@@ -80,6 +85,6 @@ The **only** exception is an explicit "no PR" from the operator (e.g. `/implemen
 
 ## Do NOT
 
-- Re-open a plan cycle or re-edit the plan file per code change — it's a transient artifact `/finalize` sweeps (see `@.claude/skills/plan/SKILL.md`). Leave it as the approved snapshot (under its `.in-progress.md` name); only refresh it when the operator specifically asks — e.g. so a fresh session can pick up the work from an up-to-date plan.
+- Re-open a plan cycle or re-edit the plan file per code change — it's a transient artifact `/finalize` sweeps (see `@.claude/skills/plan/SKILL.md`). Leave it as the approved snapshot under its `.in-progress.md` name. The one time it gets written to mid-flight is the release above — stopping partway, where the progress record is what a fresh session picks the work up from.
 - Run the vet suite, mark the PR ready, dispatch a CI-only bucket, or attest — those are `/finalize`.
 - Skip either Step-3 pass because the diff "looks clean." They're mandatory.
