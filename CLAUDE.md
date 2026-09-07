@@ -136,7 +136,7 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Retiring a doc leaves a tombstone.** Don't just `rm` a doc that other files, comments, or history cite — leave a file recording the last commit that contained it and the `git show <sha>:<path>` recipe to read it, so every surviving citation still resolves, plus a pointer to where any still-live content went. **One tombstone per retirement, not per file**: docs retired together get a single tombstone with a row each. A tombstone standing in for a whole retired directory is `retired.md` at that directory's root; one standing in for a single file is `<name>.retired.md` beside its siblings — so every tombstone matches `*retired.md`.
 
-Plans are the exception to all of the above, being transient by construction: keep them current (**plan drift** — when work deviates from the plan, update it to reflect actual progress and revised ordering), and keep their checklist items in forward-looking voice — how you'd phrase them _before_ doing the work, not as retrospective reports.
+**Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
 ## Working with skills
 

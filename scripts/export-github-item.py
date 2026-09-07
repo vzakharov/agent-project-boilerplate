@@ -110,7 +110,7 @@ def parse_args(argv: list[str]) -> tuple[int, str]:
 def _request(
     url: str, token: str, accept: str, data: bytes | None = None
 ) -> tuple[bytes, dict[str, str]]:
-    """A `data` body makes it a POST, and the only bodies sent here are JSON."""
+    """Any `data` body is labeled JSON — the only kind this script posts."""
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": accept,
@@ -176,17 +176,13 @@ query($owner: String!, $repo: String!, $pr: Int!, $cursor: String) {
 
 
 class GraphqlError(Exception):
-    """A GraphQL response carrying an `errors` array.
-
-    GitHub answers those with HTTP 200, so `fetch`'s ladder sees a success and
-    the payload has to be checked instead.
+    """GitHub answers a bad GraphQL query with HTTP 200 and an `errors` array,
+    so `fetch`'s ladder reads it as a success and the payload must be checked.
     """
 
 
 def api_graphql(query: str, variables: dict[str, Any], token: str) -> Any:
-    """POST one GraphQL query and return its `data`.
-
-    Goes through `lib.github.fetch` rather than `gh api graphql` because the
+    """Goes through `lib.github.fetch` rather than `gh api graphql`: the
     remote-session proxy blocks most of `gh`'s GraphQL surface, while the
     ladder's direct rung reaches `api.github.com`.
     """
@@ -203,13 +199,12 @@ def api_graphql(query: str, variables: dict[str, Any], token: str) -> Any:
 
 
 def fetch_thread_resolution(repo: str, number: int, token: str) -> dict[int, bool]:
-    """`isResolved` keyed by **every** comment id in the thread, not just its root.
+    """Every comment id in a thread maps to that thread's `isResolved`.
 
-    Whether a reviewer resolved a thread is the one fact no REST comment payload
-    carries, hence the GraphQL read. The export reconstructs threads from REST
-    `in_reply_to_id` chains, which root on a different comment than GraphQL does
-    when the parent falls off the page — so every id in the thread maps to the
-    same verdict.
+    Resolution is the one fact no REST comment payload carries, hence GraphQL.
+    Keying on every id rather than the root is what makes the two views line up:
+    the export rebuilds threads from REST `in_reply_to_id` chains, which root on
+    a different comment when the parent falls off the page.
     """
     owner, name = repo.split("/", 1)
     resolved_by_comment_id: dict[int, bool] = {}

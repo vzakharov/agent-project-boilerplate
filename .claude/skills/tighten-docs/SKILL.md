@@ -98,7 +98,7 @@ The homes, in order of preference — take the first that fits:
 | 2   | **A docstring at the topmost point of the code it describes** | How a flow works, when following it means holding more modules in your head than fit at once |
 | 3   | **`.claude/rules/<area>.md`** (frontmatter `paths:`)          | An obligation every edit in the matched files must respect                                   |
 | 4   | **A colocated `README.md`**                                   | The big picture, for when not having it is itself what blocks the edit                       |
-| 5   | **A runbook page** (`docs/runbook/*.md` or wherever the project keeps them) | A procedure a human executes                                                    |
+| 5   | **A runbook page** (`docs/runbook/*.md`, or the project's equivalent)       | A procedure a human executes                                                    |
 
 **The alternatives already live in the PR or issue thread, and any of the five
 homes can cite it.** Add a `#1234` beside the line where a reader would otherwise
