@@ -199,7 +199,9 @@ while IFS= read -r line || [ -n "$line" ]; do
   [ "$in_block" -eq 1 ] || continue
 
   if [ "$blocks" -eq 1 ]; then
-    is_blank "$line" && continue
+    if is_blank "$line"; then
+      continue
+    fi
     title_lines=$((title_lines + 1))
     [ "${#line}" -le "$title_widest" ] || title_widest=${#line}
     if [ "${#line}" -gt "$TITLE_MAX_CHARS" ]; then
