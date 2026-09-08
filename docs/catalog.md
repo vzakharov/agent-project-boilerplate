@@ -274,9 +274,8 @@ Four closure facts are counter-intuitive enough to state outright:
   does not run your checks. (Three more skills *name* it — `/implement` to say vetting is
   not its job, `/sync-upstream` and `/test-on-gh` as an example — so a grep
   overcounts the dependency.) Its one line calling
-  `scripts/check-squash-message.sh` is the exception to the rewrite — a rewrite
-  that drops it silently retires the squash caps at the gate that catches a
-  proposal edited by hand or outgrown by a later base merge.
+  `scripts/check-squash-message.sh` is the part a rewrite decides separately; the
+  comment above that line says what dropping it costs.
 - **`/finalize` reaches into G3 and G5 conditionally.** Its working-artifact
   sweep cites `/issue`, and its CI steps cite `/watch-ci`. Both citations are
   guarded by prose conditions ("if a workflow runs on PRs"), so the behavior

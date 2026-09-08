@@ -11,11 +11,11 @@
 # Parallel, printing only what failed (worth it once the serial run is the wait):
 #   exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
 #
-# The `check-squash-message.sh` line below is the one check here that is not
-# stack-specific, so it must survive the rewrite this file is meant to get: keep
-# it when you replace everything around it. It measures the squash proposal
-# against the caps `/squash-message` states, and passes quietly on a branch that
-# has no proposal yet.
+# The `check-squash-message.sh` line below is not stack-specific: it measures the
+# squash proposal against the caps `/squash-message` states, and passes quietly
+# when a branch has no proposal. Replacing everything around it is what this file
+# is for, so decide that line on its own — dropping it leaves nothing catching a
+# proposal edited by hand or outgrown by a later base merge.
 #
 # See CLAUDE.md → Vetting for the contract.
 

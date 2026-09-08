@@ -207,8 +207,10 @@ product area); a hotfix body for a minimal fix is one or two paragraphs. The pas
 runs at either size — trimming words inside each of a release's areas rather than
 dropping areas, and never padding a hotfix out to look substantial. The paragraph
 target moves with scope that way; the measured caps do not. They bind every lane,
-and a project whose release bodies genuinely outgrow 50 lines raises the constant
-in its own copy of `scripts/check-squash-message.sh`, as a reviewable edit.
+and a project whose release bodies genuinely outgrow 50 lines edits its own copy
+of `scripts/check-squash-message.sh` — raising the constant, or teaching the
+script to recognize a release first and widen only there — as a reviewable
+change.
 
 Overwrite the file with the tightened version, then **measure it**:
 

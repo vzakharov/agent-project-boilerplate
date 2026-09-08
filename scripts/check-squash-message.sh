@@ -4,10 +4,10 @@
 # over. The skill's Step 3 is an agent reading its own output; this is the part
 # of that target a machine can settle.
 #
-# An adopter whose bodies genuinely need more room edits the constants below.
-# There is deliberately no env override: the only lane that would want one is a
-# hydrated release lane, and a hatch in the boilerplate teaches reaching for it
-# instead of tightening.
+# There is deliberately no env override: a hatch in the boilerplate teaches
+# reaching for it instead of tightening. An adopter needing more room edits this
+# copy — raising a constant below, or adding what the case needs, the way a
+# release lane must first work out that a commit is a release.
 #
 # Usage:
 #   scripts/check-squash-message.sh [<path-to-proposal>]
