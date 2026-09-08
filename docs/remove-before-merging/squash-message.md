@@ -29,8 +29,13 @@ one of them a second input shape.
 
 /implement becomes /go, converging the command with the vocabulary
 /plan's approval gate already listens for, and the skill it names is no
-longer "execute an approved plan" but every shape of starting work. The
-old path stays as a redirect stub, because the handoff block is a
+longer "execute an approved plan" but every shape of starting work.
+Which shape is read off the argument by whitespace alone: one bare token
+is a branch to attach to, confirmed by ls-remote and stopping to ask
+when it does not resolve, and anything with a space in it is a task to
+do. Testing for whitespace rather than for ref syntax is what keeps
+fix-sidebar-scroll from being implemented as a sentence. The old path
+stays as a redirect stub, because the handoff block is a
 copyable command living in plan files and PR comments that outlive the
 rename — permanent here, and offered downstream only to a repo that
 shipped /implement, whose operator decides whether the compatibility is
