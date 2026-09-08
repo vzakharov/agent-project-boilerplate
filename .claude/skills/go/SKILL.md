@@ -88,7 +88,7 @@ Then **`git mv` the plan to `docs/plans/<slug>.completed.md`** and commit — im
 
 ## Step 4 — Fill in the PR
 
-Load `@.claude/skills/pr/SKILL.md` and follow it with no args. On a branch `/plan` published, the PR already exists and `/pr` runs in **refresh** mode: the body it composed at plan time was a forecast of what the change would be, and there is now a diff to reconcile it against. On a planless branch that never got one, the same call creates it — which is also why this step satisfies the system prompt's "don't open a PR unless asked" gate, the operator's go-ahead being the request.
+Load `@.claude/skills/pr/SKILL.md` and follow it with no args. Which of its modes the call reaches is the branch's to decide — refresh on a branch `/plan` published, create on a planless one that never got a PR. Either way this step satisfies the system prompt's "don't open a PR unless asked" gate, the operator's go-ahead being the request.
 
 The **only** exception is an explicit "no PR" from the operator (e.g. `/go, no PR`) — then stop after Step 3 and report.
 

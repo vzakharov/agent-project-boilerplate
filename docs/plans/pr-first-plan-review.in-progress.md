@@ -272,7 +272,7 @@ both cases:
 
 | File | Change |
 |---|---|
-| `.claude/skills/implement/` → `.claude/skills/go/` | `git mv`; frontmatter; § "Branch-name form" gains the ref-shape target-vs-task rule and its stop-and-ask; § "Planless entry" becomes operator-facing; Step 4 refreshes rather than opens |
+| `.claude/skills/implement/` → `.claude/skills/go/` | `git mv`; frontmatter; § "Branch-name form" becomes § "Argument shape" and gains the target-vs-task rule with its stop-and-ask (the old heading no longer covers a section that classifies tasks too); § "Planless entry" becomes operator-facing; Step 4 refreshes rather than opens |
 | `.claude/skills/implement/SKILL.md` (new) | redirect stub; one line naming it a compatibility shim for repos that shipped `/implement` |
 | `.claude/skills/pr/SKILL.md` | Step 1a deletes; the three-mode table; Step 1b guard → refresh; frontmatter loses the task argument |
 | `.claude/skills/plan/SKILL.md` | final publish step; handoff block gains the PR URL; predicate home in § "Plan file lifecycle"; approval gate gains the review-comment channel |
@@ -291,6 +291,7 @@ prose is not, so it is swept by hand:
 | `CLAUDE.md` | main-loop bullets (`/pr` demoted to "Mechanical pieces"); § "Plan mode & questions in web sessions"; "rename … right after the first commit" → before it |
 | `docs/catalog.md` | rows for `go` (new), `implement` (stub), `pr`, `plan`, `handle`, `issue`; both adopter notes per § "Notes for adopters" |
 | `.claude/skills/audit-github-backlog/SKILL.md` | three `/implement` mentions |
+| `README.md` | the G2 group row, the § "Why /plan and /implement exist" heading and its handoff line |
 
 `check-merge:54` and `branch-rename/SKILL.md` need no edit — both stay true.
 

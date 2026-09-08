@@ -32,7 +32,7 @@ git diff --stat origin/<base>..HEAD
 
 Write the checklist as markdown `- [ ]` items, each led by a short backticked slug (`` `stream` ``, `` `bad-input` ``, …) — the slug is the only metadata the item carries and it's the join key the classification table's **Item** column references. (Numbers don't work: GitHub renders ordered task lists as checkboxes and hides the ordinal, so a `#` column would have nothing visible to join on.) **Bias toward concrete, user-visible scenarios** a human walks through in the running app — open this page, run this command, confirm this state changes — **not** "run the tests" or "check CI". Each item should be something a reviewer can actually do and observe. If the user passed focus guidance after `/qa-checklist`, weave it in — it's a hint about what to emphasize, not a free-form append.
 
-The checklist isn't frozen at creation — a checklist derived from a plan is a forecast, and `/pr`'s refresh mode re-derives it against the real diff at the end of implementation. Re-run `/qa-checklist` directly whenever the body of work changes in between.
+The checklist isn't frozen at creation — `/pr`'s refresh mode re-derives it against the real diff at the end of implementation, and re-running `/qa-checklist` directly refreshes it whenever the body of work changes in between.
 
 ### Classify automatability (a table after the checklist)
 

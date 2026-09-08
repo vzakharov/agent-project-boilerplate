@@ -33,7 +33,7 @@ Do **exactly what you would do in plan mode** — same research, same rigor, sam
 
 ### Publishing the plan
 
-Once the plan file is committed, invoke `@.claude/skills/pr/SKILL.md` with no args — load and follow it; do **not** inline-copy its steps. It renames the auto-branch, pushes, opens the draft PR over the plan commit, composes the body from the plan, and posts the squash proposal. `/pr` owns the `gh` mechanics; `/plan` owns only the decision to publish.
+Once the plan file is committed, invoke `@.claude/skills/pr/SKILL.md` with no args — load and follow it; do **not** inline-copy its steps. Its plan-open mode is what a branch carrying one plan commit and no PR reaches. `/pr` owns the `gh` mechanics; `/plan` owns only the decision to publish.
 
 The trigger lives here rather than in `/pr` because this is where a plan becomes pushed, so **every** entry into planning gets a PR. CLAUDE.md § "Plan mode & questions in web sessions" names a bare `/plan` as the default entry for a new web session — more common than `/issue` — and hanging PR-creation off `/pr` would leave exactly that entry on a PR-less branch.
 
