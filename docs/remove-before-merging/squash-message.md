@@ -30,9 +30,11 @@ one of them a second input shape.
 /implement becomes /go, converging the command with the vocabulary
 /plan's approval gate already listens for, and the skill it names is no
 longer "execute an approved plan" but every shape of starting work. The
-old path stays as a permanent redirect stub, because the handoff block
-is a copyable command living in plan files and PR comments that outlive
-the rename. Two things deliberately keep the old word: the
+old path stays as a redirect stub, because the handoff block is a
+copyable command living in plan files and PR comments that outlive the
+rename — permanent here, and offered downstream only to a repo that
+shipped /implement, whose operator decides whether the compatibility is
+worth the extra row. Two things deliberately keep the old word: the
 *.draft.do-not-implement.md suffix, where it is a warning rather than a
 command, and /from-branch's follow-up keywords, which gain "go" instead
 of trading it.
