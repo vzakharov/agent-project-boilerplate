@@ -16,7 +16,7 @@ lines and 72 wide, exempting a line whose trimmed text is a single
 unwrappable token. One run reports every violation, naming the source,
 each value against its cap, and the over-width lines by number. The
 caps bind every lane, the release lane included; a project needing more
-room edits the constants in its own copy.
+room edits its own copy of the script.
 
 The proposal is usually gone by vet time, since `/finalize` sweeps
 `docs/remove-before-merging/` before a re-vet can run, so the source is
@@ -29,9 +29,9 @@ wherever no PR-opening lane has run, and passes.
 Two gates catch different things. `/squash-message` step 3 fails at
 authorship and is the only run `/finalize no vet` gets; `scripts/vet.sh`
 catches a proposal edited by hand or outgrown by a later base merge.
-Since `vet.sh` is a `rewrite`, that one line has to survive an adopter
-replacing the rest — its own comment is the home for why, and
-CLAUDE.md, ADOPTING.md and the catalog's closure note point at it.
+Since `vet.sh` is a `rewrite`, an adopter decides that one line on its
+own — the comment above it is the home for what dropping it costs, and
+ADOPTING.md and the catalog point at it.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
