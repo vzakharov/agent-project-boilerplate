@@ -263,11 +263,10 @@ loop stopping loudly — it is a
 [`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
 [the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
 
-**Keep the `scripts/check-squash-message.sh` line** when you replace the rest.
-It is the one check in the file that isn't stack-specific — it measures the
-squash proposal against the caps `/squash-message` states, and passes quietly on
-a branch that has no proposal yet. Bodies that genuinely need more room than the
-caps allow are a matter of editing the constants in your copy of that script.
+**Keep the `scripts/check-squash-message.sh` line** when you replace the rest —
+it is the one check in the file that isn't stack-specific, and the comment above
+it in `vet.sh` says why. Bodies that genuinely need more room than its caps allow
+are a matter of editing the constants in your copy of that script.
 
 ### Hydrate or delete the G6 stubs
 

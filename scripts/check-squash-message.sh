@@ -4,14 +4,6 @@
 # over. The skill's Step 3 is an agent reading its own output; this is the part
 # of that target a machine can settle.
 #
-# Three caps, all on the two fenced blocks of the proposal:
-#   - title: one line, at most 80 chars (the mandatory ` (pr #N)` suffix eats
-#     ~10, which is why it isn't the body's own 72),
-#   - body: at most 50 lines,
-#   - body: at most 72 chars per line, exempting a line whose trimmed text holds
-#     no whitespace — a single unwrappable token (a URL, a long path) has no
-#     wrapped form to demand.
-#
 # An adopter whose bodies genuinely need more room edits the constants below.
 # There is deliberately no env override: the only lane that would want one is a
 # hydrated release lane, and a hatch in the boilerplate teaches reaching for it
@@ -20,14 +12,11 @@
 # Usage:
 #   scripts/check-squash-message.sh [<path-to-proposal>]
 #
-# With no argument the proposal is located by a ladder, because `/finalize`
-# sweeps `docs/remove-before-merging/` before a re-vet can run: the worktree
-# file, the `tmp/` fallback, `HEAD` (sweep staged, not committed), then the last
-# commit on this branch that deleted it. The history rung is bounded to
-# `<merge-base>..HEAD` so a *different* branch's swept proposal, still in the
-# base's history, is never measured as this one's. No proposal anywhere is
-# normal — every lane that vets before `/squash-message` has run has none — so
-# that case reports the absence and passes.
+# With no argument the proposal is located by the ladder in `resolve_source`,
+# because `/finalize` sweeps `docs/remove-before-merging/` before a re-vet can
+# run and the file is usually already gone by the time this executes. Finding
+# nothing is normal — every lane that vets before `/squash-message` has run has
+# no proposal — so that case reports the absence and passes.
 #
 # POSIX `/bin/sh` with `git` for the history rungs: `scripts/vet.sh` is the one
 # entrypoint every adopter must have, so a check it calls must not add an
@@ -85,14 +74,11 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-# Prints the merge base of HEAD against the repo's default branch, which is what
-# bounds the history rung to this branch's own commits. `origin/HEAD` is absent
-# from a clone made without it — including the ones agent sessions run in — so
-# the common default names are tried after it. Failing to resolve a base is not
-# a reason to search the whole history: a swept proposal reached from the base's
-# side belongs to some other branch, and measuring it would fail this branch for
-# someone else's words. Returns 1 instead, and the caller falls through to
-# reporting no proposal.
+# Bounds the history rung to this branch's own commits. `origin/HEAD` is absent
+# from a clone made without it — agent sessions get one of those — hence the
+# default names after it. An unresolvable base returns 1 rather than widening to
+# the whole history: a swept proposal reachable from the base belongs to another
+# branch, and measuring it would fail this branch for someone else's words.
 merge_base_with_default() {
   for ref in refs/remotes/origin/HEAD refs/remotes/origin/main refs/remotes/origin/master; do
     git rev-parse --verify --quiet "$ref" >/dev/null || continue
@@ -219,8 +205,8 @@ while IFS= read -r line || [ -n "$line" ]; do
   body_lines=$((body_lines + body_blanks_held + 1))
   body_blanks_held=0
 
-  # An exempt line is left out of the widest-line figure too, so a passing run
-  # never reports a width above the cap.
+  # Exempt lines stay out of the widest-line figure, so a passing run never
+  # reports a width above the cap.
   if is_wrappable "$line"; then
     [ "${#line}" -le "$body_widest" ] || body_widest=${#line}
     if [ "${#line}" -gt "$BODY_MAX_WIDTH" ]; then

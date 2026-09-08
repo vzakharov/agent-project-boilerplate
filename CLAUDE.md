@@ -29,7 +29,7 @@ go vet ./... && go test -short ./...                # Go
 
 The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typecheck='…' test='…'`, which prints output only for the ones that failed.
 
-One line in `vet.sh` is **not** yours to replace: the call to `scripts/check-squash-message.sh`, which holds the squash proposal to the size caps `@.claude/skills/squash-message/SKILL.md` states. It is stack-independent and passes quietly on a branch with no proposal, so carry it through the rewrite.
+One line in `vet.sh` is **not** yours to replace: the call to `scripts/check-squash-message.sh`, which holds the squash proposal to the size caps `@.claude/skills/squash-message/SKILL.md` states. Carry it through the rewrite; the comment above the call says why.
 
 Until it's implemented, skills that depend on it (notably `/finalize`) will stop loudly.
 

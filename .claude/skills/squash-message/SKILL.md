@@ -160,8 +160,8 @@ Re-read the draft as the future reader above, and rewrite it until it hits the
 target.
 
 The target is **three paragraphs of prose, four at the outside**, inside the
-measured caps the format rules state — a one-line title of at most 80 chars, and
-a body of at most 50 lines wrapped at 72. The opening says
+measured caps above — 80 chars of title, 50 lines of body at 72 wide. The
+opening says
 why the change exists; the rest say what it does about it, named at the level of
 the behavior, contract or module affected, plus anything that would trip someone
 editing that area later. Not a bullet-per-change inventory: detail that doesn't
