@@ -68,11 +68,14 @@ the opening gains that rationale.
 Its "created once, when the PR opens" rule needs no change — the sentence stays
 true, the moment just moves earlier.
 
-**One ordering constraint:** the title carries a `(pr #N)` suffix, so the
-proposal cannot be composed before the PR number exists. The squash file lands in
-the push immediately *after* creation, within the same turn — which is why `/pr`
-Step 6 already sits where it does. From the operator's side both files are on the
-PR when they first open it.
+**The `(pr #N)` suffix imposes no ordering.** The proposal composes with `(pr
+#tbd)` when the number isn't known yet, and the real number lands at whatever
+run next touches the comment. `/squash-message` § "When to (re)run" already
+counts *"the PR being recreated under a different `(pr #N)`"* as a refresh
+trigger, so filling in a placeholder rides a path that exists; `/finalize`
+Step 5's reconciliation is what guarantees no `#tbd` reaches the trunk. Step 1
+"Gather" gains the placeholder as its answer to a missing `gh pr view` number
+rather than a precondition to wait on.
 
 ## Move 2 — `/plan` publishes
 
@@ -109,13 +112,28 @@ What remains is a no-args skill with three modes:
 | Invocation | Behavior |
 |---|---|
 | **plan-open** (caller: `/plan`) | rename → push → create draft → body from the plan → `/squash-message` |
-| **`/pr`, no PR** | open from the commits already on the branch (the mid-session wrap-up: a session that started as brainstorming and produced commits) |
+| **`/pr`, no PR** | open from the commits already on the branch |
 | **`/pr`, PR exists** | **refresh**: re-derive body and QA checklist from the real diff, re-run `/squash-message`, create nothing |
 
-Every one of `/pr`'s seven callers is already a no-args caller: `/go` Step 4,
-`branch-rename:27` (recreate a PR a rename killed), `finalize:13` (no-PR branch →
-draft), `sync-upstream:260` (ported commits, no plan), a hydrated `/release` and
-`/hotfix` per `squash-message:40`, and the bare mid-session form.
+`/pr` has eight callers under this plan — the seven it has today plus `/plan`'s
+publish step — and all of them already invoke it with no args. Which mode each
+reaches is decided by the branch, not by the caller:
+
+| Caller | Mode |
+|---|---|
+| `/plan`'s publish step | **plan-open** |
+| `/go` Step 4, after a plan | **refresh** — `/plan` opened the PR |
+| `/go` Step 4 via § "Planless entry" | **create** — nothing opened one earlier |
+| `sync-upstream:260` (ported commits, no plan) | **create** |
+| `branch-rename:27` (a rename closed the PR) | **create** |
+| `finalize:13` (land prep on a PR-less branch) | **create** |
+| bare mid-session `/pr` (brainstorming that produced commits) | **create** |
+| a hydrated `/release` / `/hotfix` per `squash-message:40` | either, per lane |
+
+So **create-from-commits is the planless lane's PR-open**, not a leftover: after
+move 1 nothing that went through `/plan` reaches it, and everything that
+deliberately skipped planning does. The two are complementary, which is why the
+mode split is a read of the branch rather than a flag a caller passes.
 
 ### Revert the duplicate-PR guard
 
@@ -145,18 +163,28 @@ go). `/go` is the word that gate is already listening for.
 
 ### Argument disambiguation
 
-`/go` takes three argument shapes, and two can collide: a terse `/go
-fix-sidebar-scroll` could be a branch or a task. The rule reuses a check
-`/from-branch` Step 1 already runs:
+`/go` takes three argument shapes, and in principle two can collide: a terse
+`/go fix-sidebar-scroll` could be a branch or a task. In practice they barely
+overlap — session branches are `<vendor>/<slug>-<hash>`, so a branch token
+essentially always carries a `/`. **Shape is the classifier; resolution only
+confirms it:**
 
-> A first token that resolves to an existing branch or PR
-> (`git ls-remote --heads origin <token>`, or a `#NNN`/PR URL) is a **target**.
-> Anything else is a **task**.
+> A first token that **looks like a ref** — it contains a `/`, or it is `#NNN`
+> or a PR URL — is a **target**. Confirm it with `/from-branch` Step 1's
+> `git ls-remote --heads origin <token>`; if it does not resolve, **stop and
+> ask**. A token that does not look like a ref is a **task**.
 
-The § "Branch-name form" canary is unaffected — it fires on *bare* `/go` as a
-session's first prompt, which stays distinct from `/go <anything>`.
+A ref-shaped token that fails to resolve must **not** fall through to "task".
+The likely cause is a handoff block pasted into a session opened on the wrong
+repository, and implementing a branch name as if it were a task description is
+the worst available response — worse than one round-trip. This is § "Branch-name
+form"'s reasoning applied to the argument: a handoff that did not land intact
+gets a question, not a guess.
 
-### The stub is permanent, and it says "load and follow"
+That canary is otherwise unaffected — it fires on *bare* `/go` as a session's
+first prompt, which stays distinct from `/go <anything>`.
+
+### The stub is permanent here, conditional downstream
 
 `.claude/skills/implement/SKILL.md` survives as a redirect to
 `@.claude/skills/go/SKILL.md`. It is load-bearing rather than courtesy: `/plan`'s
@@ -170,6 +198,9 @@ It keeps the "load and follow" imperative for the reason `/handle`'s Do-NOT
 gives: *acting on a referenced skill from the one-line summary this file gives
 it* is the named failure, and a stub is nothing but a one-line summary.
 
+Permanent applies to **this** repo, where `/implement` was the shipped name. For
+a repo adopting from here the stub is conditional — see § "Notes for adopters".
+
 ### Two things the rename must not touch
 
 - **The plan lifecycle suffix `*.draft.do-not-implement.md` stays.** That
@@ -180,13 +211,31 @@ it* is the named failure, and a stub is nothing but a one-line summary.
   `go` rather than losing the old ones. This is prose matching, not a pointer, so
   `check-skill-catalog.sh` cannot catch it.
 
-### A note for adopters
+### Notes for adopters
 
-`/go` reads ambiguously in a Go project, and this is a stack-agnostic
-boilerplate. `docs/catalog.md`'s row gets a line saying the name is a local
-choice, not a contract — adopters should rename it to whatever their
-language or framework leaves unambiguous, and `check-skill-catalog.sh` will
-verify the pointers after they do.
+Two adopter-facing lines, both living in `docs/catalog.md` because that is the
+file `@.claude/skills/sync-upstream/SKILL.md` Step 4a reads out of the source
+clone when it offers a new skill path — so criteria written there reach the
+adopting agent by construction.
+
+**The name `/go` is a local choice, not a contract.** It reads ambiguously in a
+Go project, and this is a stack-agnostic boilerplate. Adopters should rename it
+to whatever their language or framework leaves unambiguous;
+`check-skill-catalog.sh` verifies the pointers after they do.
+
+**The `implement` stub is offered on a criterion, not adopted by default.** It
+only carries value where `/implement` was already the shipped name, which is
+exactly where a live handoff block might still say it. Its catalog row states
+both cases:
+
+- **Never adopted `/implement`** → take `go` alone and put
+  `.claude/skills/implement/` in `declined`. There is no downstream caller to
+  redirect, and the stub would be a permanent extra row in the skills list
+  standing in for a name the repo never had.
+- **Already adopted `/implement`** → the redirect is a real question rather than
+  a default. Ask the operator whether the backwards compatibility is worth that
+  extra row, and record either answer in `upstream.json` so Step 4a's "the
+  question does not come back" holds.
 
 ## Files
 
@@ -194,13 +243,13 @@ verify the pointers after they do.
 
 | File | Change |
 |---|---|
-| `.claude/skills/implement/` → `.claude/skills/go/` | `git mv`; frontmatter; § "Branch-name form" gains the target-vs-task rule; § "Planless entry" becomes operator-facing; Step 4 refreshes rather than opens |
-| `.claude/skills/implement/SKILL.md` (new) | permanent redirect stub |
+| `.claude/skills/implement/` → `.claude/skills/go/` | `git mv`; frontmatter; § "Branch-name form" gains the ref-shape target-vs-task rule and its stop-and-ask; § "Planless entry" becomes operator-facing; Step 4 refreshes rather than opens |
+| `.claude/skills/implement/SKILL.md` (new) | redirect stub; one line naming it a compatibility shim for repos that shipped `/implement` |
 | `.claude/skills/pr/SKILL.md` | Step 1a deletes; the three-mode table; Step 1b guard → refresh; frontmatter loses the task argument |
 | `.claude/skills/plan/SKILL.md` | final publish step; handoff block gains the PR URL; predicate home in § "Plan file lifecycle"; approval gate gains the review-comment channel |
 | `.claude/skills/handle/SKILL.md` | Step 2 both-lanes stop → plan-review reading; go-ahead sentence gains its exception |
 | `.claude/skills/qa-checklist/SKILL.md` | Step 2 accepts the plan as input; the two `/pr`-composes-at-creation notes (lines 10, 22) |
-| `.claude/skills/squash-message/SKILL.md` | Step 1 gather-from-plan; opening gains the plan-condensed rationale |
+| `.claude/skills/squash-message/SKILL.md` | Step 1 gather-from-plan, and `(pr #tbd)` as its answer to an unknown number; opening gains the plan-condensed rationale |
 | `.claude/skills/issue/SKILL.md` | End state; the chain line (line 7); Step 4 hands to `/plan`, not `/pr` |
 | `.claude/skills/from-branch/SKILL.md` | Step 6 keyword list gains `go`; pointers |
 
@@ -211,7 +260,7 @@ prose is not, so it is swept by hand:
 | File | Change |
 |---|---|
 | `CLAUDE.md` | main-loop bullets (`/pr` demoted to "Mechanical pieces"); § "Plan mode & questions in web sessions"; "rename … right after the first commit" → before it |
-| `docs/catalog.md` | rows for `go` (new), `implement` (stub), `pr`, `plan`, `handle`, `issue`; the adopter note |
+| `docs/catalog.md` | rows for `go` (new), `implement` (stub), `pr`, `plan`, `handle`, `issue`; both adopter notes per § "Notes for adopters" |
 | `.claude/skills/audit-github-backlog/SKILL.md` | three `/implement` mentions |
 
 `check-merge:54` and `branch-rename/SKILL.md` need no edit — both stay true.
@@ -235,7 +284,9 @@ deliberate historical references.
 - **The handoff block format** stays in `/plan` § "Handing off". `/pr` plan-open
   mode does not restate it — `/plan` emits it, since `/plan` ends that turn.
 - **The target-vs-task check** reuses `/from-branch` Step 1's existing
-  `git ls-remote` resolution rather than adding a parallel one. `/go` cites it.
+  `git ls-remote` resolution rather than adding a parallel one — as the
+  confirmation step behind `/go`'s shape test, whose failure is a stop. `/go`
+  cites it; the resolution itself stays in one place.
 - **No shared "PR mode" abstraction.** The three modes are a table inside `/pr`,
   not a fourth skill. Extracting them would add a load hop for zero reuse — every
   caller touches exactly one cell and reaches it through `/pr` already.
