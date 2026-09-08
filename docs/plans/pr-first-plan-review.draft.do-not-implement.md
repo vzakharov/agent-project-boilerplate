@@ -121,19 +121,27 @@ reaches is decided by the branch, not by the caller:
 
 | Caller | Mode |
 |---|---|
-| `/plan`'s publish step | **plan-open** |
-| `/go` Step 4, after a plan | **refresh** — `/plan` opened the PR |
-| `/go` Step 4 via § "Planless entry" | **create** — nothing opened one earlier |
-| `sync-upstream:260` (ported commits, no plan) | **create** |
-| `branch-rename:27` (a rename closed the PR) | **create** |
+| `/plan`'s publish step | **plan-open** — by construction there is no PR yet |
+| `/go` Step 4 after a plan | **refresh** — `/plan` opened the PR at plan time |
+| `/go` Step 4 via § "Planless entry" | **refresh** on an attached branch that has a PR (`implement/SKILL.md:35`'s case), **create** on one that doesn't |
+| bare mid-session `/pr` | **refresh** where the PR predates the newer commits, **create** where brainstorming produced the branch's first PR-worthy state |
+| `branch-rename:27` (a rename closed the PR) | **create** — the head ref is gone, so the PR is too |
 | `finalize:13` (land prep on a PR-less branch) | **create** |
-| bare mid-session `/pr` (brainstorming that produced commits) | **create** |
+| `sync-upstream:260` (ported commits, no plan) | **create** |
 | a hydrated `/release` / `/hotfix` per `squash-message:40` | either, per lane |
 
-So **create-from-commits is the planless lane's PR-open**, not a leftover: after
-move 1 nothing that went through `/plan` reaches it, and everything that
-deliberately skipped planning does. The two are complementary, which is why the
-mode split is a read of the branch rather than a flag a caller passes.
+**Refresh is where planned work always lands**, which after move 1 is most work:
+the PR exists from plan time, so every `/pr` call downstream of a plan finds one.
+The dominant instance is `/go` Step 4 at the end of implementation — the same
+call that *opens* the PR today. `implement/SKILL.md:35` already describes the
+second, where planless entry attaches to a branch that has a PR, and today
+resolves it as a stop. That is the inversion the guard revert below turns on:
+"PR exists" was a near-certain mistake before move 1, and is the expected end
+state after it.
+
+Create-from-commits is then the complement — the planless lane's PR-open rather
+than a leftover: nothing that went through `/plan` reaches it, and everything
+that deliberately skipped planning does.
 
 ### Revert the duplicate-PR guard
 
