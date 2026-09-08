@@ -6,8 +6,8 @@
 #
 # There is deliberately no env override: a hatch in the boilerplate teaches
 # reaching for it instead of tightening. An adopter needing more room edits this
-# copy — raising a constant below, or adding what the case needs, the way a
-# release lane must first work out that a commit is a release.
+# copy instead — raising a constant below, or adding the mechanics that decide
+# when a wider cap applies.
 #
 # Usage:
 #   scripts/check-squash-message.sh [<path-to-proposal>]
