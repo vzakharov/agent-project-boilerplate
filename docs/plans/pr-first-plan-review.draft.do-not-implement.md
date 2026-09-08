@@ -113,7 +113,7 @@ What remains is a no-args skill with three modes:
 |---|---|
 | **plan-open** (caller: `/plan`) | rename → push → create draft → body from the plan → `/squash-message` |
 | **`/pr`, no PR** | open from the commits already on the branch |
-| **`/pr`, PR exists** | **refresh**: re-derive body and QA checklist from the real diff, re-run `/squash-message`, create nothing |
+| **`/pr`, PR exists** | **refresh**: re-compose the body against the real diff — Step 4 unchanged, `gh pr edit` in place of `gh pr create` |
 
 `/pr` has eight callers under this plan — the seven it has today plus `/plan`'s
 publish step — and all of them already invoke it with no args. Which mode each
@@ -130,18 +130,36 @@ reaches is decided by the branch, not by the caller:
 | `sync-upstream:260` (ported commits, no plan) | **create** |
 | a hydrated `/release` / `/hotfix` per `squash-message:40` | either, per lane |
 
-**Refresh is where planned work always lands**, which after move 1 is most work:
-the PR exists from plan time, so every `/pr` call downstream of a plan finds one.
-The dominant instance is `/go` Step 4 at the end of implementation — the same
-call that *opens* the PR today. `implement/SKILL.md:35` already describes the
-second, where planless entry attaches to a branch that has a PR, and today
-resolves it as a stop. That is the inversion the guard revert below turns on:
-"PR exists" was a near-certain mistake before move 1, and is the expected end
-state after it.
+Create-from-commits is the planless lane's PR-open rather than a leftover:
+nothing that went through `/plan` reaches it, and everything that deliberately
+skipped planning does.
 
-Create-from-commits is then the complement — the planless lane's PR-open rather
-than a leftover: nothing that went through `/plan` reaches it, and everything
-that deliberately skipped planning does.
+### Why `/go` still calls `/pr` when `/plan` already opened the PR
+
+Because the body composed at plan time is a **forecast**, and the body is `/pr`'s
+field. `/pr` Step 4 writes the Summary from the branch's commits and delegates
+the QA section to `/qa-checklist`; at plan time both are written from the plan,
+because there is no diff yet. By the end of `/go` there is one, and the body
+still describes what the change was *going to* be. Reconciling it is the same
+Step 4 composition against a different input — which is why refresh is a mode of
+`/pr` and not new machinery, and why Step 5 needs only `gh pr edit` where it
+would otherwise `gh pr create` (a clause `pr/SKILL.md:102` already carries for
+its pre-created case).
+
+**Refresh's own work is the body, and nothing more.** The two other jobs it
+would be natural to hang here already belong elsewhere:
+
+- **`/squash-message` re-runs itself.** Its § "When to (re)run" fires on any push
+  that changes what the permanent record should say, which implementation pushes
+  do, and `/finalize` Step 5 backstops it. Refresh cites that rule; it does not
+  own a trigger.
+- **`/qa-checklist` already edits an existing body** — its Steps 1 and 3 exist
+  for exactly that, and refresh reaches them the way the operator does.
+
+So the choice is narrow: either `/go` Step 4 keeps its single `/pr` line and the
+Summary gets reconciled, or it calls `/qa-checklist` directly and the Summary —
+the one section written entirely before the code existed — stays a forecast on a
+merged PR. **This plan keeps the call.**
 
 ### Revert the duplicate-PR guard
 
@@ -288,7 +306,8 @@ deliberate historical references.
 - **QA-checklist derivation** stays single-sourced in `/qa-checklist` Step 2, and
   **squash-message format** in `/squash-message`. `/pr` keeps delegating to both
   by reference in every mode. What gains a second shape is `/qa-checklist`'s
-  *input*, not a copy of its rules.
+  *input*, not a copy of its rules — and `/squash-message`'s **re-run trigger**
+  stays its own, cited by refresh mode rather than restated there.
 - **The handoff block format** stays in `/plan` § "Handing off". `/pr` plan-open
   mode does not restate it — `/plan` emits it, since `/plan` ends that turn.
 - **The target-vs-task check** reuses `/from-branch` Step 1's existing
