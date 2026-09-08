@@ -1,0 +1,267 @@
+#!/bin/sh
+# Measure the squash proposal's copy-pasteable text against the size caps
+# `@.claude/skills/squash-message/SKILL.md` states as prose, and fail when it is
+# over. The skill's Step 3 is an agent reading its own output; this is the part
+# of that target a machine can settle.
+#
+# Three caps, all on the two fenced blocks of the proposal:
+#   - title: one line, at most 80 chars (the mandatory ` (pr #N)` suffix eats
+#     ~10, which is why it isn't the body's own 72),
+#   - body: at most 50 lines,
+#   - body: at most 72 chars per line, exempting a line whose trimmed text holds
+#     no whitespace — a single unwrappable token (a URL, a long path) has no
+#     wrapped form to demand.
+#
+# An adopter whose bodies genuinely need more room edits the constants below.
+# There is deliberately no env override: the only lane that would want one is a
+# hydrated release lane, and a hatch in the boilerplate teaches reaching for it
+# instead of tightening.
+#
+# Usage:
+#   scripts/check-squash-message.sh [<path-to-proposal>]
+#
+# With no argument the proposal is located by a ladder, because `/finalize`
+# sweeps `docs/remove-before-merging/` before a re-vet can run: the worktree
+# file, the `tmp/` fallback, `HEAD` (sweep staged, not committed), then the last
+# commit on this branch that deleted it. The history rung is bounded to
+# `<merge-base>..HEAD` so a *different* branch's swept proposal, still in the
+# base's history, is never measured as this one's. No proposal anywhere is
+# normal — every lane that vets before `/squash-message` has run has none — so
+# that case reports the absence and passes.
+#
+# POSIX `/bin/sh` with `git` for the history rungs: `scripts/vet.sh` is the one
+# entrypoint every adopter must have, so a check it calls must not add an
+# interpreter or a `jq`/`gh` prerequisite to the floor.
+#
+# Exit codes:
+#   0  - every cap held, or there is no proposal to measure.
+#   1  - a cap was exceeded, the proposal was unparseable, or bad arguments.
+
+set -eu
+
+PROG="check-squash-message"
+
+TITLE_MAX_CHARS=80
+BODY_MAX_LINES=50
+BODY_MAX_WIDTH=72
+
+TRACKED_PATH="docs/remove-before-merging/squash-message.md"
+TMP_PATH="tmp/squash-message.md"
+
+NL='
+'
+
+die() {
+  printf '%s: %s\n' "$PROG" "$1" >&2
+  exit 1
+}
+
+usage() {
+  cat >&2 <<EOF
+usage: scripts/check-squash-message.sh [<path-to-proposal>]
+
+  Measures the squash proposal's title and body against the size caps.
+  With no argument, locates the proposal itself (worktree, tmp/, then git
+  history) and passes quietly when there is none.
+EOF
+  exit 1
+}
+
+case "${1:-}" in
+  -h | --help) usage ;;
+esac
+[ "$#" -le 1 ] || usage
+
+if REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null); then
+  IN_REPO=1
+else
+  REPO_ROOT="."
+  IN_REPO=0
+fi
+
+TMPFILE=""
+cleanup() {
+  [ -z "$TMPFILE" ] || rm -f "$TMPFILE"
+}
+trap cleanup EXIT HUP INT TERM
+
+# Prints the merge base of HEAD against the repo's default branch, which is what
+# bounds the history rung to this branch's own commits. `origin/HEAD` is absent
+# from a clone made without it — including the ones agent sessions run in — so
+# the common default names are tried after it. Failing to resolve a base is not
+# a reason to search the whole history: a swept proposal reached from the base's
+# side belongs to some other branch, and measuring it would fail this branch for
+# someone else's words. Returns 1 instead, and the caller falls through to
+# reporting no proposal.
+merge_base_with_default() {
+  for ref in refs/remotes/origin/HEAD refs/remotes/origin/main refs/remotes/origin/master; do
+    git rev-parse --verify --quiet "$ref" >/dev/null || continue
+    git merge-base HEAD "$ref" 2>/dev/null && return 0
+  done
+  return 1
+}
+
+# Sets SRC_FILE (what to read) and SRC_DESC (what to tell the operator it was).
+# Returns 1 when no proposal exists anywhere, which is a pass, not an error.
+resolve_source() {
+  if [ -n "${1:-}" ]; then
+    [ -f "$1" ] || die "no such file: $1"
+    SRC_FILE="$1"
+    SRC_DESC="$1 (given)"
+    return 0
+  fi
+
+  if [ -f "$REPO_ROOT/$TRACKED_PATH" ]; then
+    SRC_FILE="$REPO_ROOT/$TRACKED_PATH"
+    SRC_DESC="$TRACKED_PATH (worktree)"
+    return 0
+  fi
+
+  if [ -f "$REPO_ROOT/$TMP_PATH" ]; then
+    SRC_FILE="$REPO_ROOT/$TMP_PATH"
+    SRC_DESC="$TMP_PATH (worktree)"
+    return 0
+  fi
+
+  [ "$IN_REPO" -eq 1 ] || return 1
+
+  TMPFILE="${TMPDIR:-/tmp}/$PROG.$$"
+
+  if git cat-file -e "HEAD:$TRACKED_PATH" 2>/dev/null; then
+    git show "HEAD:$TRACKED_PATH" >"$TMPFILE"
+    SRC_FILE="$TMPFILE"
+    SRC_DESC="HEAD:$TRACKED_PATH (sweep staged, not committed)"
+    return 0
+  fi
+
+  base=$(merge_base_with_default) || return 1
+  deleted_in=$(git log --diff-filter=D -1 --format=%h "$base..HEAD" -- "$TRACKED_PATH")
+  if [ -n "$deleted_in" ]; then
+    git show "$deleted_in^:$TRACKED_PATH" >"$TMPFILE"
+    SRC_FILE="$TMPFILE"
+    SRC_DESC="$TRACKED_PATH (swept in $deleted_in, read from history)"
+    return 0
+  fi
+
+  return 1
+}
+
+is_blank() {
+  case $1 in
+    *[![:space:]]*) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+# True when the line still holds whitespace once its own indent and any trailing
+# spaces are gone — i.e. it is more than one unwrappable token and so had a
+# wrapped form available to it.
+is_wrappable() {
+  s=${1#"${1%%[![:space:]]*}"}
+  s=${s%"${s##*[![:space:]]}"}
+  case $s in
+    *[![:space:]]*[[:space:]]*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+resolve_source "${1:-}" || {
+  printf '%s: no squash proposal on this branch — nothing to measure.\n' "$PROG"
+  exit 0
+}
+
+blocks=0
+in_block=0
+title_lines=0
+title_over=""
+title_widest=0
+body_lines=0
+body_blanks_held=0
+body_over=""
+body_over_count=0
+body_widest=0
+
+while IFS= read -r line || [ -n "$line" ]; do
+  case $line in
+    '```'*)
+      if [ "$in_block" -eq 1 ]; then
+        in_block=0
+        [ "$blocks" -lt 2 ] || break
+      else
+        blocks=$((blocks + 1))
+        [ "$blocks" -le 2 ] || break
+        in_block=1
+      fi
+      continue
+      ;;
+  esac
+
+  [ "$in_block" -eq 1 ] || continue
+
+  if [ "$blocks" -eq 1 ]; then
+    is_blank "$line" && continue
+    title_lines=$((title_lines + 1))
+    [ "${#line}" -le "$title_widest" ] || title_widest=${#line}
+    if [ "${#line}" -gt "$TITLE_MAX_CHARS" ]; then
+      title_over="${title_over}${NL}    ${#line} chars: ${line}"
+    fi
+    continue
+  fi
+
+  # Trailing blank lines are not part of the body, so blanks are held back and
+  # only counted once a further non-blank line proves they were interior.
+  if is_blank "$line"; then
+    body_blanks_held=$((body_blanks_held + 1))
+    continue
+  fi
+  body_lines=$((body_lines + body_blanks_held + 1))
+  body_blanks_held=0
+
+  # An exempt line is left out of the widest-line figure too, so a passing run
+  # never reports a width above the cap.
+  if is_wrappable "$line"; then
+    [ "${#line}" -le "$body_widest" ] || body_widest=${#line}
+    if [ "${#line}" -gt "$BODY_MAX_WIDTH" ]; then
+      body_over_count=$((body_over_count + 1))
+      body_over="${body_over}${NL}    line ${body_lines} (${#line} chars): ${line}"
+    fi
+  fi
+done <"$SRC_FILE"
+
+failures=""
+fail() {
+  failures="${failures}${NL}  $1"
+}
+
+if [ "$blocks" -lt 2 ]; then
+  fail "found $blocks fenced block(s); a proposal is two — the title, then the body"
+else
+  if [ "$title_lines" -eq 0 ]; then
+    fail "title block is empty"
+  elif [ "$title_lines" -gt 1 ]; then
+    fail "title is $title_lines lines; a squash title is one line, and a wrapped one pastes broken"
+  fi
+  if [ -n "$title_over" ]; then
+    fail "title over $TITLE_MAX_CHARS chars:$title_over"
+  fi
+  if [ "$body_lines" -eq 0 ]; then
+    fail "body block is empty"
+  elif [ "$body_lines" -gt "$BODY_MAX_LINES" ]; then
+    fail "body is $body_lines lines, cap $BODY_MAX_LINES"
+  fi
+  if [ -n "$body_over" ]; then
+    fail "$body_over_count body line(s) over $BODY_MAX_WIDTH chars:$body_over"
+  fi
+fi
+
+if [ -n "$failures" ]; then
+  printf '%s: FAIL — %s%s\n' "$PROG" "$SRC_DESC" "$failures" >&2
+  printf '%s: tighten it — /squash-message step 3, then re-run.\n' "$PROG" >&2
+  exit 1
+fi
+
+printf '%s: ok — %s (title %s/%s chars, body %s/%s lines, widest %s/%s)\n' \
+  "$PROG" "$SRC_DESC" \
+  "$title_widest" "$TITLE_MAX_CHARS" \
+  "$body_lines" "$BODY_MAX_LINES" \
+  "$body_widest" "$BODY_MAX_WIDTH"
