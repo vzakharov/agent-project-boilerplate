@@ -2,8 +2,8 @@
 description: Compatibility redirect — `/implement` is now `/go`. Invoke as `/implement` (or `/implement <branch>`); it forwards to the `go` skill unchanged. Kept because handoff blocks in older plan files and PR comments still say `/implement`.
 ---
 
-`/implement` was renamed to `/go`. This path is a permanent redirect so a handoff
-block written before the rename still resolves.
+`/implement` is a permanent alias for `/go`, so a handoff block carrying the old
+name still resolves.
 
 **Load and follow `@.claude/skills/go/SKILL.md`**, passing whatever arguments
 `/implement` was invoked with. Do not act on the summary above — this file

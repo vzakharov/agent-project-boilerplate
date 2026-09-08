@@ -67,7 +67,7 @@ git log --format='%s%n%n%b' origin/<base>..HEAD
 git diff --stat origin/<base>..HEAD
 ```
 
-**In plan-open mode the diff is one plan commit**, so the plan under `docs/plans/` is what the sections below are composed from — it states what the change will deliver, which is what they describe. Every other mode composes from the commits.
+**In plan-open mode the diff is one plan commit**, so the sections below are composed from the plan under `docs/plans/` rather than from the log. Every other mode composes from the commits.
 
 **Title**: conventional-commit format (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `style:`, `test:`, `ci:`, `perf:`). Reuse the subject of the lead commit when there's only one; for multi-commit branches, synthesize a subject that covers the whole branch. Keep under 70 chars.
 

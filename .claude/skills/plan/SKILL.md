@@ -37,8 +37,6 @@ Once the plan file is committed, invoke `@.claude/skills/pr/SKILL.md` with no ar
 
 The trigger lives here rather than in `/pr` because this is where a plan becomes pushed, so **every** entry into planning gets a PR. CLAUDE.md § "Plan mode & questions in web sessions" names a bare `/plan` as the default entry for a new web session — more common than `/issue` — and hanging PR-creation off `/pr` would leave exactly that entry on a PR-less branch.
 
-Publishing is what makes the plan reviewable as a diff: inline comments, threads, and `/handle` reading plan feedback the way it reads code feedback.
-
 ### Handing off — end the plan turn with a copyable `/go` block
 
 Get the branch with `git branch --show-current` and substitute the real name. Introduce the block with wording that **names the new session** — `To implement — start a new session with:`, or an unmistakable equivalent. That lead-in is what carries the session model to the operator; a bare "To implement:" reads as an offer to do it here, which is the misreading the block exists to remove. Emit the command in a fenced block containing **only** the command — no language tag, nothing else inside the fence — so it can be copied verbatim:

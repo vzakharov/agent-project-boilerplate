@@ -21,10 +21,10 @@ and the per-file steps mixed in with the things worth remembering — hence the
 mandatory tighten pass in Step 3. Never print or post a draft that hasn't been
 through it.
 
-The proposal has a third reader at the moment it is first written. `/plan`
-publishes the PR over the plan commit, so the proposal composed there is **the
-plan as it would be recorded** — a second, much shorter read of the same
-decision, in front of the operator before any code exists.
+The first reader reaches it earlier than merge time: `/plan` publishes the PR
+over the plan commit, so the proposal composed there is **the plan as it would
+be recorded** — a much shorter second read of the same decision, in front of the
+operator before any code exists.
 
 ## Invocation modes
 
