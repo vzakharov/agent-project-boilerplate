@@ -1,37 +1,50 @@
 Proposed squash title/body:
 
 ```
-feat: open the PR at plan time so plans get reviewed like code (pr #32)
+feat: give each loop skill one thing to own (pr #32)
 ```
 
 ```
 A plan file rode a PR-less branch until implementation finished, so the
 operator could read it but could not review it the way they review
-everything else in this project: no inline comments, no threads, no diff
-view. Feedback arrived as chat prose instead, on a worse surface than
-the one already in use for code.
+everything else here: no inline comments, no threads, no diff view.
+Fixing that meant opening the draft PR at plan time, and pulling on it
+turned up three more places where a skill was doing a neighbour's job.
+Each is now a responsibility removed rather than added.
 
-The draft PR now opens at the end of the planning turn. /pr's Step 1a
-gate stops being "STOP, go plan, come back later" and becomes "detour
-through /plan, then continue" — push, create, body and squash proposal
-run in the same turn they always did, over a plan commit rather than
-implementation commits. The duplicate-PR guard inverts into a refresh
-mode: an existing PR is the expected state at the end of implementation,
-so /implement fills it in, re-deriving the body and QA checklist against
-the real diff. Both derivations stay single-sourced; only their input
-gains a second shape, since a plan states what will be delivered and
-that is what a checklist and a squash message are written from anyway.
+/plan publishes its own plan. The draft PR opens over the plan commit,
+making the plan a reviewable diff, and the trigger sits in /plan because
+that is where the plan becomes pushed — so every entry into planning
+gets a PR, not only the ones that arrived through /pr. That leaves /pr
+with no reason to take a task argument: new work is /plan, unplanned
+work is /go, and Step 1a's plan gate deletes outright along with the
+defensive prose that existed only to guard an argument /pr should never
+have accepted. What remains is three modes over the PR object, one of
+them the old duplicate-PR guard inverted into a refresh: an existing PR
+is the expected state at the end of implementation, so it gets filled
+in rather than declined. The QA checklist and squash proposal are
+written from the plan at open time and reconciled against the real diff
+at refresh, which keeps both derivations single-sourced and only gives
+one of them a second input shape.
 
-One predicate carries the change: implementation has begun iff
-docs/plans/ holds a file that is not *.draft.do-not-implement.md. It is
-what lets /handle read a draft plan plus unanswered feedback as review
-of the plan — revise the file, reply, push, hand off again — while the
-same feedback without a draft plan stays the ordinary code-review lane,
-and a draft plan without feedback stays an ordinary go-ahead. That is
-why no third lane appears. The predicate is defined once, in /plan's
-plan-file lifecycle section; /handle and /plan's approval gate cite it,
-and anyone restating it there has created the drift this arrangement
-exists to prevent.
+/implement becomes /go, converging the command with the vocabulary
+/plan's approval gate already listens for, and the skill it names is no
+longer "execute an approved plan" but every shape of starting work. The
+old path stays as a permanent redirect stub, because the handoff block
+is a copyable command living in plan files and PR comments that outlive
+the rename. Two things deliberately keep the old word: the
+*.draft.do-not-implement.md suffix, where it is a warning rather than a
+command, and /from-branch's follow-up keywords, which gain "go" instead
+of trading it.
+
+One predicate carries the review loop: implementation has begun iff
+docs/plans/ holds a file that is not a draft. It lets /handle read a
+draft plan plus unanswered feedback as review of the plan — revise,
+reply, push, hand off again — while the same feedback without a draft
+plan stays the ordinary code-review lane, and a draft plan without
+feedback stays an ordinary go-ahead. That is why no third lane appears.
+It is defined once, in /plan's plan-file lifecycle section; anyone
+restating it elsewhere has created the drift the arrangement prevents.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
