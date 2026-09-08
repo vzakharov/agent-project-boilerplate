@@ -101,14 +101,15 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. | `gh` | `/finalize`, `/implement` | adopt |
 | `/handle` | Pick up a branch and do what it needs: attach, read off whether it carries an unimplemented plan or unanswered review feedback, run that lane, land-prep only if asked. | `gh`; `scripts/export-github-item.py` (G3) for the review lane's thread export | `/from-branch`, `/implement`, `/finalize` | adopt |
 | `/branch-rename` | Rename a harness auto-branch (`claude/<adjective>-<noun>-<hash>`) to a semantic name, keeping the random suffix. | `gh` | `/pr` | adopt |
-| `/squash-message` | Produce and post the copy-ready squash title/body for a PR; owns the format and the draft-then-tighten discipline. | `gh`, `jq` | `/tighten-docs` (G1) | adopt |
+| `/squash-message` | Produce and post the copy-ready squash title/body for a PR; owns the format and the draft-then-tighten discipline. | `gh`, `jq`, `scripts/check-squash-message.sh` | `/tighten-docs` (G1) | adopt |
 | `/qa-checklist` | Generate a QA checklist from the branch's change and write it into the PR body, with each step classified for automatability. | `gh`, `python3` ≥3.9, `scripts/pr-body.py` | — | adopt |
 | `/check-merge` | Check once whether the PR's base advanced or the PR landed since the branch was last attested, and reconcile the squash proposal. | `gh`, `scripts/check-merge.sh` | `/finalize`, `/from-branch`, `/squash-message` | adopt |
 | `/sync-branch` | Bring a branch up to date with its merge target, resolving mechanically and logically in one merge commit. | `gh`, `scripts/vet.sh` | `/check-merge` | adopt |
 | `scripts/check-merge.sh` | The git/GitHub polling behind `/check-merge`. | `gh`, `jq`, `git` | — | adopt |
 | `scripts/pr-body.py` | Pull a PR body to `docs/pr/<n>/body.md` for local editing and PATCH it back. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` | — | adopt |
 | `scripts/lib/github.py` | Shared GitHub plumbing for the stdlib-only Python scripts: the proxy-then-direct `fetch` ladder every request goes through, token resolution, `origin` repo detection, and the `die` they report through. | `python3` ≥3.9 | — | adopt |
-| `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | — | **rewrite** |
+| `scripts/check-squash-message.sh` | Measure the squash proposal against the size caps `/squash-message` states, locating it in the worktree or in history once `/finalize` has swept it. POSIX `sh`. | `sh`; `git` for the history rungs | — | adopt |
+| `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | `scripts/check-squash-message.sh` | **rewrite** |
 | `scripts/run-parallel.sh` | Optional helper for `scripts/vet.sh`: run the checks concurrently, print output only for the ones that failed, and name files an autofix step rewrote. POSIX `sh`. | `sh`; `git` for the autofix check only | — | adopt |
 
 Two things in this group are less optional than they look — see
@@ -272,7 +273,11 @@ Four closure facts are counter-intuitive enough to state outright:
   **rewrite** disposition rather than a choice: there is no version of G2 that
   does not run your checks. (Three more skills *name* it — `/implement` to say vetting is
   not its job, `/sync-upstream` and `/test-on-gh` as an example — so a grep
-  overcounts the dependency.)
+  overcounts the dependency.) Its one line calling
+  `scripts/check-squash-message.sh` is the exception to the rewrite: everything
+  else in that file is yours to replace, and a rewrite that drops the call
+  silently retires the squash caps at the gate that catches a proposal edited by
+  hand or outgrown by a later base merge.
 - **`/finalize` reaches into G3 and G5 conditionally.** Its working-artifact
   sweep cites `/issue`, and its CI steps cite `/watch-ci`. Both citations are
   guarded by prose conditions ("if a workflow runs on PRs"), so the behavior

@@ -138,16 +138,19 @@ number>)`, e.g. `refactor: #1150 extract useVisibilityPoll to shared/lib (pr
   `docs`, `chore`, `style`, `test`, `ci`, `perf`) with no scope or extra words
   before the colon. Include `#<issue>` only when the PR addresses a GitHub issue
   (the primary one if several); omit it otherwise. Always end with ` (pr #<pr
-number>)`.
+number>)`. **One line, at most 80 chars** — the mandatory suffix eats ~10 of it,
+  which is why it isn't the body's own 72.
 - **Body** — the why, then what changed, at the altitude Step 3 sets. When the PR or diff references an issue, end
   the prose with a `Closes #N` (for `feat`/`refactor`/…) or `Fixes #N` (for
   `fix`) trailer. Then a blank line, then `Co-authored-by: Claude
 <noreply@anthropic.com>` as the final line (or your other assigned vendor email
   if you aren't running on Claude Code) — the body is pasted verbatim, so the
   byline has to be inside it.
-- **Hard-wrap the body at ~72 chars with real newlines.** A git commit message
-  doesn't soft-wrap; one long line per paragraph reads as an unwrapped wall in
-  `git log`. Continuation lines of a bullet align under its text.
+- **Hard-wrap the body at 72 chars with real newlines**, and keep it to **at most
+  50 lines**. A git commit message doesn't soft-wrap; one long line per paragraph
+  reads as an unwrapped wall in `git log`. Continuation lines of a bullet align
+  under its text. A line holding a single unwrappable token — a URL, a long path,
+  no interior whitespace — has no wrapped form and is exempt from the width.
 - Two **separate** fenced blocks, never one — the UI offers a copy button per
   block.
 
@@ -156,7 +159,9 @@ number>)`.
 Re-read the draft as the future reader above, and rewrite it until it hits the
 target.
 
-The target is **three paragraphs of prose, four at the outside**. The opening says
+The target is **three paragraphs of prose, four at the outside**, inside the
+measured caps the format rules state — a one-line title of at most 80 chars, and
+a body of at most 50 lines wrapped at 72. The opening says
 why the change exists; the rest say what it does about it, named at the level of
 the behavior, contract or module affected, plus anything that would trip someone
 editing that area later. Not a bullet-per-change inventory: detail that doesn't
@@ -198,12 +203,22 @@ Three things a draft reaches for fail Lens A, however well written:
 
 Scope is the caller's call, not this step's, and it cuts both ways. If the project
 has hydrated a release lane, a release body is deliberately long (a paragraph per
-product area) and isn't held to the cap; a hotfix body for a minimal fix is one or
-two paragraphs. The pass runs at either size — trimming words inside each of a
-release's areas rather than dropping areas, and never padding a hotfix out to look
-substantial.
+product area); a hotfix body for a minimal fix is one or two paragraphs. The pass
+runs at either size — trimming words inside each of a release's areas rather than
+dropping areas, and never padding a hotfix out to look substantial. The paragraph
+target moves with scope that way; the measured caps do not. They bind every lane,
+and a project whose release bodies genuinely outgrow 50 lines raises the constant
+in its own copy of `scripts/check-squash-message.sh`, as a reviewable edit.
 
-Overwrite the file with the tightened version.
+Overwrite the file with the tightened version, then **measure it**:
+
+```bash
+scripts/check-squash-message.sh <working file>
+```
+
+Running it here fails at authorship, where the rewrite is already in hand — and
+it is the only run `/finalize no vet` gets, since that mode skips step 1 but still
+reaches step 5. Do not emit anything until it passes.
 
 ## Step 4 — Emit (comment first, then transcript)
 
