@@ -16,7 +16,7 @@ per skill, script and file, grouped so you can tell how much of it you need:
 | --- | --- |
 | **G0** | The sync path — how you pull later changes forward. |
 | **G1** | Prose & principles: `CLAUDE.md`, `.claude/rules/`, `/dry`, `/tighten-docs`. |
-| **G2** | The PR loop: `/plan`, `/implement`, `/pr`, `/finalize` and the mechanical pieces they compose. |
+| **G2** | The PR loop: `/plan`, `/go`, `/pr`, `/finalize` and the mechanical pieces they compose. |
 | **G3** | Issue & backlog: `/issue`, `/propose-issue`, `/audit-github-backlog`. |
 | **G4** | Remote-session plumbing — the `gh` shim that makes the rest work on the web. |
 | **G5** | CI & landing: `/bootstrap-workflow-dispatch`, `/watch-ci`, and its polling scripts. |
@@ -25,7 +25,7 @@ per skill, script and file, grouped so you can tell how much of it you need:
 The Python scripts are stdlib-only (3.9+) and use `$GH_TOKEN` or `gh auth token`;
 the shell scripts need `gh`, `jq`, and `git`.
 
-## Why `/plan` and `/implement` exist
+## Why `/plan` and `/go` exist
 
 They started as a workaround: Claude Code's web/remote sessions re-emit stacked
 plan-mode and `AskUserQuestion` prompts after idling, silently losing answers
@@ -38,9 +38,10 @@ that these stay whether or not the bug is still there. A plan on disk can carry
 sections native plan mode has nowhere to put, notably the mandatory **DRY notes**
 that force the reuse-vs-duplication call to be argued *before* implementation.
 Its filename doubles as the approval gate (`.draft.do-not-implement.md` until the
-operator says otherwise), and it ends by handing over a copy-pasteable
-`/implement <branch>` line, so the next session starts with the approval already
-recorded rather than re-litigated.
+operator says otherwise), and `/plan` publishes it as a draft PR, so the plan is
+reviewed as a diff — inline comments and threads — rather than as chat prose. The
+turn ends by handing over a copy-pasteable `/go <branch>` line, so the next
+session starts with the approval already recorded rather than re-litigated.
 
 ## Getting it
 

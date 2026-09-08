@@ -21,6 +21,11 @@ and the per-file steps mixed in with the things worth remembering — hence the
 mandatory tighten pass in Step 3. Never print or post a draft that hasn't been
 through it.
 
+The proposal has a third reader at the moment it is first written. `/plan`
+publishes the PR over the plan commit, so the proposal composed there is **the
+plan as it would be recorded** — a second, much shorter read of the same
+decision, in front of the operator before any code exists.
+
 ## Invocation modes
 
 - `/squash-message` (default) — create the proposal, or update it in place if one
@@ -58,8 +63,15 @@ PR is open.
   the why lives.
 - `git diff --stat origin/<base>..HEAD` — the shape of the change.
 - `gh pr view --json number,title,body` — the PR number for the `(pr #N)` suffix,
-  and the description.
+  and the description. **No number yet** — the PR is not open — is not something
+  to wait for: compose with `(pr #tbd)` and let the number land at whatever run
+  next touches the comment, which § "When to (re)run" already counts as a
+  refresh trigger and `/finalize` Step 5 backstops.
 - Whichever issue the PR addresses, if any (`#N` in the PR body or commits).
+
+**A branch carrying only a plan commit has the plan as its input**, not `git
+log`: the plan states the change the record will describe, and the commit
+subject only says a plan was written.
 
 ## Step 2 — Draft into the working file (do not print it)
 

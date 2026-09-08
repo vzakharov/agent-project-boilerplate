@@ -1,5 +1,5 @@
 ---
-description: Attach the current session to an existing branch or PR and continue work from there, abandoning the auto-created session branch. Invoke as `/from-branch <branch-name|#PR|PR-url> [<follow-up instruction or /skill ...>]`. The PR target may be a bare PR link or any deep link into it (a review link like `.../pull/NNN#pullrequestreview-<id>`, a review-comment or conversation-comment link, or a `/files` tab URL) — the PR number after `/pull/` is the basis for finding the branch. Also use when a session's launch prompt just names an existing branch to continue (e.g. `implement claude/foo-xxxx`) instead of a literal `/from-branch`. The follow-up can be `implement`/`execute` to run the plan a prior `/plan` session left under `docs/plans/`.
+description: Attach the current session to an existing branch or PR and continue work from there, abandoning the auto-created session branch. Invoke as `/from-branch <branch-name|#PR|PR-url> [<follow-up instruction or /skill ...>]`. The PR target may be a bare PR link or any deep link into it (a review link like `.../pull/NNN#pullrequestreview-<id>`, a review-comment or conversation-comment link, or a `/files` tab URL) — the PR number after `/pull/` is the basis for finding the branch. Also use when a session's launch prompt just names an existing branch to continue (e.g. `go claude/foo-xxxx`) instead of a literal `/from-branch`. The follow-up can be `go`/`implement`/`execute` to run the plan a prior `/plan` session left under `docs/plans/`.
 ---
 
 When a Claude Code on-the-web session starts, the harness usually creates a fresh branch (e.g. `claude/add-foo-bar-XXXX`) and checks it out. This skill **discards that auto-branch** and re-points the working tree at an existing branch or PR head so the rest of the session continues that work.
@@ -8,10 +8,10 @@ When a Claude Code on-the-web session starts, the harness usually creates a fres
 
 The obvious trigger is an explicit `/from-branch …` invocation. But a session can also **start** with a launch prompt that just names an existing branch to continue — with no literal `/from-branch`. Common shapes:
 
-- `implement claude/some-feature-xxxx` (or `execute …`),
+- `go claude/some-feature-xxxx` (or `implement …` / `execute …`),
 - "continue the work on `<branch>`", "pick up `<branch>`", "keep going on `#123`".
 
-These are the **same signal**: the harness has put you on a fresh auto-branch, but the operator's intent is to attach to the _named_ existing branch and continue its work — not to start new work on the auto-branch. Treat such a launch prompt as an implicit `/from-branch <that-branch> <the rest of the prompt as follow-up>` and run this skill: resolve the named branch as the **Target** (Step 1), and take everything else in the prompt as the **Follow-up** (bare `implement`/`execute` → run the plan under `docs/plans/`; anything richer → free-form follow-up). The tell is a launch prompt whose subject is an _existing_ branch/PR the session is not already on — when in doubt, `git ls-remote --heads origin <name>` confirms the branch exists before attaching.
+These are the **same signal**: the harness has put you on a fresh auto-branch, but the operator's intent is to attach to the _named_ existing branch and continue its work — not to start new work on the auto-branch. Treat such a launch prompt as an implicit `/from-branch <that-branch> <the rest of the prompt as follow-up>` and run this skill: resolve the named branch as the **Target** (Step 1), and take everything else in the prompt as the **Follow-up** (a bare `go`/`implement`/`execute` → run the plan under `docs/plans/`; anything richer → free-form follow-up). The tell is a launch prompt whose subject is an _existing_ branch/PR the session is not already on — when in doubt, `git ls-remote --heads origin <name>` confirms the branch exists before attaching.
 
 ## Argument shape
 
@@ -21,14 +21,14 @@ The skill argument has two parts:
 2. **Follow-up** (optional, everything after the target): one of —
    - a free-form instruction ("…fix the failing test, then push"),
    - a slash-command invocation of another skill (e.g. `/finalize`, `/check-merge`) — if so, load and follow that skill **after** the attach step completes, or
-   - the keyword **`implement`** (or its synonym **`execute`**), optionally trailed by "the plan" / "plan" filler, meaning "execute the plan file a prior `/plan` session left under `docs/plans/`". Bare `implement` — with no plan named — still means "implement the plan". Step 6 dispatches it.
+   - the keyword **`go`** (or its synonyms **`implement`** / **`execute`**), optionally trailed by "the plan" / "plan" filler, meaning "execute the plan file a prior `/plan` session left under `docs/plans/`". Bare, with no plan named, it still means "implement the plan". Step 6 dispatches it.
 
 Examples:
 
 - `/from-branch #123` — attach and wait for further instructions.
 - `/from-branch #123 finish the migration and push` — attach, then do the described work.
-- `/from-branch #123 implement` — attach, then execute the plan under `docs/plans/`.
-- `/from-branch #123 implement the plan` — same thing (the trailing "the plan" is just filler).
+- `/from-branch #123 go` — attach, then execute the plan under `docs/plans/`.
+- `/from-branch #123 implement the plan` — same thing (`implement` is a synonym and the trailing "the plan" is just filler).
 - `/from-branch #123 /finalize` — attach, then invoke `@.claude/skills/finalize/SKILL.md`.
 - `/from-branch feat/new-thing /sync-branch` — same idea with a raw branch name.
 - `/from-branch https://github.com/<owner>/<repo>/pull/123#pullrequestreview-999` — a review deep link: parse `123` as the PR, attach to its branch, and treat that review's comments as the feedback to address.
@@ -108,9 +108,9 @@ State this explicitly in your turn output so the user can see the redirect took 
 ## Step 6 — Dispatch the follow-up
 
 - **No follow-up provided** → report the attach (current branch, last commit, PR link if applicable) in 1–2 sentences and stop. Wait for the user's next instruction.
-- **`implement` / `execute` follow-up** (the keyword optionally trailed by "the plan" / "plan" — nothing richer) → load `@.claude/skills/implement/SKILL.md` and follow it from its Step 1; it owns locating the plan under `docs/plans/`, the plan-file lifecycle flip, and the closing draft PR. Do **not** inline-copy those steps. A `/from-branch` launch is already continued work, so there is no plan cycle to open — this follow-up **is** the go-ahead the lifecycle flip quotes. If the follow-up carries a real instruction beyond `implement`/`execute` + that filler, it's a free-form follow-up — handle it as the bullet below instead.
-- **Free-form follow-up** → load `@.claude/skills/implement/SKILL.md` and follow it via its § "Planless entry", treating the follow-up text as the task. Two points are `/from-branch`-specific:
-  - **A concrete request is not a plan cycle.** `/from-branch` is continued work (CLAUDE.md § "Plan mode & questions in web sessions"), so routing through `/implement` is not an invitation to write a plan file first.
+- **`go` / `implement` / `execute` follow-up** (the keyword optionally trailed by "the plan" / "plan" — nothing richer) → load `@.claude/skills/go/SKILL.md` and follow it from its Step 1; it owns locating the plan under `docs/plans/`, the plan-file lifecycle flip, and the closing hand-off to `/pr`. Do **not** inline-copy those steps. A `/from-branch` launch is already continued work, so there is no plan cycle to open — this follow-up **is** the go-ahead the lifecycle flip quotes. If the follow-up carries a real instruction beyond the keyword + that filler, it's a free-form follow-up — handle it as the bullet below instead.
+- **Free-form follow-up** → load `@.claude/skills/go/SKILL.md` and follow it via its § "Planless entry", treating the follow-up text as the task. Two points are `/from-branch`-specific:
+  - **A concrete request is not a plan cycle.** `/from-branch` is continued work (CLAUDE.md § "Plan mode & questions in web sessions"), so routing through `/go` is not an invitation to write a plan file first.
   - **The quality passes are diff-scoped, so they self-limit.** A follow-up that produced no code ("explain why X fails", "rerun CI") leaves them nothing to act on, and each says so in its own "When to use". That is a property of the passes — "the change was small" is not grounds to skip them.
 - **Slash-command follow-up** (e.g. `/finalize`, `/check-merge`, `/sync-branch`, or `/test-on-gh` where the project has hydrated it) → load `@.claude/skills/<name>/SKILL.md` and follow it. Do **not** inline-copy its steps; read and execute the actual file so updates to that skill flow through.
 
@@ -120,4 +120,4 @@ State this explicitly in your turn output so the user can see the redirect took 
 - **Target branch already checked out** — skip Steps 2–4 and proceed to Step 6.
 - **MCP says "not allowed"** for a branch/PR action — switch to `gh` (the token is in `GH_TOKEN`). Don't report the action as impossible.
 - **Branch was force-pushed since the PR was opened** — `git pull --ff-only` will refuse; do a `git reset --hard origin/<branch>` only after confirming with the user that there's no local work to lose.
-- **`implement`/`execute` given but `docs/plans/` has zero or multiple files** — don't guess; `@.claude/skills/implement/SKILL.md` Step 1 owns the resolution, and Step 6 dispatches there.
+- **`go`/`implement`/`execute` given but `docs/plans/` has zero or multiple files** — don't guess; `@.claude/skills/go/SKILL.md` Step 1 owns the resolution, and Step 6 dispatches there.

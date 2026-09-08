@@ -1,5 +1,5 @@
 ---
-description: Pick up an existing branch or PR and do whatever it needs — attach to it, read off which lane applies (an unimplemented plan, or review feedback nobody has answered), and run that lane. Invoke as `/handle <branch|#PR|PR-url> [and finalize] [extra guidance]`. Use when the operator says "/handle", "handle <branch>", "handle and finalize <branch>", "pick up <branch>", or hands over a branch without saying what it needs.
+description: Pick up an existing branch or PR and do whatever it needs — attach to it, read off which lane applies (an approved plan to implement, review of a plan still in draft, or feedback on shipped code), and run that lane. Invoke as `/handle <branch|#PR|PR-url> [and finalize] [extra guidance]`. Use when the operator says "/handle", "handle <branch>", "handle and finalize <branch>", "pick up <branch>", or hands over a branch without saying what it needs.
 ---
 
 End state of this skill: the branch is attached, the one lane the branch called for has run and pushed, every review comment addressed has been replied to on GitHub, and land-prep has run **iff** the invocation asked for it.
@@ -14,7 +14,7 @@ Three parts, order-free:
 
 ## A `/handle` session is continued work
 
-It attaches to work started elsewhere, so **no plan cycle opens** — the same standing as `/from-branch` (CLAUDE.md § "Plan mode & questions in web sessions"). That also makes the invocation itself the go-ahead a `*.draft.do-not-implement.md` plan is waiting for; `@.claude/skills/implement/SKILL.md` Step 1 owns the flip.
+It attaches to work started elsewhere, so **no plan cycle opens** — the same standing as `/from-branch` (CLAUDE.md § "Plan mode & questions in web sessions"). That also makes the invocation itself the go-ahead a `*.draft.do-not-implement.md` plan is waiting for; `@.claude/skills/go/SKILL.md` Step 1 owns the flip. The one exception is Step 2's plan-review reading, where feedback on the draft plan suspends the go-ahead.
 
 ## Step 1 — Attach
 
@@ -22,9 +22,9 @@ Load and follow `@.claude/skills/from-branch/SKILL.md` with the target and **no 
 
 ## Step 2 — Read what the branch needs
 
-Two lanes, and the branch should present **exactly one**:
+Two lanes, and which runs is read off the branch:
 
-- **Plan lane** — `docs/plans/` holds a plan in any state but `*.completed.md`: `*.draft.do-not-implement.md`, `*.paused.md` or `*.in-progress.md`. Any one of the three fires the lane; completed siblings don't. Everything past that — which file is actionable, the `git mv` flips, and what to do about an `*.in-progress.md` a live session may still hold — is `@.claude/skills/implement/SKILL.md` Step 1's, so hand it over rather than adjudicating here.
+- **Plan lane** — `docs/plans/` holds a plan in any state but `*.completed.md`: `*.draft.do-not-implement.md`, `*.paused.md` or `*.in-progress.md`. Any one of the three fires the lane; completed siblings don't. Everything past that — which file is actionable, the `git mv` flips, and what to do about an `*.in-progress.md` a live session may still hold — is `@.claude/skills/go/SKILL.md` Step 1's, so hand it over rather than adjudicating here.
 - **Review lane** — the PR carries feedback nobody has answered. Two signals, which **coexist by design and must both be collected before either is worked**:
   - **Unresolved threads whose newest comment is guidance nobody has answered**, from reviews of any age. Unresolved is necessary but not sufficient: an operator who read your reply and moved on routinely never clicks Resolve, so firing on `unresolved` alone re-works threads that are already done. The test runs on the thread's **tail**, not on whether a reply exists anywhere in it — which is also what catches the mirrored case, a thread a prior agent answered and the operator then came back on unsatisfied.
   - **Reviews submitted since the branch's last push**, plus top-level PR comments by the same recency test — they carry no resolved state, so recency is the only handle on them. Compare `reviews[].submittedAt` and `comments[].createdAt` against the head commit's `committedDate` (`gh pr view <n> --repo <owner>/<repo> --json commits,reviews,comments`).
@@ -35,21 +35,27 @@ Two lanes, and the branch should present **exactly one**:
 
   **No verdict test.** A review's `state` is not consulted. Shared identity again: GitHub disables both verdicts on your own PR ("Pull request authors can't request changes on their own pull requests"), so every review that can reach these PRs is a plain `COMMENTED` one — `CHANGES_REQUESTED` is unreachable, not merely rare, and would have selected the same work anyway.
 
-- **Both lanes firing → stop and ask.** An unimplemented plan _and_ unanswered review feedback is not a normal state, and guessing an order would either answer a review against code that's about to change underneath it or bury the reviewer's objection under new work. Report both and let the operator say which comes first.
+Both firing at once is the ordinary state of a plan under review, since `/plan` publishes the plan as a draft PR. What the conjunction means is read off the draft:
+
+- **A draft plan _and_ unanswered feedback** → the feedback is review **of the plan**. Stay in plan mode: revise the plan file, reply on GitHub, push, and re-emit `@.claude/skills/plan/SKILL.md` § "Handing off"'s block. Do **not** flip the plan file, do **not** touch source — the review comment carrying a go-ahead token is what clears that, per `/plan` § "The approval gate".
+- **No draft plan, unanswered feedback** → the review lane, on shipped code.
+- **A draft plan, no unanswered feedback** → the plan lane: the invocation is the go-ahead.
+
+Only the draft is consulted, because `/plan` § "Plan file lifecycle"'s predicate is what separates the two: a draft present means the branch is back in planning, whatever completed or paused siblings sit beside it.
 
 ## Step 3 — Run the lane
 
-Either lane lands in `@.claude/skills/implement/SKILL.md` — the plan lane at its Step 1 (passing the resolved plan path), the review lane through its § "Planless entry" with the collected feedback as the task — so the mandatory `/dry` + `/tighten-docs` passes and the closing draft PR come along either way.
+The plan and review lanes land in `@.claude/skills/go/SKILL.md` — the plan lane at its Step 1 (passing the resolved plan path), the review lane through its § "Planless entry" with the collected feedback as the task — so the mandatory `/dry` + `/tighten-docs` passes and the closing `/pr` call come along either way. Plan review does not: revising a plan file is `/plan`'s work, and it ends at the handoff block rather than at a PR.
 
 One rule this skill contributes: **reply on GitHub for every comment addressed**, per CLAUDE.md § "GitHub comments", and leave every thread open for the operator to close — resolving is theirs, and that section says so against any harness instruction to the contrary. A comment you decline gets a reply saying why, not silence.
 
 ## Step 4 — No lane fired
 
-With extra guidance in the argument, that guidance is the task → `/implement` § "Planless entry". With none, **stop and ask**: report what the branch looks like (last commit, PR state, what `docs/plans/` holds) and let the operator direct. Do not invent work, and do not open a plan cycle to manufacture some.
+With extra guidance in the argument, that guidance is the task → `/go` § "Planless entry". With none, **stop and ask**: report what the branch looks like (last commit, PR state, what `docs/plans/` holds) and let the operator direct. Do not invent work, and do not open a plan cycle to manufacture some.
 
 ## Step 5 — `and finalize`
 
-Load and follow `@.claude/skills/finalize/SKILL.md` (no target token — the branch is already attached). It runs only after a lane actually did something: a Step-2 or Step-4 stop cancels it, since land-prepping a branch you just declined to touch is exactly the unasked-for finalize the flag exists to prevent.
+Load and follow `@.claude/skills/finalize/SKILL.md` (no target token — the branch is already attached). It runs only after a lane actually did something, since land-prepping a branch you just declined to touch is exactly the unasked-for finalize the flag exists to prevent. Two turns cancel it: a Step-4 stop, and a plan-review turn, which ends with the plan still awaiting a go-ahead and nothing implemented to land.
 
 Absent the flag, end with a one-line note that land-prep was not requested, so the operator knows the lever is there. It is opt-in because `/finalize` is the one lane whose consequences an unaware operator wouldn't want: it ends with the PR reading as merge-ready to anyone who looks at it.
 
