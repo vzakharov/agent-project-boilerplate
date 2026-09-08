@@ -189,21 +189,26 @@ go). `/go` is the word that gate is already listening for.
 
 ### Argument disambiguation
 
-`/go` takes three argument shapes, and in principle two can collide: a terse
-`/go fix-sidebar-scroll` could be a branch or a task. In practice they barely
-overlap — session branches are `<vendor>/<slug>-<hash>`, so a branch token
-essentially always carries a `/`. **Shape is the classifier; resolution only
-confirms it:**
+`/go` takes three argument shapes, and two of them are separated by shape alone:
+**a task is prose, a target is a token.** No operator writes the work they want
+done as a single whitespace-free string — not `fix-sidebar-scroll`, because
+nobody hyphenates a sentence, and not `sidebar`, because a bare noun names a
+subject rather than a job. So the classifier does not have to recognise ref
+syntax, and must not narrow itself to it:
 
-> A first token that **looks like a ref** — it contains a `/`, or it is `#NNN`
-> or a PR URL — is a **target**. Confirm it with `/from-branch` Step 1's
-> `git ls-remote --heads origin <token>`; if it does not resolve, **stop and
-> ask**. A token that does not look like a ref is a **task**.
+> A first argument that is a **single whitespace-free token** — `claude/foo-a1b2`,
+> `fix-sidebar-scroll`, `sidebar`, `#NNN`, a PR URL — is a **target**. Confirm it
+> with `/from-branch` Step 1's `git ls-remote --heads origin <token>`; if it does
+> not resolve, **stop and ask**. An argument carrying whitespace is a **task**.
 
-A ref-shaped token that fails to resolve must **not** fall through to "task".
-The likely cause is a handoff block pasted into a session opened on the wrong
-repository, and implementing a branch name as if it were a task description is
-the worst available response — worse than one round-trip. This is § "Branch-name
+Testing for whitespace rather than for a `/` is what keeps the stop-and-ask
+reachable: a `/`-shaped test reads `fix-sidebar-scroll` as a task and implements
+it as one, which is the outcome the rule exists to prevent.
+
+A token that fails to resolve must **not** fall through to "task". The likely
+cause is a handoff block pasted into a session opened on the wrong repository,
+and implementing a branch name as if it were a task description is the worst
+available response — worse than one round-trip. This is § "Branch-name
 form"'s reasoning applied to the argument: a handoff that did not land intact
 gets a question, not a guess.
 
