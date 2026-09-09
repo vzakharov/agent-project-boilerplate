@@ -5,11 +5,12 @@ fix: #40 give the boilerplate no upstream of its own (pr #41)
 ```
 
 ```
-This repo is where the agent infrastructure its adopters run comes
-from, but /sync-upstream was written as one link in a chain with a
-source above it, and its watermark named Playgramai/playgramapp —
-by now an adopter of this repo rather than its source. Two adopters
-each naming the other left the chain with no root.
+Playgramai/playgramapp donated this repo's agent infrastructure and
+has since become a consumer of it, adopting the boilerplate back
+under its own /sync-agent-infra. That leaves this repo with no
+source above it, while /sync-upstream is still written as one link
+in a chain that has one and its watermark still names playgramapp
+as where this repo syncs from.
 
 The skill keeps its procedure and loses the claim that this repo
 runs it: renamed /sync-agent-infra and shipped as a stub whose

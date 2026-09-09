@@ -4,14 +4,15 @@
 
 Issue export: `docs/issue/40/issue.md`. Closes #40.
 
-This repo is the origin of the agent infrastructure its adopters run. `/sync-upstream`
-is written as one link in a chain with a source above it, and
-`.claude/skills/sync-upstream/upstream.json` names `Playgramai/playgramapp` —
-now itself an adopter of this repo. Two adopters each naming the other as source
-is a loop with no root. The change says this repo has no upstream.
+`Playgramai/playgramapp` donated this repo's agent infrastructure and has since
+become a consumer of it, adopting the boilerplate back under its own
+`/sync-agent-infra`. Nothing broke in that flip — it just leaves this repo with
+no source above it, while `/sync-upstream` is still written as one link in a
+chain that has one, and `.claude/skills/sync-upstream/upstream.json` still names
+playgramapp as where this repo syncs from.
 
-The skill's *procedure* is not the problem — an adopter needs exactly it. What
-goes is the claim that this repo runs it.
+The skill's *procedure* is not affected — an adopter needs exactly it. What goes
+is the claim that this repo runs it.
 
 ## Step 1 — Rename the directory
 
@@ -105,7 +106,10 @@ port notes. Those describe a source this repo does not have.
 
 The placeholder `lastSyncedSha` is the tripwire, not a formality — the skill's
 Step 1 stops on it, so an unhydrated tree cannot run a sync against a foreign
-history. Nothing machine-checks the placeholder (see open question 3).
+history. That check already exists and is the only one needed: nothing
+machine-checks the placeholder itself, deliberately, since an assertion that the
+source repo's watermark stays unfilled would only hold *because* of this change
+rather than catch anything that went wrong.
 
 ## Step 4 — Repoint every pointer
 
@@ -173,12 +177,11 @@ this-repo-has-no-source rewrite over prose that already exists once each.
   `ADOPTING.md` § "Hydrate the sync stub" is a worked filling-in of the same
   instance — the relationship all three have today. No new duplicate appears,
   and the JSON example in the skill stays the schema statement.
-- **One risk this answer creates, and the mitigation:** a placeholder watermark
-  and a documented schema are now two JSON blocks that must agree on field names.
-  They already were (the skill's example vs. the live file), so the count is
-  unchanged — but the skill's example is the one that may add a field, and the
-  template must follow. Open question 3 is the machine-checked version of that
-  coupling; without it, it is a review-time concern.
+- **The one coupling this answer creates:** the placeholder watermark and the
+  schema example in § "The watermark" must agree on field names. They already had
+  to (the example vs. the live file), so the count is unchanged — but the example
+  is the one that may gain a field, and the template has to follow. A review-time
+  concern, left uncodified per the reasoning in Step 3.
 - **Group rationale is not duplicated.** G0's rewritten prose cites G6's
   hydrate-or-delete rule rather than restating it, so the rule has one home even
   though a stub now lives outside G6.
@@ -221,47 +224,19 @@ this-repo-has-no-source rewrite over prose that already exists once each.
   adopter create a file rather than edit one, and drops the `rewrite` disposition
   to a single qualifying file; and an empty `repo`, which throws away the one
   value that is knowable at ship time.
+- **`adopted` ships as a placeholder string**, not a plausible starter set. A
+  starter set is closer to what most adopters land on, but a plausible value is
+  one they can leave standing without noticing, and a wrong `adopted` fails
+  silently — it under-filters the candidate log rather than erroring.
+- **The row stays in G0**, against the issue's §4 which moved it to G6. Keeping
+  the watermark row means G0 is not empty, so the question §4 was answering does
+  not arise; G0's group-level "do you want future updates at all?" is a different
+  decision from G6's per-row hydrate-or-delete, and the group-level one is what an
+  adopter answers first. Ruled out: moving the skill row alone (a group named
+  "the sync path" that does not contain the sync skill), and moving both rows and
+  deleting G0 (coherent, but the group-level framing goes with it).
 - **The `🏷️ Rename it if the name misleads` banner is dropped entirely**, its
   advice having been taken by the rename itself.
-
-## Open questions
-
-Answerable tersely. The plan above is written with every recommendation already in
-force, so silence is a valid resolution.
-
-**1. Does the row stay in G0, against the issue's §4 which moves it to G6?**
-
-- **(a) Stay in G0 — recommended, and what this plan is written for.** Three
-  reasons. The `upstream.json` row stays in the catalog now that the file does, so
-  G0 is not empty and the question the issue was answering ("what's left of G0?")
-  does not arise. G0 is a *group-level* decision — "do you want future updates at
-  all?" — which is a different shape from G6's per-row hydrate-or-delete, and the
-  group-level version is the one an adopter needs to answer first. And it is the
-  cheaper diff: G6's intro, its delete-instead count, catalog line 175, the
-  `/override-gh`-travels-beyond-G4 bullet and both anchors all stay put.
-- (b) Move it to G6 per the issue, leaving G0 holding only the watermark row —
-  a group named "the sync path" that does not contain the sync skill.
-- (c) Move both rows to G6 and delete G0. Coherent, but it loses the group-level
-  framing above, which is the objection that reopened this.
-
-**2. Does `adopted` ship as a placeholder string, or as a plausible starter set?**
-
-- **(a) Placeholder — recommended.** `["<the paths you took — see the skill's
-  § The watermark>"]` is unmistakably unfilled, and the skill's § "The watermark"
-  is one scroll away with a real example.
-- (b) A starter set (`["CLAUDE.md", ".claude/", "scripts/"]`), which is closer to
-  what most adopters end up with. Costs the tripwire: a plausible-looking value is
-  one an adopter can leave standing without noticing, and `adopted` being wrong is
-  silent — it under-filters the log rather than erroring.
-
-**3. Machine-check the template's unhydrated state? (Beyond the issue.)**
-
-- **(a) File it as a follow-up issue instead — recommended.** Assertion 4 already
-  establishes the idiom this would use: `docs/catalog.md` present means the source
-  repo, where `lastSyncedSha` **must** still be a placeholder; absent means an
-  adopting tree, where it must **not** be. That is ~15 lines and it forecloses
-  exactly the failure that produced #40 — a live watermark shipped from the
-  source. But it is a new assertion in a script this issue does not otherwise
-  touch, so it widens the PR on the agent's judgement rather than yours.
-- (b) Fold it into this PR, since the decoupling and the check that keeps it
-  decoupled are one thought.
+- **No new assertion in `scripts/check-skill-catalog.sh`.** Considered: a
+  catalog-presence check in assertion 4's idiom, asserting this repo's
+  `lastSyncedSha` stays a placeholder. Dropped — see Step 3.
