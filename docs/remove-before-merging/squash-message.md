@@ -6,22 +6,19 @@ feat: #40 ship the sync path as an unhydrated stub (pr #41)
 
 ```
 Playgramai/playgramapp donated this repo's agent infrastructure and
-has since become a consumer of it, adopting the boilerplate back
-under its own /sync-agent-infra. That leaves this repo with no
-source above it, while /sync-upstream is still written as one link
-in a chain that has one and its watermark still names playgramapp
-as where this repo syncs from.
+has since adopted the boilerplate back under its own
+/sync-agent-infra, so nothing sits above this repo any more.
+/sync-upstream was still written as though something did, and its
+watermark still named playgramapp as where this repo syncs from.
 
 The skill keeps its procedure and loses the claim that this repo
 runs it: renamed /sync-agent-infra and shipped as a stub whose
 hydration is a watermark rather than a procedure. What an adopter
-needs survives intact — the watermark's structure and its
-adopted/declined contract, the never-sync-the-watermark and
-judge-the-diff invariants, the triage verdicts, apply-by-intent,
-and the clone recipe whose credential-helper placement is the trap
-that recipe exists for. The "upstream is relative to where you
-stand" framing goes: with no upstream there is no direction left
-to relativize.
+needs survives intact — the watermark's adopted/declined contract,
+the never-sync-the-watermark and judge-the-diff invariants, the
+triage verdicts, apply-by-intent and the clone recipe. What goes is
+the "upstream is relative to where you stand" framing: with no
+upstream there is no direction left to relativize.
 
 The watermark itself becomes the adopter's template: repo already
 names this repo, which is every adopter's source, and the SHA, date
