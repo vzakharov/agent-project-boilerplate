@@ -160,7 +160,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/handle`** — attach to a branch and do whatever it needs: read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, and land-prep only if asked.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
-- **`/sync-agent-infra`** — pull the agent infrastructure forward from the repo this one adopted it from, triaging commit by commit. Ships as a stub, this repo having no source above it: hydration is filling in `.claude/skills/sync-agent-infra/upstream.json`, which already names this repo as the source an adopter syncs from.
+- **`/sync-agent-infra`** — pull the agent infrastructure forward from the repo this one adopted it from, triaging commit by commit. Ships as a stub, this repo having no source above it.
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 - **`/implement`** — a redirect to `/go`, kept because handoff blocks written before the rename still say it.
 
