@@ -144,13 +144,16 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 
 Inert on a laptop, load-bearing on the web. The agent proxy in Claude Code
 web/remote sessions blocks long-polling calls and most of `gh`'s GraphQL
-surface; the hook installs a `gh` shim that routes the real binary around the
-proxy so the rest of the infrastructure works at all.
+surface; the session-start hook installs a `gh` shim that routes the real binary
+around the proxy so the rest of the infrastructure works at all. The second hook
+carries the other web-only divergence: native plan mode loses answers there, so
+a session that lands in it is told where this repo's planning actually happens.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash`; **`gh` already on `PATH`** | — | adopt |
-| `.claude/settings.json` | Project settings wiring the SessionStart hook. Merge into yours if you already have one. | — | — | adopt — merge if present |
+| `.claude/hooks/plan-mode-notice.sh` | On every prompt submitted while the session is in native plan mode, inject the notice that this repo plans on disk and that the exit is plan mode's own. | web/remote sessions; `bash`, `jq` | `/plan` (G2) | adopt |
+| `.claude/settings.json` | Project settings wiring the SessionStart and UserPromptSubmit hooks. Merge into yours if you already have one. | — | — | adopt — merge if present |
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
 **The hook does not install `gh`; it shims one that is already there.** Finding

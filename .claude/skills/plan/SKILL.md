@@ -19,9 +19,11 @@ None of the value above depends on that bug, so fixing it upstream does not reti
 
 ## If the session is already in native plan mode
 
-`plan` is a **built-in slash command** in the Claude Code client, so typing `/plan` enables native plan mode and never reaches the agent — the operator's own entry to this skill is bare prose (`plan: <task>`, or just the task). A session that arrives here from that keystroke is read-only and has to leave before it can write anything.
+A session reaches native plan mode two ways, and neither one asks the agent first: the operator switches mode in the UI, or types `/plan` — a **built-in slash command** in the client, so the keystroke renders there and never reaches the agent at all. Either way the session is read-only and has to leave before it can write anything, so the recovery below is keyed on **being in plan mode**, not on how it got there. (The operator's own entry to this skill is bare prose: `plan: <task>`, or just the task.)
 
 **The tell:** the harness announces plan mode and names a plan file under `/root/.claude/plans/<slug>.md`; edits anywhere else refuse as read-only.
+
+**The escape hatch: an operator who says they want native plan mode gets it.** Entering plan mode is not itself that statement — the whole point of this section is that the mode is usually reached by reflex or by a UI switch that says nothing about intent. But "stay in plan mode", "no, use the native one", or an equivalent is a decision, and it stands for the rest of the session: don't take the exit, don't run this skill, and don't re-raise it on later turns. The plan-mode notice the `UserPromptSubmit` hook re-injects each turn is not a fresh instruction to relitigate that with.
 
 **This is plan mode's own exit, not an override of it.** Plan mode's injected instructions end with "this supercedes any other instructions you have received", and rightly so — but they also make the harness plan file writable and end the turn at `ExitPlanMode`, which is exactly what the steps below do. What is genuinely incompatible with this repo's loop is the rival procedure plan mode injects alongside the restriction — a phased workflow built on `Explore`/`Plan` subagents and `AskUserQuestion` — and both are moot the moment the exit lands.
 
