@@ -17,11 +17,11 @@ change's reasoning.
 
 `/squash-message`'s body format rule now states that the byline is the
 last line and explicitly overrides the harness block, and
-`scripts/check-squash-message.sh` fails a body carrying either
-spelling of the link — the trailer key, or a bare session URL in the
-prose. The check runs at authorship and in the vet run, so the rule no
-longer stands alone against an instruction the agent sees every
-session.
+`scripts/check-squash-message.sh` fails a body carrying either a
+`Claude-Session:` trailer at the head of a line or a session URL
+anywhere in the prose; a body writing *about* the rule doesn't trip it.
+The check runs at authorship and in the vet run, so the rule no longer
+stands alone against an instruction the agent sees every session.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
