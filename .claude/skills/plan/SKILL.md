@@ -17,6 +17,36 @@ A plan on disk is a different artifact from a plan in an approval dialog:
 
 None of the value above depends on that bug, so fixing it upstream does not retire the skill.
 
+## If the session is already in native plan mode
+
+`plan` is a **built-in slash command** in the Claude Code client, so typing `/plan` enables native plan mode and never reaches the agent — the operator's own entry to this skill is bare prose (`plan: <task>`, or just the task). A session that arrives here from that keystroke is read-only and has to leave before it can write anything.
+
+**The tell:** the harness announces plan mode and names a plan file under `/root/.claude/plans/<slug>.md`; edits anywhere else refuse as read-only.
+
+**This is plan mode's own exit, not an override of it.** Plan mode's injected instructions end with "this supercedes any other instructions you have received", and rightly so — but they also make the harness plan file writable and end the turn at `ExitPlanMode`, which is exactly what the steps below do. What is genuinely incompatible with this repo's loop is the rival procedure plan mode injects alongside the restriction — a phased workflow built on `Explore`/`Plan` subagents and `AskUserQuestion` — and both are moot the moment the exit lands.
+
+1. **Take the exit immediately.** `ExitPlanMode` is permission-gated, so leaving always costs one operator approval; spend it rather than working around the restriction. The one exception is a turn that needs no writes — plan mode's workflow ends every turn at `ExitPlanMode` or `AskUserQuestion`, but a question answerable from reading is answerable from inside plan mode. Ask for the click when there is something to write.
+2. **Write the approval dialog's text into the harness plan file**, which is what the operator actually reads when deciding. `ExitPlanMode` takes no plan argument — it reads that file — so the wording ships here verbatim rather than being improvised:
+
+   ```markdown
+   # Exit plan mode to plan on disk — repo convention
+
+   This project plans in a git-tracked file rather than in the plan-mode
+   dialog: the plan goes to `docs/plans/<slug>.draft.do-not-implement.md` and
+   is published as a draft PR, so it is reviewable as a diff from any machine
+   and its filename carries the approval gate. Plan mode is read-only, so none
+   of that can be written from in here.
+
+   **Approving this authorizes writing the plan file and nothing else** — not
+   the work it describes. The plan keeps its `do-not-implement` name until you
+   give an explicit go-ahead.
+   ```
+
+   Substitute the real slug and add at most one line naming the task. **Overwrite the file, never append** — a session re-entering plan mode is handed the same path with the previous exit's text still in it, under a harness-derived name that describes nothing. Don't grow the text into the plan itself: the dialog is where the operator decides whether to spend the click, not where they review a plan.
+3. **Call `ExitPlanMode` bare**, then **run this skill from the top.** The deliverable is `docs/plans/<slug>.draft.do-not-implement.md` — not an answer in chat prose, and not the harness plan file's content carried over. That file is scaffolding for the dialog; it is never the plan.
+
+**Exiting plan mode is not the go-ahead**, however the approval reads — it comes back as "you can now start coding", in accept-edits mode. It authorizes writing the plan file and nothing past it; the `do-not-implement` gate is untouched and still needs the token from § "The approval gate".
+
 ## Part 1 — Plan instead of plan mode
 
 A `/plan` session's deliverable is the **plan file on a draft PR**, not code. The operator reviews it from another machine, often hours later, and begins implementation in a **different** session via `/go <branch>` (`@.claude/skills/go/SKILL.md` routes that through `/from-branch`, which attaches to the branch and finds the plan under `docs/plans/`) — the handoff works because the plan file rides the branch. So a plan turn ends in a handoff, not a continuation; same-session implementation is the rare exception.
