@@ -107,6 +107,14 @@ actually costs. Rationale, and what was rejected:
    - **Plan mode also injects a rival procedure**, not just a restriction: a
      phased workflow built on `Explore`/`Plan` subagents and `AskUserQuestion`,
      both of which this repo's loop rules out. Ignore it and run this skill.
+   - **Write the section as plan mode's own exit, never as an override of it.**
+     Plan mode's injected instructions end with "this supercedes any other
+     instructions you have received", and an agent that reads the recovery as
+     defiance of a system-level instruction will — correctly — balk. It isn't
+     one: plan mode says the harness plan file is writable and the turn ends at
+     `ExitPlanMode`, and that is exactly what this does. The only genuine
+     conflicts are the subagent phases and `AskUserQuestion`, and both are moot
+     once the exit has happened.
 3. **`CLAUDE.md` § "Plan mode & questions in web sessions"** — three additions,
    each a clause rather than a paragraph: bare-prose `plan …` (or just the task)
    is what an operator types; `/plan` is a built-in that enables native plan mode
@@ -118,12 +126,27 @@ actually costs. Rationale, and what was rejected:
    name against the client's built-in slash commands, because a built-in shadows
    a same-named skill in the composer (client-side, so the agent can still reach
    it — the operator cannot).
-5. **`bash scripts/check-skill-catalog.sh`** — the skill's `@`-references are
+5. **`.claude/hooks/plan-mode-notice.sh`, wired as a `UserPromptSubmit` hook** —
+   the enforcement behind step 2, because prose alone is weak against an injected
+   "this supercedes any other instructions you have received." Every hook payload
+   carries the mode (the base object is `{session_id, transcript_path, cwd,
+   permission_mode}`) and `UserPromptSubmit` accepts `additionalContext`, so the
+   hook reads stdin, and when `permission_mode == "plan"` injects a few lines:
+   this repo plans on disk, the exit is plan mode's own, take it now, wording in
+   the skill. Two properties prose cannot have — it arrives *after* the plan-mode
+   system message, and it re-fires on every prompt while the mode is on, so it
+   cannot be forgotten mid-session. `/plan` itself submits no prompt, so the
+   first firing is the operator's next message, which is the one carrying the
+   task. Merge the event into `.claude/settings.json` beside the existing
+   `SessionStart` entry, and give the hook a `docs/catalog.md` row in G4.
+6. **`bash scripts/check-skill-catalog.sh`** — the skill's `@`-references are
    touched, so prove none dangles.
-6. **Quality passes and hand-off** — `/dry`, `/tighten-docs`, then `/pr`.
+7. **Quality passes and hand-off** — `/dry`, `/tighten-docs`, then `/pr`.
 
-`README.md` and `docs/catalog.md` need no edit: the name is unchanged, and the
-recovery is skill-internal.
+`README.md` needs no edit: the name is unchanged and the recovery is
+skill-internal. `docs/catalog.md` gains only the hook's row — and the hook is
+G4, which an adopter may decline, so the `CLAUDE.md` clauses from step 3 have to
+stand on their own rather than assume it.
 
 Commit prefix is `feat:` throughout: the loop is this repo's product, so a
 changed procedure is a behavior change however Markdown-shaped the diff
@@ -145,6 +168,15 @@ recommended option already in force — silence resolves them.
 3. **The collision convention line** (step 4). (a) Keep it — *recommended*, one
    line, and the next colliding name costs a whole cycle to discover; (b) drop
    it: one collision in 28 names is not a pattern.
+4. **The `UserPromptSubmit` hook** (step 5). (a) Ship it — *recommended*: the
+   only mechanism that reaches an agent *after* plan mode has told it to
+   supersede everything else, and the repo's own rule is that automated
+   behavior needs a hook rather than a memory. (b) Prose only, and accept that a
+   fresh session may run native plan mode anyway — recoverable, at the cost of
+   the operator saying "use the plan skill" and one wasted planning turn.
+   Verifying (a) means launching a session in plan mode and seeing whether the
+   injected context actually lands, which is the one step here that can't be
+   checked by reading.
 
 ## DRY notes
 
