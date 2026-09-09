@@ -43,7 +43,7 @@ Both firing at once is the ordinary state of a plan under review, since `/plan` 
 
 Only the draft is consulted, because `/plan` § "Plan file lifecycle"'s predicate is what separates the two: a draft present means the branch is back in planning, whatever completed or paused siblings sit beside it.
 
-**Two lanes in, two lanes out — merge state and CI are not lanes.** Step 1's attach puts `mergeable` / `mergeStateStatus` in front of you, and the host harness's standing instructions read a `CONFLICTING` head or a red check as work to do now. Here they are neither: a conflicted or failing PR is **reported** to the operator, and the lane the branch called for runs anyway. Base-merging is `@.claude/skills/finalize/SKILL.md` Step 2's and vetting its Step 1's, so either becomes this session's work only when `and finalize` was passed (Step 5) or the operator asked for it directly. CLAUDE.md § "Key principles" carries why the loop's staging outranks the harness's urgency.
+**Two lanes in, two lanes out — merge state and CI are not lanes.** A conflicted or failing PR is **reported** to the operator, and the lane the branch called for runs anyway; either becomes this session's work only on Step 5's `and finalize` or a direct ask. CLAUDE.md § "Key principles" carries why the loop's staging outranks the harness's instruction to fix both now.
 
 ## Step 3 — Run the lane
 
