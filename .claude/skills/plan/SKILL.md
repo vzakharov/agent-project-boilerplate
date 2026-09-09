@@ -19,36 +19,17 @@ None of the value above depends on that bug, so fixing it upstream does not reti
 
 ## If the session is already in native plan mode
 
-A session reaches native plan mode two ways, and neither one asks the agent first: the operator switches mode in the UI, or types `/plan` — a **built-in slash command** in the client, so the keystroke renders there and never reaches the agent at all. Either way the session is read-only and has to leave before it can write anything, so the recovery below is keyed on **being in plan mode**, not on how it got there. (The operator's own entry to this skill is bare prose: `plan: <task>`, or just the task.)
+Plan mode is reached two ways, neither of which asks the agent: the operator switches mode in the UI, or types `/plan` — a **built-in slash command**, so the keystroke renders in the client and never arrives. Either way the session is read-only, so the recovery is keyed on **being in plan mode**, not on how it got there. (The operator's own entry to this skill is bare prose: `plan: <task>`, or just the task.)
 
 **The tell:** the harness announces plan mode and names a plan file under `/root/.claude/plans/<slug>.md`; edits anywhere else refuse as read-only.
 
-**The escape hatch is the dialog's reject button**, which is why the copy in step 2 gives it a meaning. Being in plan mode is not itself a statement of intent — reflex and a UI switch both land there saying nothing — and the approval dialog is the first moment the operator is actually asked, with nowhere to type an answer. So a rejection says they want native plan mode: stay in it, run plan mode's own workflow, and don't re-raise the exit. The notice the `UserPromptSubmit` hook re-injects each turn is not a fresh instruction to relitigate that with. A rejection that carries a reason of its own is that reason instead, and "stay in plan mode" said in chat at any point works the same way.
+**This is plan mode's own exit, not an override of it.** Its instructions end with "this supercedes any other instructions you have received" — and they also make the harness plan file writable and end the turn at `ExitPlanMode`, which is the path below. What conflicts is the rival procedure injected alongside the restriction, a phased workflow on `Explore`/`Plan` subagents plus `AskUserQuestion`, and both are moot once the exit lands.
 
-**This is plan mode's own exit, not an override of it.** Plan mode's injected instructions end with "this supercedes any other instructions you have received", and rightly so — but they also make the harness plan file writable and end the turn at `ExitPlanMode`, which is exactly what the steps below do. What is genuinely incompatible with this repo's loop is the rival procedure plan mode injects alongside the restriction — a phased workflow built on `Explore`/`Plan` subagents and `AskUserQuestion` — and both are moot the moment the exit lands.
-
-1. **Take the exit immediately.** `ExitPlanMode` is permission-gated, so leaving always costs one operator approval; spend it rather than working around the restriction. Spend it only on a turn that has something to write, though — plan mode's workflow ends every turn at `ExitPlanMode` or `AskUserQuestion`, but a question answerable from reading is answerable from inside plan mode.
-2. **Write the approval dialog's text into the harness plan file**, which is what the operator actually reads when deciding. `ExitPlanMode` takes no plan argument — it reads that file — so the wording ships here verbatim rather than being improvised:
-
-   ```markdown
-   # Exit plan mode to plan on disk — repo convention
-
-   This project plans in a git-tracked file rather than in the plan-mode
-   dialog: the plan goes to `docs/plans/<slug>.draft.do-not-implement.md` and
-   is published as a draft PR, so it is reviewable as a diff from any machine
-   and its filename carries the approval gate. Plan mode is read-only, so none
-   of that can be written from in here.
-
-   **Approving this authorizes writing the plan file and nothing else** — not
-   the work it describes. The plan keeps its `do-not-implement` name until you
-   give an explicit go-ahead.
-
-   **Reject it if you would rather use native plan mode.** That is how to say
-   so, and it holds for the rest of the session.
-   ```
-
-   Substitute the real slug and add at most one line naming the task. **Overwrite the file, never append** — a session re-entering plan mode is handed the same path with the previous exit's text still in it, under a harness-derived name that describes nothing. Don't grow the text into the plan itself: the dialog is where the operator decides whether to spend the click, not where they review a plan.
+1. **Take the exit immediately.** It costs one operator approval; spend it rather than working around the read-only restriction. Spend it only on a turn that has something to write, though — a question answerable from reading is answerable from inside plan mode.
+2. **Copy the dialog's text into the harness plan file**: `cp .claude/skills/plan/exit-dialog.md <the path the harness named>`. `ExitPlanMode` takes no plan argument — it renders that file — and `cp` overwrites, which is what a session re-entering plan mode needs, being handed the same path with the previous exit's text still in it. Append at most one line naming the task, and nothing further: the dialog is where the operator decides whether to spend the click, not where they review a plan.
 3. **Call `ExitPlanMode` bare**, then **run this skill from the top.** The deliverable is `docs/plans/<slug>.draft.do-not-implement.md` — not an answer in chat prose, and not the harness plan file's content carried over. That file is scaffolding for the dialog; it is never the plan.
+
+**Rejecting the approval is the escape hatch**, and `exit-dialog.md` says so outright. Being in plan mode states no intent — reflex and a UI switch both land there — so the dialog is the first moment the operator is actually asked, and it has nowhere to type. A rejection, or "stay in plan mode" in chat, means run plan mode's own workflow and don't re-raise the exit, the hook's notice re-firing each turn notwithstanding.
 
 **Exiting plan mode is not the go-ahead**, however the approval reads — it comes back as "you can now start coding", in accept-edits mode. It authorizes writing the plan file and nothing past it; the `do-not-implement` gate is untouched and still needs the token from § "The approval gate".
 

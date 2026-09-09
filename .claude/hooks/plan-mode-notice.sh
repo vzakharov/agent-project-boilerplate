@@ -30,10 +30,10 @@ This repo plans on disk: the deliverable is a git-tracked
 `docs/plans/<slug>.draft.do-not-implement.md` on a draft PR, and plan mode is
 read-only, so it cannot be written from in here.
 
-Take plan mode's own exit now — this is not an override of it. Write the
-approval dialog's wording into the harness plan file (verbatim text in
-`.claude/skills/plan/SKILL.md` § "If the session is already in native plan
-mode"), call `ExitPlanMode` bare, then run that skill from the top.
+Take plan mode's own exit now — this is not an override of it. Copy
+`.claude/skills/plan/exit-dialog.md` over the harness plan file, so the approval
+dialog carries this repo's wording, call `ExitPlanMode` bare, then run
+`.claude/skills/plan/SKILL.md` from the top.
 
 Ignore plan mode's injected `Explore`/`Plan` subagent phases and
 `AskUserQuestion`: this repo's loop rules both out, and both are moot once the

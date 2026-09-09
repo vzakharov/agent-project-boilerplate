@@ -192,6 +192,4 @@ the step it couldn't load. The script also asserts that every skill has exactly
 one row in `docs/catalog.md`, which is what keeps that inventory from drifting as
 skills are added.
 
-**Check a new name against the client's built-in slash commands.** A built-in shadows a same-named skill in the composer, so the operator cannot type it — the agent can still invoke it by name, which is why the shadowing is invisible until someone tries. `plan` is the one collision in this repo, absorbed rather than renamed (§ "Plan mode & questions in web sessions").
-
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
