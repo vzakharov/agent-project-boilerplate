@@ -29,7 +29,7 @@ go vet ./... && go test -short ./...                # Go
 
 The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typecheck='…' test='…'`, which prints output only for the ones that failed.
 
-Until it's implemented, skills that depend on it (notably `/finalize`) will stop loudly.
+The stub exits `0`, which is correct only where there is no stack to check — true of this repo, and of nothing that adopts it. **In an adopting project this file exits `1` until it runs that project's real checks.** An exit-0 stub over an unchecked stack is worse than no script at all, because `/finalize` passes step 1 and attests to a run that verified nothing.
 
 **Keep it current** as tooling evolves. If a CI job catches something `vet.sh` should have caught, that's a signal to extend it.
 
@@ -173,7 +173,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 Seven skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
 
-**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` is the same contract in shell form — it exits `1` until implemented.
+**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form: it exits `0` only because this repo has no stack to check, and in an adopting project it exits `1` until it runs that project's checks.
 
 ### Adding or renaming a skill
 

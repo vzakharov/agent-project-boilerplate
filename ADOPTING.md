@@ -258,10 +258,18 @@ only for the checks that failed:
 exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
 ```
 
-The shipped stub **exits `1` by design**, so skipping this step leaves the PR
-loop stopping loudly — it is a
+The shipped stub **exits `0`**, which is true only of the boilerplate — a repo of
+prose and shell with nothing else to check. **In your repo this file exits `1`
+until it runs the commands above.** An exit-0 stub over a real stack is worse
+than no script: `/finalize` passes step 1 and attests to a vet run that checked
+nothing, and a false green is harder to notice than a loud stop. This is why the
+file is a
 [`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
 [the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
+
+One line in `vet.sh` — the call to `scripts/check-squash-message.sh` — is not
+stack-specific, so decide it separately rather than sweeping it away with the
+rest; the comment above it says what dropping it costs.
 
 ### Hydrate or delete the G6 stubs
 
