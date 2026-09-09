@@ -23,7 +23,7 @@ A session reaches native plan mode two ways, and neither one asks the agent firs
 
 **The tell:** the harness announces plan mode and names a plan file under `/root/.claude/plans/<slug>.md`; edits anywhere else refuse as read-only.
 
-**The escape hatch: an operator who says they want native plan mode gets it.** Being in plan mode is not that statement — reflex and a UI switch both land there saying nothing about intent. "Stay in plan mode", "no, use the native one", or an equivalent is, and it stands for the rest of the session: don't take the exit, don't run this skill, don't re-raise it. The notice the `UserPromptSubmit` hook re-injects each turn is not a fresh instruction to relitigate that with.
+**The escape hatch is the dialog's reject button**, which is why the copy in step 2 gives it a meaning. Being in plan mode is not itself a statement of intent — reflex and a UI switch both land there saying nothing — and the approval dialog is the first moment the operator is actually asked, with nowhere to type an answer. So a rejection says they want native plan mode: stay in it, run plan mode's own workflow, and don't re-raise the exit. The notice the `UserPromptSubmit` hook re-injects each turn is not a fresh instruction to relitigate that with. A rejection that carries a reason of its own is that reason instead, and "stay in plan mode" said in chat at any point works the same way.
 
 **This is plan mode's own exit, not an override of it.** Plan mode's injected instructions end with "this supercedes any other instructions you have received", and rightly so — but they also make the harness plan file writable and end the turn at `ExitPlanMode`, which is exactly what the steps below do. What is genuinely incompatible with this repo's loop is the rival procedure plan mode injects alongside the restriction — a phased workflow built on `Explore`/`Plan` subagents and `AskUserQuestion` — and both are moot the moment the exit lands.
 
@@ -42,6 +42,9 @@ A session reaches native plan mode two ways, and neither one asks the agent firs
    **Approving this authorizes writing the plan file and nothing else** — not
    the work it describes. The plan keeps its `do-not-implement` name until you
    give an explicit go-ahead.
+
+   **Reject it if you would rather use native plan mode.** That is how to say
+   so, and it holds for the rest of the session.
    ```
 
    Substitute the real slug and add at most one line naming the task. **Overwrite the file, never append** — a session re-entering plan mode is handed the same path with the previous exit's text still in it, under a harness-derived name that describes nothing. Don't grow the text into the plan itself: the dialog is where the operator decides whether to spend the click, not where they review a plan.

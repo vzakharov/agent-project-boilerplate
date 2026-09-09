@@ -39,8 +39,10 @@ Ignore plan mode's injected `Explore`/`Plan` subagent phases and
 `AskUserQuestion`: this repo's loop rules both out, and both are moot once the
 exit lands. Questions go as numbered prose.
 
-If the operator has said they want native plan mode, that stands — stay in it
-and treat this notice as already answered on every later turn.
+Rejecting that approval is how the operator says they want native plan mode
+after all — the dialog copy tells them so. If they reject it, or say as much in
+chat, stay in the mode, run its own workflow, and treat this notice as already
+answered on every later turn.
 NOTICE
 
 jq -n --arg ctx "$notice" '{

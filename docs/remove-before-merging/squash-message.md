@@ -22,8 +22,9 @@ the harness plan file the dialog displays has its wording supplied
 verbatim — what this repo plans into, why plan mode conflicts with it,
 and that approving authorizes writing the plan file alone. That exit
 leaves the `do-not-implement` gate untouched, however much the approval
-reads like a go-ahead, and an operator who says they want native plan
-mode keeps it for the rest of the session.
+reads like a go-ahead; rejecting it is how an operator keeps native
+plan mode, the dialog being the one place they are asked and its copy
+saying so outright.
 
 A UserPromptSubmit hook is what makes the convention land. Plan mode
 instructs the agent to supersede every other instruction it has, so
