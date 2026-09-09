@@ -12,22 +12,23 @@ by now an adopter of this repo rather than its source. Two adopters
 each naming the other left the chain with no root.
 
 The skill keeps its procedure and loses the claim that this repo
-runs it: renamed /sync-agent-infra and shipped as a stub, with the
-watermark it runs on left for an adopter to write. What an adopter
+runs it: renamed /sync-agent-infra and shipped as a stub whose
+hydration is a watermark rather than a procedure. What an adopter
 needs survives intact — the watermark's structure and its
 adopted/declined contract, the never-sync-the-watermark and
 judge-the-diff invariants, the triage verdicts, apply-by-intent,
 and the clone recipe whose credential-helper placement is the trap
-that recipe exists for. The live lastSyncedSha and the "upstream is
-relative to where you stand" framing go: with no upstream there is
-no direction left to relativize.
+that recipe exists for. The "upstream is relative to where you
+stand" framing goes: with no upstream there is no direction left
+to relativize.
 
-The catalog follows the row into G6 at adopt-only-if-hydrating-now,
-which empties G0 — its "skipping this leaves you with a snapshot"
-rationale becomes the argument for hydrating rather than deleting
-this one stub, whose hydration is a single file rather than a
-procedure. CLAUDE.md, README.md and ADOPTING.md drop their
-citations of a source this repo does not have.
+The watermark itself becomes the adopter's template: repo already
+names this repo, which is every adopter's source, and the SHA, date
+and adopted set are placeholders they fill in — safe to ship
+because the skill refuses to run on a placeholder SHA. G0 keeps
+both rows and says the sync path arrives unhydrated, while
+CLAUDE.md, README.md and ADOPTING.md drop their citations of a
+source this repo does not have.
 
 Closes #40
 
