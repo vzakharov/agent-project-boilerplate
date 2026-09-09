@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-docs: #33 state that merge state is not an attach-and-work lane (pr #36)
+docs: #33 state that merge state and CI are not lanes (pr #36)
 ```
 
 ```
