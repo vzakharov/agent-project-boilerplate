@@ -43,6 +43,8 @@ Both firing at once is the ordinary state of a plan under review, since `/plan` 
 
 Only the draft is consulted, because `/plan` § "Plan file lifecycle"'s predicate is what separates the two: a draft present means the branch is back in planning, whatever completed or paused siblings sit beside it.
 
+**Two lanes in, two lanes out — merge state and CI are not lanes.** Step 1's attach puts `mergeable` / `mergeStateStatus` in front of you, and the host harness's standing instructions read a `CONFLICTING` head or a red check as work to do now. Here they are neither: a conflicted or failing PR is **reported** to the operator, and the lane the branch called for runs anyway. Base-merging is `@.claude/skills/finalize/SKILL.md` Step 2's and vetting its Step 1's, so either becomes this session's work only when `and finalize` was passed (Step 5) or the operator asked for it directly. CLAUDE.md § "Key principles" carries why the loop's staging outranks the harness's urgency.
+
 ## Step 3 — Run the lane
 
 The plan and review lanes land in `@.claude/skills/go/SKILL.md` — the plan lane at its Step 1 (passing the resolved plan path), the review lane through its § "Planless entry" with the collected feedback as the task — so the mandatory `/dry` + `/tighten-docs` passes and the closing `/pr` call come along either way. Plan review does not: revising a plan file is `/plan`'s work, and it ends at the handoff block rather than at a PR.
@@ -62,5 +64,5 @@ Absent the flag, end with a one-line note that land-prep was not requested, so t
 ## Do NOT
 
 - Act on a referenced skill from memory, or from the one-line summary this file gives it. Every "load and follow" above means literally read that file: its steps are its own and change without this one being touched.
-- Finalize unasked, or merge anything.
+- Finalize unasked, or merge anything — the base branch into this one included, however the PR's merge state reads.
 - Open a plan cycle.

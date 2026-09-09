@@ -95,5 +95,5 @@ The **only** exception is an explicit "no PR" from the operator (e.g. `/go, no P
 ## Do NOT
 
 - Re-open a plan cycle or re-edit the plan file per code change — it's a transient artifact `/finalize` sweeps (see `@.claude/skills/plan/SKILL.md`). Leave it as the approved snapshot under its `.in-progress.md` name. The one time it gets written to mid-flight is the release above — stopping partway, where the progress record is what a fresh session picks the work up from.
-- Run the vet suite, mark the PR ready, dispatch a CI-only bucket, or attest — those are `/finalize`.
+- Run the vet suite, merge the base branch, mark the PR ready, dispatch a CI-only bucket, or attest — those are `/finalize`. A PR that reads `CONFLICTING`, or a red check, is reported to the operator here rather than fixed; CLAUDE.md § "Key principles" carries why that outranks the host harness's instruction to treat either as work now.
 - Skip either Step-3 pass because the diff "looks clean." They're mandatory.
