@@ -17,7 +17,7 @@ judgment is what makes this a skill rather than a script.
 
 **The foundation is the triage's output: what leaves the caller.** Where each
 part of it *lands* is a separate question, settled by Step 4 on a different
-principle — so the two never collapse into one word.
+principle.
 
 End state: the target exists; its `main` carries the foundation's already-reviewed
 half, enough for a session there to run `/handle`, with `bash
@@ -100,9 +100,9 @@ The three buckets, the one the spinoff is *for* first:
   and boundary system below. Travels as files or as intent, per the fork above.
 - **Agent infrastructure — the loop itself**, which is stack-neutral and so
   travels unconditionally, needing no fork and no argument: `.claude/skills/`,
-  `.claude/settings.json`, the `.claude/rules/` that survive the trap below, the
-  `scripts/` the loop's own skills call, `CLAUDE.md`, `README.md`, the editor
-  config.
+  `.claude/settings.json`, the `.claude/rules/` that survive the per-path sort
+  below, the `scripts/` the loop's own skills call, `CLAUDE.md`, `README.md`, the
+  editor config.
 - **The product, and anything path-scoped to it** — does not travel, except by
   the hatch below.
 
@@ -122,15 +122,16 @@ shapes of this recur, and each is silent when taken by directory:
   copying it whole leaves a working loop wrapped around a bootstrap step that
   fails on the new repo's first session.
 
-**The rules below name the *role* a path plays**, with ecosystems only as
-parenthetical examples: a rule written in one ecosystem's nouns is unusable from
-the others. The cases the criterion does not settle alone:
+**The rules below name the *role* a path plays**, ecosystems appearing only as
+parenthetical examples — read them for the role, and keep any you add in the same
+form, since a rule spelled in one ecosystem's nouns is unusable from the others.
+The cases the criterion does not settle alone:
 
 - **The directory skeleton and its import boundaries.** Under a matched stack the
   skeleton travels *empty* and the rule enforcing its direction travels *intact*
   — a layer boundary is architecture whether or not a single feature exists yet.
-  Under a mismatched stack both become intent. None of this is a config file,
-  which is why an enumeration misses it completely.
+  Under a mismatched stack both become intent. None of it is a config file, so
+  reading the configuration will not surface any of it.
 - **Module-resolution aliases** are part of the boundary system, not decoration
   on it (wherever the stack declares them — a compiler or bundler path map, a
   workspace member list, a module path prefix).

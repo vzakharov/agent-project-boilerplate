@@ -58,9 +58,7 @@ what applies.
 - **`lineage`** — optional provenance: the whole ancestry, **root first**, so the
   repo actually synced from leads and each later entry is one hop further from
   it. Each entry names an ancestor and its HEAD **at the moment the next link was
-  created**. `@.claude/skills/spinoff/SKILL.md` writes it by copying the caller's
-  array and appending the caller, so a sibling-of-a-sibling carries every hop in
-  birth order.
+  created**. `@.claude/skills/spinoff/SKILL.md` is what writes it, and owns how.
 
 **Where the ancestry is complete, `lineage[0]` names the same repo as `repo`, and
 that is not duplication — the two SHAs are different facts.** `lastSyncedSha` is
@@ -71,10 +69,9 @@ first sync overwrites the only other trace of the birth point.
 
 **An empty array means no ancestors; a missing one means nobody wrote them
 down.** The root ships `[]`, which is complete. A watermark filled in by hand
-from `ADOPTING.md` has no `lineage` at all, and that gap is not recoverable — so
-a spinoff from such a repo can honestly record only the one hop it knows, leaving
-`lineage[0]` naming the caller rather than `repo`. Never fabricate an entry from
-`lastSyncedSha`: that would state a birth point nobody recorded.
+from `ADOPTING.md` has no `lineage` at all, and that gap is not recoverable from
+anything else in the file — so a partial array, its first entry naming something
+other than `repo`, is valid rather than malformed.
 
 **Nothing syncs from `lineage`.** This procedure reads `repo` and `lastSyncedSha`
 and nothing else. A sync that walked the ancestry would multiply the triage at
