@@ -38,9 +38,8 @@ Two further gaps, independent of the naming:
 - **Bucket 2 is enumerated as config files** — "build config, lint config, the
   real `vet.sh`, CI workflows, the test and generated-asset tooling". Architecture
   that is a *convention* rather than a file is absent: the directory skeleton and
-  the import boundaries that enforce it (FSD layers being the worked case), path
-  aliases, the app shell, design tokens, the deploy target, and the
-  manifest-versus-lockfile call.
+  the import boundaries that enforce it, module-resolution aliases, the app shell,
+  design tokens, the deploy target, and the dependency-declaration call.
 - **"The product never travels" is absolute**, with no hatch for carrying a piece
   across as a starting template on request.
 
@@ -55,13 +54,10 @@ under either reading. The narrow framing is confined to the skill body.
 ### 1. Name the thing that travels
 
 Introduce **the foundation** — the union of the two travelling buckets — in the
-intro, and use it in the end state and Step 4. This is the whole fix for three of
-the four rows above: those sentences say "agent infrastructure" because that was
-the only name available.
-
-End state becomes: the target exists; its `main` carries one commit of **the
-foundation**; `check-skill-catalog.sh` passes there and `scripts/vet.sh` has been
-run with its result interpreted (§ 4); and the operator holds a copyable command.
+intro, and use it wherever a downstream sentence currently says "the agent
+infrastructure" and means more than that. The foundation is the *triage's output*:
+what leaves the caller. Where each part of it **lands** is a separate question,
+settled by § 4 on a different principle.
 
 ### 2. Step 2 — re-order, and give bucket 2 a criterion
 
@@ -74,29 +70,39 @@ goes stale against every stack the skill has not seen:
 > Does this file say **how code here is organized**, or **what this particular
 > product is**? Organization travels. Identity does not.
 
-Then name only the cases the criterion does not settle on its own:
+**Everything below is written stack-agnostically**, naming the *role* a file
+plays and giving examples across ecosystems in parentheses. The boilerplate has
+no stack, and a rule phrased in one ecosystem's nouns is unusable from the other
+ecosystems it was meant to serve — the defect this revision was itself caught
+committing. Then name only the cases the criterion does not settle on its own:
 
 - **The directory skeleton and its import boundaries.** The skeleton travels
-  *empty*; the rule that enforces its direction travels *intact* — an FSD layer
+  *empty*; the rule that enforces its direction travels *intact* — a layer
   boundary is architecture whether or not a single feature exists yet. This is the
   case the current enumeration misses most completely, since none of it is a
-  config file.
-- **Path aliases** (`tsconfig` `paths`, bundler resolve config) travel: they are
-  part of the boundary system, not decoration on it.
+  config file: it is a convention, expressed partly as empty directories and
+  partly as whatever the stack uses to enforce direction (an import-boundary lint
+  rule, a module visibility declaration, a build-graph constraint).
+- **Module-resolution aliases** travel: they are part of the boundary system, not
+  decoration on it. (Wherever the stack declares them — a compiler or bundler
+  path map, a workspace member list, a module path prefix.)
 - **The app shell and entry points** travel as a *reduction* — the routing and
   layout mechanism, not the pages inside it. The genuinely hard call, and the one
   worth stating rather than leaving to taste.
 - **Design tokens** travel as a system; the brand values inside them are the
   operator's call; product copy never travels.
 - **Deploy config travels as a rewrite, and is a footgun.** The mechanism (the
-  pages workflow, the build output path) travels; the domain, `CNAME`, and
-  environment secrets never do. A copied `CNAME` silently aims the new site at the
-  caller's domain.
-- **The manifest travels as a rewrite; the lockfile is regenerated, not copied.**
-  The dependency set changes when product-only deps drop, so a copied lock pins
-  resolutions for a manifest that no longer matches. **Carry forward any explicit
-  pin, override or resolution block** — that is where deliberate version decisions
-  live, and regenerating loses them silently.
+  publish workflow, the build output path) travels; the domain, the hostname file,
+  and environment secrets never do. A copied domain declaration silently aims the
+  new deployment at the caller's address.
+- **The dependency *declaration* travels as a rewrite; the *resolved lockfile* is
+  regenerated, not copied.** Every stack has both — a declared set with
+  human-chosen constraints, and a machine-resolved pin of the whole graph. The
+  declared set changes when product-only dependencies drop, so a copied resolution
+  describes a graph that no longer exists. **Carry forward the deliberate
+  constraints and regenerate the resolution**: version bounds, overrides,
+  replacements and patches are decisions someone made, and they are the part a
+  regenerate loses silently.
 
 **Fix the double-count.** `scripts/` does not travel wholesale: `vet.sh` is stack
 scaffolding and travels as a rewrite, and the rest of `scripts/` is agent
@@ -122,91 +128,116 @@ Keep *sibling* available, and add the redirect it implies: an operator who wants
 the loop but **not** this stack is probably describing a template fork off the
 boilerplate rather than a spinoff, and the skill should say so.
 
+**The skill carries a worked example**, because the fork is the one place a
+caller has to reason about three repos at once and the abstract statement does
+not land. Root `R` (this boilerplate), caller `C` (an adopter, whose watermark
+points at `R`), new repo `N`:
+
+- **Sibling** — `N` points at `R`. `N` and `C` become siblings. `N`'s syncs pull
+  loop changes from `R` directly, and never see anything `C` invented itself: `C`
+  improves its lint config, `N` never hears about it.
+- **Chain** — `N` points at `C`. `N`'s syncs pull everything that landed at `C`,
+  including `R`'s changes that `C` already absorbed *and* `C`'s own stack work. A
+  fix made at `R` reaches `N` only after `C` syncs it — one hop later, and never
+  at all if `C` is never synced again.
+
+State the trade in that form: **sibling trades the caller's adaptations for
+first-hop access to the root; chain trades a hop for the adaptations.** A
+watermark pointing at both is not offered — `/sync-agent-infra`'s watermark holds
+one `repo`, so it would be a change to *that* contract, and it doubles the triage
+work on every sync.
+
 The two SHA mechanics are correct and load-bearing — which `lastSyncedSha` is
 honest under each answer, and verifying an inherited `adopted` list against the
 parent's tree. They stay as written, including the [#40](https://github.com/vzakharov/agent-project-boilerplate/issues/40)
 citation.
 
-### 4. Step 4 — give the foundation a home, and gate it
+### 4. Step 4 — split the seed by reviewedness, not by category
 
-- **Substep 2 becomes "`main` gets one commit: the foundation."** Both travelling
-  buckets, nothing product-specific.
-- **Add the stack-side gate.** After `check-skill-catalog.sh`, run
-  `bash scripts/vet.sh` in the target and **report the result with its
-  interpretation**:
-  - **Red for a reason you can name** (no dependencies installed, no source tree
-    yet) is the expected honest outcome, and becomes the **first work item of the
-    paused plan**.
-  - **Green is the suspicious outcome** and must be explained. A vet that passes
-    over a tree with no source is precisely the false green `scripts/vet.sh`'s own
-    header exists to prevent — `/finalize` step 1 passes and its attestation
-    records a run that checked nothing.
-  - **Do not weaken the target's `vet.sh` to make the seed green.** Naming this is
-    the point: the step creates the pressure, and yielding to it reproduces the
-    exact failure the boilerplate warns about. Note too that
-    `check-skill-catalog.sh` skips assertions 2–3 downstream (no `docs/catalog.md`
-    there, by design), so absent this gate the only automated check in a
-    freshly-seeded repo covers the skill graph and nothing else.
+**`main` carries only what a session needs to run `/handle` in the new repo. Everything else is built in PR #1, as ordinary reviewed work.**
+
+The principle is not *which bucket a file is in* but **whether it arrives already
+reviewed**. Step 2 already sorts every travelling path into a **copy** or a
+**rewrite**, and that distinction is exactly the one needed:
+
+- **Copies → `main`.** They were reviewed where they came from and travel
+  unchanged: `.claude/skills/**`, `.claude/rules/` that survived the triage,
+  `scripts/` other than `vet.sh`, the editor config. This is precisely the
+  `/handle` closure — `check-skill-catalog.sh`'s assertion 1 fails on a dangling
+  `@`-reference, so satisfying it *is* "enough to run the loop".
+- **Rewrites → PR #1.** A rewrite is new work written for a repo nobody has
+  looked at yet: `CLAUDE.md`, `README.md`, `vet.sh`, the dependency declaration,
+  the deploy config, the app shell reduction, the layer skeleton. Putting these on
+  `main` would land the least-reviewed content in the repo through the one path
+  that has no review.
+
+So `main` is the caller's tree **reduced to what the boilerplate itself would
+ship** — the loop, plus stubs where the caller had hydration — and PR #1 is the
+hydration. That makes a spinoff structurally identical to an adoption, which is
+the argument that it is right: the new repo passes through the same state every
+adopter does, and reaches its stack by the same reviewed path.
+
+Consequences to write into the step:
+
+- **A stub the caller had hydrated is re-stubbed on `main` and re-hydrated in PR
+  #1.** A hydrated `/release` encodes the *caller's* deploy setup, so it is a
+  rewrite by the § 2 criterion, not a copy — even though it sits in `.claude/`.
+  Category does not decide this; per-target editability does.
+- **`main`'s `vet.sh` must exit non-zero**, per the adopter contract its own
+  header states and CLAUDE.md § "Vetting" repeats. `main` has no stack yet, so the
+  honest script is one that refuses to certify — and PR #1 wires in the real
+  checks ported from the caller. **The gate is therefore cheap and exact: assert
+  `main`'s `vet.sh` exits non-zero.** An exit-0 `vet.sh` sitting on `main` is the
+  false green the boilerplate exists to prevent, and it would sit there
+  unchallenged until PR #1 lands.
+- **Do not weaken the caller's `vet.sh` to make the seed pass.** Naming this is
+  the point: the step creates the pressure, and yielding to it reproduces exactly
+  the failure the boilerplate warns about. The reduction on `main` is a *refusal
+  to certify*, not a narrowed set of checks that quietly passes.
 - **Substep 3 stops saying "gets the project."** The target has no project yet.
-  It carries the plan for the new product — `docs/plans/<slug>.paused.md`, the
-  state `/handle`'s plan lane resumes from — plus any product piece the operator
-  asked to carry.
+  The branch carries the rewrites, the plan for the new product
+  (`docs/plans/<slug>.paused.md`, the state `/handle`'s plan lane resumes from),
+  and any product piece the operator asked to carry.
 - **Retarget the closure paragraph.** It currently settles
-  infrastructure-versus-project; it should settle foundation-versus-product. The
-  closure argument keeps doing its own work (it is why you cannot carve a subset of
-  the skills), and the re-centering adds a **second, independent** reason for the
-  same two-commit split: `main` must be able to run the target's own vet, which it
-  cannot if the stack is on a branch. Two independent justifications, not a
-  replacement for one.
+  infrastructure-versus-project. It now justifies what goes on `main`
+  specifically: closure over `/handle` is the floor, and the reason the floor
+  cannot be carved smaller.
+
+**Rejected:** putting the whole foundation on `main` as one commit, or splitting
+`main` into two commits by provenance. Both land the stack unreviewed in the one
+place nothing reviews it, and the stack is the half that needs per-target
+adaptation — a copied deploy target aimed at the caller's domain is the worked
+example of why that matters.
 
 ## Open questions
 
-Each carries a recommendation, and the plan above is written **with the
-recommended option in force** — so it is implementable as written and silence
-resolves it. Answer tersely (e.g. "1a, 2b, 3-default").
+**Q1 (`main`'s contents), Q2 (dependency declarations) and Q4 (the vet gate) are
+settled** and folded into § 2 and § 4 above. One remains.
 
-**1. Does `main`'s foundation commit stay one commit, or split in two** —
-boilerplate-derived, then caller-derived?
-
-- **(a) One commit. — recommended.** Under chain-by-default both halves come from
-  the same source, and the watermark already records provenance.
-- (b) Two commits, making the boundary readable in the target's `git log`. Worth
-  something under *sibling*, where only the first half is covered by
-  `lastSyncedSha`. Coupled to Q3: if you keep the fork undefaulted, (b) gets
-  stronger.
-
-**2. The lockfile — regenerate or copy?**
-
-- **(a) Regenerate, carrying forward explicit pins and overrides. —
-  recommended.** The manifest changes, so a copied lock is either stale or gets
-  rewritten on first install; the pins are the part that encodes real decisions.
-- (b) Copy, then prune. Preserves the caller's *tested* resolutions, which matters
-  if it pinned around a known-bad version — but that case is what carrying the pin
-  block covers.
-
-**3. Invert the watermark recommendation to chain-by-default?**
+**3. Invert the watermark recommendation to chain-by-default?** § 3 above is
+written with (a) in force, including the worked example, so silence resolves it.
 
 - **(a) Yes — chain recommended, sibling the deliberate exception with its
-  redirect. — recommended.**
-- (b) Keep it undefaulted as today, improving only the framing and the cost
-  statement.
-
-**4. Does the target's `vet.sh` result gate the hand-over, or only get reported?**
-
-- **(a) Reported with interpretation; red-for-a-known-reason becomes the paused
-  plan's first item. — recommended.** Green needs installed dependencies and a
-  shell that lints — phase-2 work, and it needs the environment setup script that
-  has no API behind it.
-- (b) Gate it: no hand-over until vet is green in the target. Stronger guarantee,
-  but it pulls most of phase 2 into the seed.
+  redirect to a template fork. — recommended.** The premise of a spinoff is
+  inheriting the caller's foundation, and sibling severs it.
+- (b) Keep it undefaulted as today, improving only the framing, the cost
+  statement and the worked example.
 
 ## DRY notes
 
+- **The seed split reuses a distinction the skill already draws.** § 4 does not
+  invent a rule for what lands on `main`: it reads Step 2's existing
+  copy-versus-rewrite sort, which was already there for `CLAUDE.md` and
+  `README.md`. One concept doing two jobs, rather than a second concept that has
+  to be kept in agreement with the first.
 - **This revision removes a duplication rather than adding one.** `vet.sh` is
   currently stated in two triage buckets; § 2 gives it one home (stack
-  scaffolding, travelling as a rewrite) and folds it into the existing
-  rewrites-not-copies list beside `CLAUDE.md` and `README.md` — an existing
-  mechanism reused, not a new one.
+  scaffolding, travelling as a rewrite) and folds it into that same
+  rewrites-not-copies list.
+- **`main`'s vet gate cites the contract rather than restating it.**
+  `scripts/vet.sh`'s own header and CLAUDE.md § "Vetting" already own "an adopting
+  project's vet exits non-zero until its real checks are wired in"; § 4 applies
+  that existing rule to a new caller instead of writing a spinoff-specific one.
 - **The criterion replaces an enumeration, which is why it does not duplicate
   `docs/catalog.md`.** The catalog carries per-file dispositions for *this* tree;
   the skill's whole premise is a caller that has no catalog, so there is nothing
@@ -216,7 +247,8 @@ boilerplate-derived, then caller-derived?
   duplicate this.** There the caller genuinely *is* the boilerplate: the agent
   infrastructure is the whole payload, there is no stack to triage, and its step 2
   prunes by catalog group — which works only because a catalog exists. Same words,
-  different operation.
+  different operation. § 4's "a spinoff passes through the same state an adopter
+  does" is a claim about the *target's* history, not a shared procedure to extract.
 - **Not extracted, on purpose: a shared "what travels" list between `/spinoff`
   and `ADOPTING.md`.** Forcing one is net-negative because the two run against
   different inputs — one against a tree that has the catalog, one against a tree
@@ -249,11 +281,16 @@ Untouched, having been checked: `docs/catalog.md`, `CLAUDE.md`, `README.md`,
   format via `check-squash-message.sh`.
 - **Read Step 2 against a concrete tree** — `vzakharov/vovazakharov.com`, the
   worked case #43 cites — and confirm the criterion plus its named cases decide
-  every path in it, including the `CNAME`, the pages workflow, and the layer
-  boundaries.
+  every path in it, including the domain declaration, the publish workflow, and
+  the layer boundaries.
+- **Sort that same tree into copies and rewrites** and confirm the copies alone
+  satisfy `check-skill-catalog.sh` assertion 1 — that `main` really is bootable
+  for `/handle` without any rewrite.
+- **Grep the revised skill for stack-specific nouns.** No ecosystem's filenames
+  or tool names outside a parenthetical example; the rules themselves name roles.
 - **Confirm no sentence downstream of the intro still says "the agent
   infrastructure" where it means the foundation.** That substitution is the whole
-  divergence; grep for it.
+  divergence.
 
 ## `/finalize` note
 
