@@ -327,6 +327,9 @@ holds*, and that has to be re-read at sync time either way.
 From here on, pulling later changes forward is just `/sync-upstream` — the same
 command this repo uses to track *its* own source. Nothing further to install.
 
+Each sync lands as a `chore:` PR whose subject is the first thing your `git log`
+shows — that skill's Step 8 covers titling the change rather than the sync.
+
 ### Hand the operator a setup script (web/remote only — you cannot do this one)
 
 Everything else here is a file you can write. The **environment setup script**
