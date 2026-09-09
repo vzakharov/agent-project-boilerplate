@@ -111,6 +111,10 @@ Use semantic commit prefixes:
 - `ci:` — CI/CD changes
 - `perf:` — performance improvements
 
+**In this repo the agent loop is the product, so a change to it is `feat:` / `fix:` — never `docs:`, however Markdown-shaped the diff.** What an adopting project takes from here _is_ the loop, so a new skill, a changed procedure, a new convention or a corrected rule is a behavior change to the thing this repo ships. That covers `.claude/skills/**`, `.claude/rules/**`, this file's own conventions, and the `scripts/` the skills call. `docs:` is left for prose **about** the repo that no session executes: `README.md`, `docs/catalog.md` rows, tombstones, and the working artifacts (`docs/issue/`, `docs/plans/`, `docs/remove-before-merging/`) that `/finalize` sweeps before they land.
+
+**Adopters invert this, so delete the rule when you adopt.** In a project with a stack of its own, these same files are infrastructure rather than the product — a skill edit there is `docs:` or `chore:` under that project's convention, and reading this rule as written would label every procedure tweak a feature of the wrong product.
+
 Write descriptive commit messages: the subject line summarizes the change, and the body explains what was changed and why in enough detail that someone reading the log understands the commit without looking at the diff.
 
 **On a feature branch in a remote/web environment** (typically signalled by a branch named `<vendor>/<autoname>`), commit and push proactively after each meaningful unit of work — don't wait to be asked. The operator is usually reviewing from a different machine than the VM the agent runs on, so they can only see the work once it's pushed.
