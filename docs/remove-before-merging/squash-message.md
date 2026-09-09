@@ -1,32 +1,40 @@
 Proposed squash title/body:
 
 ```
-feat: rename the plan skill out of the built-in /plan's way (pr #42)
+feat: absorb the built-in /plan collision in the plan skill (pr #42)
 ```
 
 ```
-Typing `/plan` in the Claude Code composer never reached this repo's
-plan skill: `plan` is a built-in client command that enables native
-plan mode and submits no prompt, so the keystroke meaning "plan on
-disk" put the session in the read-only mode whose only exit is the
-ExitPlanMode dialog the skill exists to route around. The client
+Typing `/plan` in the Claude Code composer never reaches this repo's
+plan skill: `plan` is a built-in client command that submits no prompt
+and enables native plan mode instead — read-only, so the plan file the
+skill exists to write cannot be written from in there. The client
 offers no per-command suppression, and a client-side command is
 invisible to hooks and rules alike.
 
-The skill is now `/plan-file`, a name no built-in claims and one that
-still surfaces when someone reaches for `/plan`. Every citation of it
-moves with it; no compatibility stub stays behind under the old name,
-which would be shadowed in the composer just as the skill was, and
-nothing in the loop emits `/plan` (handoff blocks emit `/go`). Because
-the shadowing was only ever client-side, the agent's own invocations
-were never broken — the rename buys back the operator's.
+The skill now carries the way out, framed as plan mode's own exit
+rather than as an override of it: the mode makes the harness plan file
+writable and ends the turn at ExitPlanMode, which is exactly the path
+taken. Leaving costs one operator approval, so it is spent immediately,
+and the harness plan file that the approval dialog displays has its
+wording supplied verbatim — what this repo plans into, why plan mode
+conflicts with it, and that approving authorizes writing the plan file
+alone. That exit leaves the `do-not-implement` gate untouched, however
+much the approval reads like a go-ahead.
 
-A rename cannot stop muscle memory, so the skill also carries what to
-do from inside native plan mode: leave it at once, while the operator
-is still present, for the sole purpose of writing the plan file — and
-treat that exit as authorization for the file alone, never as the
-go-ahead its filename gates. New skill names are checked against the
-client's built-ins from here on.
+A UserPromptSubmit hook is what makes the convention land. Plan mode
+instructs the agent to supersede every other instruction it has, so
+prose in CLAUDE.md is the wrong weight for it; every hook payload
+carries the permission mode and the event accepts additionalContext, so
+the repo states its convention after the mode's own message, and again
+on every prompt while the mode is on.
+
+The skill keeps its name. A rename could not have prevented the
+mistyped keystroke — a stub under the old name would be shadowed just
+as the skill is — and the collision is self-limiting, since falling
+into it requires typing `/plan` and therefore being at the keyboard.
+Bare prose is the entry an operator types, and new skill names are
+checked against the client's built-ins from here on.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
