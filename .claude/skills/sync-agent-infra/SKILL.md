@@ -1,40 +1,26 @@
 ---
-description: "Pull the agent-infrastructure changes this repo adopted from its source (`.claude/skills/sync-upstream/upstream.json`) forward since the last sync, triage them, and port the ones that apply. Works in either direction — the watermark names the source. Use when the user says \"sync upstream\", \"check upstream\", or \"/sync-upstream\"."
+description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/sync-agent-infra/upstream.json` — the procedure below is usable as written. Use when the user says \"sync agent infra\", \"sync the boilerplate\", or \"/sync-agent-infra\"."
 ---
 
-> 🔁 **REPOINT ON ADOPTION.** This skill runs on the watermark at
-> `.claude/skills/sync-upstream/upstream.json`, which is per-repo by definition.
-> If you adopted this skill from another repo, **rewrite that file for yours**
-> (see `ADOPTING.md` at the source) rather than inheriting the copy that came
-> with it — an inherited watermark points your sync at a repo you may not be able
-> to read and sets `lastSyncedSha` to a foreign history. That rewrite is the only
-> adjustment the skill *requires*.
+> ⚠️ **STUB.** This skill has no watermark to run on. Before it can be invoked,
+> fill in `.claude/skills/sync-agent-infra/upstream.json`: `lastSyncedSha` (the
+> source's HEAD when you cloned it), `lastSyncedAt`, and the real
+> `adopted`/`declined` sets for your repo. `repo` already names the boilerplate,
+> and needs changing only if you adopted from a repo that itself adopted from it.
+> Delete this banner once you have, and drop `STUB` from the description above.
+> If you took a one-time snapshot and do not intend to re-sync, delete the skill
+> instead.
 >
-> 🏷️ **Rename it if the name misleads in your repo.** "Upstream" is a fork's
-> vocabulary, and this is not a fork — in a repo whose real upstream is something
-> else, or one where nobody thinks of the boilerplate as upstream at all,
-> `/sync-boilerplate`, `/sync-agent-infra` or whatever your team would actually
-> say is a better name than the one it arrived with. You may of course rename any
-> adopted skill; this one is singled out because it is the one whose shipped name
-> describes the source's relationships rather than the job. Rename the directory,
-> then update every `@.claude/skills/sync-upstream/SKILL.md` pointer and the
-> `CLAUDE.md` index entry — `bash scripts/check-skill-catalog.sh` fails on the
-> ones you miss, which is the whole reason it exists.
+> **Hydration here is a handful of JSON fields, not a procedure.** Unlike the
+> other stubs, every step below this banner is usable exactly as written.
 
 ## What this skill is for
 
 A repo that took its agent infrastructure — `CLAUDE.md`, `.claude/`, `scripts/`,
 whatever else — from another repo has a **source** that keeps editing those files.
 This skill finds what changed there since the last sync, decides commit by commit
-what applies here, and ports the ones that do.
-
-**"Upstream" is relative to the repo you are standing in.** The procedure is the
-same at every link in the chain; only the watermark differs. For the boilerplate
-repo, the source is the application repo its infrastructure was extracted from.
-For a project that adopted from the boilerplate, the source is the boilerplate.
-For anything that adopts from *that*, it is that repo. One operation applied
-repeatedly: *pull the vendored agent infrastructure forward from the repo I took
-it from.*
+what applies here, and ports the ones that do: *pull the vendored agent
+infrastructure forward from the repo I took it from.*
 
 This is a path-scoped diff, not a fork merge. It never tries to reconcile whole
 histories — it reads a bounded set of paths, commit by commit, and re-expresses
@@ -42,7 +28,7 @@ what applies.
 
 ## The watermark
 
-`.claude/skills/sync-upstream/upstream.json` is the state this skill runs on:
+`.claude/skills/sync-agent-infra/upstream.json` is the state this skill runs on:
 
 ```json
 {
@@ -61,9 +47,8 @@ what applies.
 ```
 
 - **`adopted`** — the paths you took, at whatever granularity is true: directories
-  or individual files. This repo's value is the degenerate everything-case; an
-  adopting repo's is a real subset. It is what turns a wall of source commits into
-  a handful of candidates.
+  or individual files, up to the degenerate everything-case. It is what turns a
+  wall of source commits into a handful of candidates.
 - **`declined`** — path → why-not. This is what keeps re-sync quiet: without it,
   every sync re-offers every skill the repo already refused.
 
