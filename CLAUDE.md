@@ -178,7 +178,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`, `/sync-agent-infra`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
 
-`/sync-agent-infra` is the exception to the *why*: its procedure is universal and usable as written, and what it lacks is the per-repo watermark to run against. Everything below still applies to it — a stub is a stub — but hydrating it is filling in JSON fields, not writing a procedure.
+`/sync-agent-infra` is the exception to the *why*: what it lacks is the per-repo watermark, not a procedure — every step of it is usable as written. Everything below still applies regardless: a stub is a stub.
 
 **A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form: it exits `0` only because this repo has no stack to check, and in an adopting project it exits `1` until it runs that project's checks.
 

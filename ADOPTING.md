@@ -280,12 +280,12 @@ banner is still a stub.
 
 ### Hydrate the sync stub
 
-`/sync-agent-infra` ships as a stub because its watermark,
-`.claude/skills/sync-agent-infra/upstream.json`, is a
-[`rewrite`](docs/catalog.md#three-dispositions-not-two) — the procedure needs no
-hydration at all, only the JSON. Write that file for **your** repo, then clear
-both stub markers: delete the `⚠️ **STUB.**` banner and drop `STUB` from the
-frontmatter `description`. Half of either leaves the skill failing assertion 4.
+`/sync-agent-infra` is a stub for want of a watermark, not a procedure, so
+hydrating it is `.claude/skills/sync-agent-infra/upstream.json` — a
+[`rewrite`](docs/catalog.md#three-dispositions-not-two). Write it for **your**
+repo, then clear both stub markers: delete the `⚠️ **STUB.**` banner and drop
+`STUB` from the frontmatter `description`. Half of either leaves the skill
+failing assertion 4.
 
 `repo` arrives correct — the shipped value names this repo, which *is* your
 source. What must not survive is the placeholder `lastSyncedSha`: the skill's

@@ -65,11 +65,11 @@ conditions, and any row can be escaped individually.
 Adopting this group is what makes every later change at the source reachable.
 Skipping it leaves you with a snapshot.
 
-**It ships unhydrated**, this repo having no source of its own to sync from — so
-the shipped watermark is a template rather than live state. Hydrating it is
-filling in that JSON, not writing a procedure: every step of the skill is usable
-as written. The [G6 hydrate-now-or-delete rule](#g6--stack-stubs) applies here
-too, and `scripts/check-skill-catalog.sh` enforces it the same way.
+**It ships unhydrated**, this repo having no source of its own to sync from.
+Hydrating it is filling in the watermark, not writing a procedure: every step of
+the skill is usable as written. The [G6 hydrate-now-or-delete
+rule](#g6--stack-stubs) applies here too, and `scripts/check-skill-catalog.sh`
+enforces it the same way.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
