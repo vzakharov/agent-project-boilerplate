@@ -210,9 +210,10 @@ while IFS= read -r line || [ -n "$line" ]; do
   body_blanks_held=0
 
   # Both spellings: the trailer key the harness attribution emits, and a bare
-  # session URL that reached the prose some other way.
-  case $line in
-    *Claude-Session:* | *claude.ai/code/session*)
+  # session URL that reached the prose some other way. The key is anchored to
+  # the head of its line, so a body writing *about* this rule isn't a hit.
+  case ${line#"${line%%[![:space:]]*}"} in
+    Claude-Session:* | *claude.ai/code/session*)
       body_session_count=$((body_session_count + 1))
       body_session="${body_session}${NL}    line ${body_lines}: ${line}"
       ;;
