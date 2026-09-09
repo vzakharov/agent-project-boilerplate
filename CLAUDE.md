@@ -158,6 +158,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/plan`.
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
+- **`/spinoff`** — seed a new sibling repo out of the project you are standing in, and hand over a session rooted in it. **Adopters only**: it refuses from this repo, where the route to a new project is the README's template button.
 - **`/handle`** — attach to a branch and do whatever it needs: read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, and land-prep only if asked.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
