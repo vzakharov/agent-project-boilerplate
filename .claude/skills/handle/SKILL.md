@@ -37,7 +37,7 @@ Two lanes, and which runs is read off the branch:
 
 Both firing at once is the ordinary state of a plan under review, since `/plan` publishes the plan as a draft PR. What the conjunction means is read off the draft:
 
-- **A draft plan _and_ unanswered feedback** → the feedback is review **of the plan**. Stay in plan mode: revise the plan file, reply on GitHub, push, and re-emit `@.claude/skills/plan/SKILL.md` § "Handing off"'s block. Do **not** flip the plan file, do **not** touch source — the review comment carrying a go-ahead token is what clears that, per `/plan` § "The approval gate".
+- **A draft plan _and_ unanswered feedback** → the feedback is review **of the plan**. Stay in plan mode: revise the plan file, reply on GitHub, push, and re-emit `@.claude/skills/plan/SKILL.md` § "Handing off"'s block. Do **not** flip the plan file, do **not** touch source — no review comment clears that, whatever it says; the next `/go`, or a `/handle` that finds no unanswered feedback, is what does, per `/plan` § "The approval gate".
 - **No draft plan, unanswered feedback** → the review lane, on shipped code.
 - **A draft plan, no unanswered feedback** → the plan lane: the invocation is the go-ahead.
 

@@ -7,7 +7,7 @@
 - **Draft:** yes
 - **Merged:** _not merged_
 - **Created:** 2026-09-08T17:44:46Z
-- **Updated:** 2026-09-08T23:07:40Z
+- **Updated:** 2026-09-09T00:51:40Z
 - **Closed:** _not closed_
 - **Labels:** _none_
 
@@ -26,17 +26,17 @@ Four moves, each **removing** a responsibility from a skill that acquired it by 
 
 One predicate carries the review loop — *implementation has begun iff `docs/plans/` holds a file that is not a draft* — which is what lets `/handle` tell plan review from code review without growing a third lane.
 
-**This PR is its own first instance.** Branch renamed before the plan existed, PR opened over the plan commit, squash proposal posted as a comment, and every revision since has landed as a plan edit rather than a code change. The plan under `docs/plans/` is the thing to review.
+**This PR is its own first instance.** Branch renamed before the plan existed, PR opened over the plan commit, squash proposal posted as a comment, the plan revised through four rounds of inline review, and implementation entered through `/handle` on the branch — the loop the plan describes, run once end to end before the diff that defines it.
 
 ## QA Checklist
 
-- [ ] `catalog` — `bash scripts/check-skill-catalog.sh` passes: every `@.claude/skills/…` pointer resolves and every skill has exactly one `docs/catalog.md` row.
-- [ ] `no-stale-implement` — `grep -rn "/implement\b"` returns only the redirect stub, the `*.draft.do-not-implement.md` lifecycle suffix, and deliberate historical references. 15 pointers and 50 prose mentions are in scope; the catalog check covers only the pointers.
+- [x] `catalog` — `bash scripts/check-skill-catalog.sh` passes: every `@.claude/skills/…` pointer resolves and every skill has exactly one `docs/catalog.md` row.
+- [x] `no-stale-implement` — `grep -rn "/implement\b"` returns only the redirect stub, the `*.draft.do-not-implement.md` lifecycle suffix, and deliberate historical references. 15 pointers and 50 prose mentions are in scope; the catalog check covers only the pointers.
 - [ ] `stub-redirect` — a literal `/implement <branch>` still reaches `/go`, via the stub at the old path.
 - [ ] `plan-publishes` — a bare `/plan` (no `/pr`, no `/issue`) ends with a pushed plan, a draft PR over the plan commit, a squash comment, and a handoff block carrying the PR URL.
 - [ ] `pr-refresh` — `/pr` on a branch that already has a PR re-derives body and QA checklist from the real diff, re-runs `/squash-message`, creates nothing, and does **not** stop-and-report.
 - [ ] `pr-no-task-arg` — `/pr <some task>` is no longer a valid shape; the operator is routed to `/plan` or `/go`.
-- [ ] `go-target-vs-task` — `/go <existing-branch>` attaches; `/go <prose task>` runs planless; `/go <ref-shaped token that does not resolve>` **stops and asks** rather than treating it as a task. Classified by shape (a `/`, `#NNN`, or a PR URL), confirmed by `/from-branch` Step 1's `git ls-remote --heads origin <token>`.
+- [ ] `go-target-vs-task` — `/go <existing-branch>` attaches; `/go <prose task>` runs planless; `/go <single token that does not resolve>` **stops and asks** rather than treating it as a task. A whitespace-free first argument is a target, confirmed by `/from-branch` Step 1's `git ls-remote --heads origin <token>`; anything carrying whitespace is a task. The rule lives in `/go` § "Argument shape" — the old § "Branch-name form" heading, renamed because the section now classifies tasks too.
 - [ ] `handle-plan-review` — `/handle <branch>` with a draft plan **and** unanswered feedback revises the plan, replies on GitHub, pushes, re-emits the handoff; it does **not** flip the plan file or touch source.
 - [ ] `handle-regressions` — draft plan + no feedback is still a go-ahead; no draft plan + feedback is still the ordinary code-review lane.
 - [ ] `qa-from-plan` — `/qa-checklist` Step 2 accepts an approved plan as input alongside `origin/<base>..HEAD`.
@@ -48,10 +48,10 @@ One predicate carries the review loop — *implementation has begun iff `docs/pl
 | `no-stale-implement` | yes | no | One `grep`; the allowlist is the judgement half |
 | `stub-redirect` | no | no | Behavioral |
 | `plan-publishes` | no | no | Behavioral; the move that reaches the most-used entry |
-| `pr-refresh` | no | no | Behavioral; exercised when `/go` closes this branch out |
+| `pr-refresh` | no | no | Behavioral; exercised by the `/pr` call that wrote this body |
 | `pr-no-task-arg` | partially | no | `grep` the frontmatter; the routing is a read |
 | `go-target-vs-task` | no | no | Behavioral; three shapes, one of them a deliberate stop |
-| `handle-plan-review` | no | no | Behavioral; verified by reviewing this PR and running `/handle` |
+| `handle-plan-review` | no | no | Behavioral; leave a comment on the plan diff of the next planning PR |
 | `handle-regressions` | no | no | Behavioral; two regression checks on existing lanes |
 | `qa-from-plan` | no | no | Prose contract |
 | `finalize-sweep` | no | no | Behavioral; exercised at `/finalize` time |
@@ -59,8 +59,12 @@ One predicate carries the review loop — *implementation has begun iff `docs/pl
 Prose-only change to `.claude/skills/` plus two pointer files. `scripts/vet.sh` is an unhydrated stub in this repo and there is no `.github/`, so `check-skill-catalog.sh` and the `grep` are the whole automatable gate.
 
 https://claude.ai/code/session_01XUq5KMhf3B7bLSeXuxNmMS
+https://claude.ai/code/session_01FAUK8YLwNU8Sy6wTVPQAcS
 
 
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
 
 ---
 
@@ -101,8 +105,13 @@ one of them a second input shape.
 
 /implement becomes /go, converging the command with the vocabulary
 /plan's approval gate already listens for, and the skill it names is no
-longer "execute an approved plan" but every shape of starting work. The
-old path stays as a redirect stub, because the handoff block is a
+longer "execute an approved plan" but every shape of starting work.
+Which shape is read off the argument by whitespace alone: one bare token
+is a branch to attach to, confirmed by ls-remote and stopping to ask
+when it does not resolve, and anything with a space in it is a task to
+do. Testing for whitespace rather than for ref syntax is what keeps
+fix-sidebar-scroll from being implemented as a sentence. The old path
+stays as a redirect stub, because the handoff block is a
 copyable command living in plan files and PR comments that outlive the
 rename — permanent here, and offered downstream only to a repo that
 shipped /implement, whose operator decides whether the compatibility is
@@ -761,7 +770,95 @@ _Generated by [Claude Code](https://claude.ai/code)_
 
 ---
 
+### `.claude/skills/go/SKILL.md`:1 — unresolved
+
+**@vzakharov** — 2026-09-09T00:41:31Z
+
+as we keep implement, git tracks this as a new file rather than a move of the previous one -- can you create and give me a commit where I can track the changes (e.g. temporarily rename `implement` to `implement_` so I can review, then rename back once I'm done; or maybe there's a better way)?
+
+---
+
+### `.claude/skills/plan/SKILL.md`:60 — unresolved
+
+```diff
+@@ -18,37 +19,46 @@ None of the value above depends on that bug, so fixing it upstream does not reti
+ 
+ ## Part 1 — Plan instead of plan mode
+ 
+-A `/plan` session's deliverable is the **pushed plan file**, not code. The operator reviews it from another machine, often hours later, and begins implementation in a **different** session via `/implement <branch>` (`@.claude/skills/implement/SKILL.md` routes that through `/from-branch`, which attaches to the branch and finds the plan under `docs/plans/`) — the handoff works because the plan file rides the branch. So a plan turn ends in a handoff, not a continuation; same-session implementation is the rare exception.
++A `/plan` session's deliverable is the **plan file on a draft PR**, not code. The operator reviews it from another machine, often hours later, and begins implementation in a **different** session via `/go <branch>` (`@.claude/skills/go/SKILL.md` routes that through `/from-branch`, which attaches to the branch and finds the plan under `docs/plans/`) — the handoff works because the plan file rides the branch. So a plan turn ends in a handoff, not a continuation; same-session implementation is the rare exception.
+ 
+ Do **exactly what you would do in plan mode** — same research, same rigor, same "don't touch code until approved" discipline. The _only_ difference is where the plan goes and how it's approved:
+ 
+-- Instead of presenting the plan via `ExitPlanMode`, **write it to `docs/plans/<branch-slug>.draft.do-not-implement.md`** (one file per session; name it after the current branch's task slug, or the issue number when working an issue — e.g. `docs/plans/1234.draft.do-not-implement.md`). The `.draft.do-not-implement.md` suffix is load-bearing: it is the on-disk marker that this plan has **not** been approved, visible in every `ls`, tool-call path, and `git status` so you can't drift past the gate without noticing. This directory is **not** gitignored on purpose: **commit and push it** so the operator can pull and review the plan from another machine. Follow the repo's usual plan-content expectations, including the `## DRY notes` section CLAUDE.md requires.
++- Instead of presenting the plan via `ExitPlanMode`, **write it to `docs/plans/<branch-slug>.draft.do-not-implement.md`** (one file per session; name it after the current branch's task slug, or the issue number when working an issue — e.g. `docs/plans/1234.draft.do-not-implement.md`). The slug comes off the branch, so a harness auto-branch is renamed **before** the plan file is written, per CLAUDE.md § "Git conventions" — rename afterwards and the file keeps a slug naming nothing. The `.draft.do-not-implement.md` suffix is load-bearing: it is the on-disk marker that this plan has **not** been approved, visible in every `ls`, tool-call path, and `git status` so you can't drift past the gate without noticing. This directory is **not** gitignored on purpose: it rides the branch so the operator can pull and review the plan from another machine. Follow the repo's usual plan-content expectations, including the `## DRY notes` section CLAUDE.md requires.
+ - **Make line 1 of the file a banner** that restates the gate:
+   ```
+   > ⛔ **DRAFT — DO NOT IMPLEMENT.** This plan is not approved. Do not edit source while this file is named `*.draft.do-not-implement.md` — prep and spikes go in `tmp/`. On an explicit operator go-ahead, `git mv` it to `*.in-progress.md` and delete this banner (quoting the go-ahead in the commit) *before* touching code.
+   ```
+-- Then **end the turn with the handoff block** (§ "Handing off" below) and stop — do not start implementing.
+-- **The in-session path is the exception, not the default.** If a literal go-ahead token does arrive in _this_ session, "The approval gate" below governs it unchanged — and on approval you hand off to `@.claude/skills/implement/SKILL.md`, whose Step 1 performs the flip that unlocks source edits (`git mv` the plan to `docs/plans/<branch-slug>.in-progress.md`, drop the draft banner, quote the go-ahead in the commit) as its first action, before any source edit. That flip is the on-record receipt that approval was given, so don't front-run it here; the mechanics live in `/implement` to avoid two copies drifting apart. The gate is exactly as strict on this path as on any other; it just fires rarely.
++- Then **commit it and publish it** (§ "Publishing the plan" below), **end the turn with the handoff block** (§ "Handing off") and stop — do not start implementing.
++- **The in-session path is the exception, not the default.** If a literal go-ahead token does arrive in _this_ session, "The approval gate" below governs it unchanged — and on approval you hand off to `@.claude/skills/go/SKILL.md`, whose Step 1 performs the flip that unlocks source edits (`git mv` the plan to `docs/plans/<branch-slug>.in-progress.md`, drop the draft banner, quote the go-ahead in the commit) as its first action, before any source edit. That flip is the on-record receipt that approval was given, so don't front-run it here; the mechanics live in `/go` to avoid two copies drifting apart. The gate is exactly as strict on this path as on any other; it just fires rarely.
+ 
+-### Handing off — end the plan turn with a copyable `/implement` block
++### Publishing the plan
++
++Once the plan file is committed, invoke `@.claude/skills/pr/SKILL.md` with no args — load and follow it; do **not** inline-copy its steps. Its plan-open mode is what a branch carrying one plan commit and no PR reaches. `/pr` owns the `gh` mechanics; `/plan` owns only the decision to publish.
++
++The trigger lives here rather than in `/pr` because this is where a plan becomes pushed, so **every** entry into planning gets a PR. CLAUDE.md § "Plan mode & questions in web sessions" names a bare `/plan` as the default entry for a new web session — more common than `/issue` — and hanging PR-creation off `/pr` would leave exactly that entry on a PR-less branch.
++
++### Handing off — end the plan turn with a copyable `/go` block
+ 
+ Get the branch with `git branch --show-current` and substitute the real name. Introduce the block with wording that **names the new session** — `To implement — start a new session with:`, or an unmistakable equivalent. That lead-in is what carries the session model to the operator; a bare "To implement:" reads as an offer to do it here, which is the misreading the block exists to remove. Emit the command in a fenced block containing **only** the command — no language tag, nothing else inside the fence — so it can be copied verbatim:
+ 
+ ````
+ ```
+-/implement claude/add-usage-charts-k3n2af
++/go claude/add-usage-charts-k3n2af
+ ```
+ ````
+ 
+ - Emit it at the end of **every** turn that leaves the plan in a reviewable, complete state — the turn that first writes the plan, and any later turn that revises or collapses it (Part 3). One block per turn, as the last thing in the reply.
++- **Print the PR URL alongside it**, outside the fence — the plan is published by the time the block goes out, and the URL is where the operator reads and comments on it.
+ - **Open questions don't hold the block back when they carry recommendations.** Part 2 requires every fork to name a recommended option _and_ the plan file to be written with that option already in force, so implementing it unanswered is the same as adhering to the recommendations. Emit the block alongside the questions: an answer that differs revises the plan, and silence is a valid resolution. Hold the block only for a fork with no recommendation, where the plan has nothing executable to say until the operator picks — handing over a command to implement a genuinely unresolved fork invites implementing the wrong one.
+ - **Never** close a plan turn with "Want me to implement it?", "Shall I proceed?", "Ready for me to start?", or any equivalent. Two reasons: the plan session does not implement, so there is nothing to ask; and a turn that ends on that question trains the agent to read the operator's _next_ message as an answer to it, so a correction ("actually, do X instead") gets taken as assent and code starts getting written. The handoff block is the structural fix that the approval gate's "a suggestion is a plan revision" and Part 3's "picking an option is not a signal to implement" can only exhort.
+-- The block is built for a session that does not exist yet, which is why the lead-in names it. Pasting it back into _this_ session is a recognizable mistake with its own guard — see `@.claude/skills/implement/SKILL.md` § "Branch-name form" for the canary that catches it.
++- The block is built for a session that does not exist yet, which is why the lead-in names it. Pasting it back into _this_ session is a recognizable mistake with its own guard — see `@.claude/skills/go/SKILL.md` § "Argument shape" for the canary that catches it.
+ 
+ ### The approval gate
+ 
+ **Only start implementing when the operator's message literally contains a go-ahead token** — "go ahead", "let's go ahead", "implement", "let's implement", or an unmistakable equivalent ("ship it", "do it", "proceed", "lgtm go"). Until such a token arrives, you are still in the planning conversation, no matter how the exchange evolves.
+ 
++**Both a suggestion and a go-ahead can arrive as PR review comments**, now that the plan is published. That changes the channel, not the test: a review comment proposing a different approach is a plan revision, one carrying a go-ahead token unlocks implementation, and `@.claude/skills/handle/SKILL.md` Step 2 is what routes each.
+```
+
+**@vzakharov** — 2026-09-09T00:45:53Z
+
+no, let's not do this. a signal to start implementing should always come via a `/go` (or a `/handle` where no unanswered feedback is present). Opening this door (to allow implementing from code review) leaves room for mis-interpretation by the agent.
+
+---
+
+### `.claude/skills/squash-message/SKILL.md`:26 — unresolved
+
+```diff
+@@ -21,6 +21,11 @@ and the per-file steps mixed in with the things worth remembering — hence the
+ mandatory tighten pass in Step 3. Never print or post a draft that hasn't been
+ through it.
+ 
++The first reader reaches it earlier than merge time: `/plan` publishes the PR
++over the plan commit, so the proposal composed there is **the plan as it would
++be recorded** — a much shorter second read of the same decision, in front of the
+```
+
+**@vzakharov** — 2026-09-09T00:49:38Z
+
+we need to make sure the squash message is phrase "as if this was already implemented" -- otherwise we risk veering into squash messages like "we have this plan and once it's done it will do this and that" -- which is obviously not what we want
+
+---
+
 ## Timeline (status, references, and other events)
 
 - **2026-09-08T18:23:01Z** @vzakharov renamed from «docs: open the PR at plan time so plans get reviewed like code» to «feat: give each loop skill one thing to own».
 - **2026-09-08T22:27:20Z** @vzakharov reviewed (COMMENTED): https://github.com/vzakharov/agent-project-boilerplate/pull/32#pullrequestreview-5147580260.
+- **2026-09-09T00:51:40Z** @vzakharov reviewed (COMMENTED): https://github.com/vzakharov/agent-project-boilerplate/pull/32#pullrequestreview-5148490928.

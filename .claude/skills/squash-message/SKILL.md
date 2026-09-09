@@ -71,7 +71,11 @@ PR is open.
 
 **A branch carrying only a plan commit has the plan as its input**, not `git
 log`: the plan states the change the record will describe, and the commit
-subject only says a plan was written.
+subject only says a plan was written. **Write it in the same completed voice as
+any other proposal** — what the change does, never what it will do once
+implemented. This is the body that gets pasted at merge, so one hedged as
+forthcoming ("once this lands, X will…") becomes a permanent record describing a
+plan rather than a change.
 
 ## Step 2 — Draft into the working file (do not print it)
 
