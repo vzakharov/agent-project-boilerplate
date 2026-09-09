@@ -358,9 +358,11 @@ default; only the conjunction suspends it, so `handle/SKILL.md:17` gains one
 exception rather than being rewritten.
 
 `/plan` § "The approval gate" already draws the right distinction — *a suggestion
-is a plan revision; only a go-ahead token unlocks implementation*. It only needs
-to learn that both can arrive as PR review comments. No change to what counts as
-either.
+is a plan revision; only a go-ahead token unlocks implementation*. It gains one
+restriction on the channel: a review comment is always the revision half, never
+the go-ahead, so the only thing that unlocks source edits is an invocation —
+`/go`, or a `/handle` finding no unanswered feedback. Review prose has too many
+ways to read as assent for an agent to arbitrate.
 
 ## Open questions
 
