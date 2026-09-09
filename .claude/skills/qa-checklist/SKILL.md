@@ -7,7 +7,7 @@ End state of this skill: the current branch's open PR has a `## QA Checklist` se
 **Two ways this skill is used:**
 
 - **Standalone** (`/qa-checklist` on an existing PR) — run all steps below: locate the PR, derive the checklist, and write it into the body.
-- **Referenced by `/pr`** — that skill composes the `## QA Checklist` section directly into the PR body **at creation time**, so it only needs **Step 2 (Derive the checklist)** — the single source of truth for what a good checklist looks like. It does not run Steps 1 or 3 (there's no existing body to edit).
+- **Referenced by `/pr`** — that skill composes the `## QA Checklist` section directly into the body it is about to write, so it only needs **Step 2 (Derive the checklist)** — the single source of truth for what a good checklist looks like. It does not run Steps 1 or 3: it holds the whole body already, whether it is creating the PR or refreshing one.
 
 ## Environment note (read this before running gh)
 
@@ -19,11 +19,11 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 gh pr view --json number,url
 ```
 
-If no PR exists for the current branch, **stop and tell the user** to open one first (e.g. via `/pr`) — this skill mutates an existing PR body, it does not create PRs. (This step only applies to the standalone path; `/pr` composes the section at creation and skips straight to Step 2.)
+If no PR exists for the current branch, **stop and tell the user** to open one first (e.g. via `/pr`) — this skill mutates an existing PR body, it does not create PRs. (This step only applies to the standalone path; `/pr` holds the body it is composing and skips straight to Step 2.)
 
 ## Step 2 — Derive the checklist
 
-Derive the checklist from **what the change is meant to do** — the PR body (Summary) and the task/conversation context that produced it. In most cases the branch diff is thin or empty (the PR is being drafted as the work begins), so the intended scope — not the code — is the primary source. Where commits already exist, use them only as a supplementary signal:
+Derive the checklist from **what the change is meant to do**, and take that from whichever of these the branch has: the **plan** under `docs/plans/`, which states the intended scope outright; the PR body's Summary; or the task and conversation context that produced it. A branch at plan time carries a plan and no diff at all, so the intended scope — not the code — is the primary source. Where commits already exist, use them only as a supplementary signal:
 
 ```bash
 git log --format='%s%n%n%b' origin/<base>..HEAD
@@ -32,7 +32,7 @@ git diff --stat origin/<base>..HEAD
 
 Write the checklist as markdown `- [ ]` items, each led by a short backticked slug (`` `stream` ``, `` `bad-input` ``, …) — the slug is the only metadata the item carries and it's the join key the classification table's **Item** column references. (Numbers don't work: GitHub renders ordered task lists as checkboxes and hides the ordinal, so a `#` column would have nothing visible to join on.) **Bias toward concrete, user-visible scenarios** a human walks through in the running app — open this page, run this command, confirm this state changes — **not** "run the tests" or "check CI". Each item should be something a reviewer can actually do and observe. If the user passed focus guidance after `/qa-checklist`, weave it in — it's a hint about what to emphasize, not a free-form append.
 
-The checklist isn't frozen at creation — it can be refreshed later (re-run `/qa-checklist`) as the body of work changes naturally during implementation.
+The checklist isn't frozen at creation — `/pr`'s refresh mode re-derives it against the real diff at the end of implementation, and re-running `/qa-checklist` directly refreshes it whenever the body of work changes in between.
 
 ### Classify automatability (a table after the checklist)
 

@@ -1,8 +1,22 @@
 ---
-description: Open a draft PR for the current branch — renames the harness auto-branch first (via the branch-rename skill), pushes, then creates the PR with a title/body derived from the branch's commits. Invoke as `/pr [optional task to implement first]`. Use when the user says "/pr", "open a PR", "draft PR", "open a draft", or similar after committing some work.
+description: Own the PR object for the current branch — rename the harness auto-branch (via the branch-rename skill), push, then open the draft PR or refresh the one that already exists, with a title and body derived from the branch. Takes no arguments. Use when the user says "/pr", "open a PR", "draft PR", "open a draft", or similar after committing some work.
 ---
 
-End state of this skill: a draft PR exists against `<base>`, targeting a semantically-named branch (`claude/<task-slug>-<hash>`), with a title and body derived from the commits on the branch, and with the copy-ready squash proposal posted as a comment and tracked on the branch per `@.claude/skills/squash-message/SKILL.md`.
+End state of this skill: a draft PR exists against `<base>`, targeting a semantically-named branch (`claude/<task-slug>-<hash>`), with a title and body describing what the branch delivers, and with the copy-ready squash proposal posted as a comment and tracked on the branch per `@.claude/skills/squash-message/SKILL.md`.
+
+## Modes
+
+`/pr` takes **no arguments** — new work is `@.claude/skills/plan/SKILL.md`, which publishes its own plan through this skill, and unplanned work is `@.claude/skills/go/SKILL.md`. What this skill owns is the PR object, in three modes. The branch decides which one, not the caller:
+
+| Invocation | Behavior |
+|---|---|
+| **plan-open** (caller: `/plan`'s publish step) | rename → push → create draft → body **from the plan**, since there is no diff yet → `/squash-message` |
+| **`/pr`, no PR** | open from the commits already on the branch |
+| **`/pr`, PR exists** | **refresh**: re-compose the body against the real diff — Step 4 unchanged, `gh pr edit` in place of `gh pr create` |
+
+Refresh exists because the body written at plan time is a **forecast**. Step 4 writes the Summary from the branch and delegates the QA section to `/qa-checklist`; at plan time both come from the plan. By the end of `/go` there is a diff and the body still says what the change was *going to* be. Reconciling it is the same Step 4 composition over a different input.
+
+**Refresh's own work is the body, and nothing more.** `/squash-message` § "When to (re)run" owns its own trigger and already fires on implementation pushes; `/qa-checklist` Steps 1 and 3 already edit an existing body. Refresh reaches both the way any other mode does.
 
 ## Caller parameters
 
@@ -10,7 +24,7 @@ An outer skill may pass these; a bare `/pr` takes the defaults, so the ordinary 
 
 - **`<base>`** — the branch the PR merges into, and the left side of every diff range below (`origin/<base>..HEAD`). Defaults to the repo default branch (`main` in most projects). When a PR already exists, its `baseRefName` wins over what the caller said.
 - **`<issue>`** — the issue number this PR closes, passed by `@.claude/skills/issue/SKILL.md`. Absent, Step 4's inference from the commits stands. Explicit beats inference for a split issue, where a stray reference to the parent in a commit body would otherwise close the umbrella.
-- **A pre-created PR** — when the caller already opened the PR, Step 1b treats it as satisfying the duplicate check rather than tripping it, and Step 5 fills it in instead of creating one.
+- **The plan** — passed by `/plan`'s publish step, and the input Step 4 composes from in plan-open mode.
 
 ## Environment note (read this before running gh)
 
@@ -18,21 +32,13 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 
 ## Step 1 — Pre-checks
 
-### Step 1a — Plan gate (do this FIRST, before any git command)
+If the invocation carries arguments, they are not this skill's to act on: route a task to `/plan` (or `/go`, when the operator says no plan is needed) and start over from there.
 
-**Any arguments after `/pr` are a task to implement** — work to plan, code, and commit before drafting the PR. A caller skill's task text counts as arguments exactly as a user's does: a handover from `/issue` hits this gate rather than sliding past it as "internal". So if the invocation has args, **STOP: do not run the PR steps yet.** Plan the task first — in a web/remote session invoke the `plan` skill (per CLAUDE.md "Plan mode & questions in web sessions"); in a local CLI session use native plan mode — get it reviewed, implement it, commit, and only then run `/pr` from the top over the finished work.
+- `git status --porcelain` must be empty. If there are unstaged or staged-but-uncommitted changes, **stop and ask the user** — this skill draws the PR from what's already committed, it does not auto-commit.
+- `git rev-list --count origin/<base>..HEAD` must be ≥ 1. If 0, the branch has no commits to PR — stop and report. (In plan-open mode the plan commit is that one commit.)
+- `gh pr view --json number,url,baseRefName 2>/dev/null` — a PR already on this branch selects **refresh** mode rather than stopping: read `baseRefName` off it as `<base>` and continue. This is the expected state on any branch `/plan` published. Say so in the Step 7 report, including for the operator who meant `/finalize` and typed `/pr`.
 
-The **only** waiver is the args themselves explicitly saying no plan is needed (e.g. "no plan"). Nothing else exempts the task: not `/pr` (it is not a plan-skill exemption), not the branch already carrying commits (that does not make new args "continued work"), and not the task looking small, well-specified, or like a tweak to existing work — plan it anyway.
-
-When the waiver applies, skipping the plan does **not** mean skipping the quality rounds. Rather than implementing inline and jumping to the PR steps, hand off to `@.claude/skills/implement/SKILL.md` via its § "Planless entry" (load and follow it) — the explicit "no plan" is what makes the args the task. Its Step 4 then re-invokes this skill with no args (the bare mid-session path below → Step 1b), which opens the draft over the finished work.
-
-`/pr` with **no arguments** → skip to Step 1b and draft the PR from the commits already on the branch. Bare `/pr` only ever happens **mid-session**, wrapping up work this session already did and discussed but never opened a PR for (e.g. a session that started as brainstorming or testing). A fresh session never opens with a bare `/pr` — there'd be nothing to PR — so no-args always means continued in-session work, never a task that needs a plan.
-
-### Step 1b — Mechanical pre-checks
-
-- `git status --porcelain` must be empty. If there are unstaged or staged-but-uncommitted changes, **stop and ask the user** — this skill creates a PR from what's already committed, it does not auto-commit. (If Step 1a sent you through the plan+implement path, your changes should already be committed before you reach here.)
-- `git rev-list --count origin/<base>..HEAD` must be ≥ 1. If 0, the branch has no commits to PR — stop and report.
-- `gh pr view --json number,url,baseRefName 2>/dev/null` — if a PR already exists for this branch, **stop and report its URL**. Don't open a duplicate. (User may want `/finalize` instead.) The exception is the caller-bootstrapped PR above: that one is the PR this run fills in, so read `baseRefName` off it as `<base>` and continue.
+`gh pr create` refuses a second open PR for the same head→base anyway; refresh is what makes that refusal an outcome instead of an error.
 
 ## Step 2 — Rename the auto-branch (by reference)
 
@@ -61,20 +67,20 @@ git log --format='%s%n%n%b' origin/<base>..HEAD
 git diff --stat origin/<base>..HEAD
 ```
 
+**In plan-open mode the diff is one plan commit**, so the sections below are composed from the plan under `docs/plans/` rather than from the log. Every other mode composes from the commits.
+
 **Title**: conventional-commit format (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`, `style:`, `test:`, `ci:`, `perf:`). Reuse the subject of the lead commit when there's only one; for multi-commit branches, synthesize a subject that covers the whole branch. Keep under 70 chars.
 
 **Body**: two sections.
 
 - **Summary** — 2-4 bullets explaining _what_ changed and _why_. Pull from commit bodies, not just subjects.
-- **QA Checklist** — a `## QA Checklist` markdown checklist of how to verify the change end-to-end, derived over `origin/<base>..HEAD`. For how to derive it, follow the "Derive the checklist" guidance in `@.claude/skills/qa-checklist/SKILL.md`.
+- **QA Checklist** — a `## QA Checklist` markdown checklist of how to verify the change end-to-end. For how to derive it, follow the "Derive the checklist" guidance in `@.claude/skills/qa-checklist/SKILL.md`, over whichever input this mode composes from.
 
 End the body with `Closes #N` (for `feat`/`refactor`/etc.) or `Fixes #N` (for `fix`), where `N` is the caller's `<issue>` when one was passed, and otherwise any issue the PR or a commit references.
 
 Append the session attribution line: `https://claude.ai/code/session_<id>` (the actual session id from the system prompt).
 
-If `/pr` was invoked with args, those describe the task you just planned and implemented (Step 1a) — let them inform the Summary and QA Checklist alongside the commits, not just the commit messages.
-
-## Step 5 — Create the draft PR (or fill in the pre-created one)
+## Step 5 — Create the draft PR, or edit the one that exists
 
 ```bash
 gh pr create --draft --base <base> \
@@ -99,17 +105,17 @@ EOF
 
 If `gh` fails with "none of the git remotes … point to a known GitHub host" (the remote-execution proxy quirk), re-run with `--repo OWNER/REPO` prepended.
 
-**When the caller pre-created the PR**, swap the `create` for `gh pr edit <PR> --title … --body …`. Pass no `--base` — re-asserting it would silently undo a retarget the caller made on purpose.
+**In refresh mode**, swap the `create` for `gh pr edit <PR> --title … --body …`. Pass no `--base` — re-asserting it would silently undo a retarget someone made on purpose.
 
 ## Step 6 — Post the squash proposal
 
 Invoke `@.claude/skills/squash-message/SKILL.md` in default mode, passing the PR's base — load and follow it; do **not** inline-copy its steps, exactly as Step 4 delegates the QA checklist to `/qa-checklist`. That skill owns the format, the draft-then-tighten pass, where the draft is tracked, and when it must be re-synced.
 
-It sits **after** creation because the title carries a `(pr #N)` suffix, so it cannot run before the PR number exists. It earns its place because the condensed title/body is the best quick lede for anyone opening the PR page — it answers "what is this?" in a few lines, complementary to the body's detail and QA checklist rather than a duplicate of them.
+It runs after Step 5, where the PR number for the `(pr #N)` suffix is already in hand. It earns its place because the condensed title/body is the best quick lede for anyone opening the PR page — it answers "what is this?" in a few lines, complementary to the body's detail and QA checklist rather than a duplicate of them.
 
 ## Step 7 — Report
 
-Print the PR URL on its own line so it's easy to copy. One sentence summary of what was opened (title + base + draft state), and note that the squash proposal is posted as a comment on it. Stop.
+Print the PR URL on its own line so it's easy to copy. One sentence summary of what the run did (mode — opened or refreshed — plus title, base and draft state), and note that the squash proposal is posted as a comment on it. Stop.
 
 Do **not**:
 

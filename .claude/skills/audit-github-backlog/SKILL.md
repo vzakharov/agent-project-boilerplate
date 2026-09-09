@@ -15,7 +15,7 @@ This is a read-and-decide pass. It closes, comments on, relabels, and edits
 runs `@.claude/skills/plan/SKILL.md` and the plan file is this skill's output —
 there is one document, in the normal plan lifecycle, not an audit report some
 later session turns into a plan. Only _execution_ is separate, through
-`/implement`, and that gate is the point: the output is a bulk close list, and
+`/go`, and that gate is the point: the output is a bulk close list, and
 the only thing worse than an unreviewed backlog is an unreviewed automated purge
 of one.
 
@@ -40,7 +40,7 @@ instructions: the working-around is exactly the knowledge the next run needs.
   verdict table.
 - Nothing on GitHub has changed.
 
-The subdirectory is load-bearing: `/implement` Step 1 does `ls docs/plans/*.md`
+The subdirectory is load-bearing: `/go` Step 1 does `ls docs/plans/*.md`
 and expects exactly one match, so the evidence must stay nested rather than
 flattened beside the plan. Before you start, check `docs/plans/` is otherwise
 empty — a leftover plan file from an earlier session makes that glob ambiguous.
@@ -188,7 +188,7 @@ and titles only — no per-item descriptions; at ~200 items that list is already
 of the body, which is why it is folded.
 
 Delegate rather than reimplement: `@.claude/skills/propose-issue/SKILL.md` for
-every new or refiled issue, `@.claude/skills/implement/SKILL.md` for execution.
+every new or refiled issue, `@.claude/skills/go/SKILL.md` for execution.
 
 End the run by putting your proposed amendments to this skill to the operator —
 yours and the ones analysts flagged. See § "This is a living document".

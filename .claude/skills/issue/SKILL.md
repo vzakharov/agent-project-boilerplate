@@ -1,10 +1,10 @@
 ---
-description: Take a GitHub issue — export and read the thread, split it when the scope demands, then hand the work over to `/pr`.
+description: Take a GitHub issue — export and read the thread, split it when the scope demands, then hand the work over to `/plan`.
 ---
 
-End state of this skill: the issue is exported and committed on the branch, any split is filed on GitHub as sub-issues, and the work has been handed to `@.claude/skills/pr/SKILL.md` — which in an ordinary web session means a pushed plan file and a copyable `/implement <branch>` handoff. Not code, and not a PR — those belong to `/implement` and `/pr`.
+End state of this skill: the issue is exported and committed on the branch, any split is filed on GitHub as sub-issues, and the work has been handed to `@.claude/skills/plan/SKILL.md` — which in an ordinary web session means a plan file published as a draft PR and a copyable `/go <branch>` handoff. Not code — that belongs to `/go`.
 
-The chain is `/issue` → `/pr` → (plan gate) `/plan` → `/implement` → draft PR → `/finalize`. Everything past the handover is owned by the skill that runs it.
+The chain is `/issue` → `/plan` → draft PR → (review loop via `/handle`) → `/go` → `/finalize`. Everything past the handover is owned by the skill that runs it.
 
 ## Step 0 — Mode gate: native plan mode is not supported
 
@@ -80,7 +80,7 @@ For **truly** large work, only the **next** slice has to be manageable in this r
 3. Comment on the parent listing the children and the ordering.
 4. `python3 scripts/export-github-item.py <first child>` and commit that export too. From here on, "the issue" means that child.
 
-The gate is there because filing sub-issues writes to the tracker on the operator's behalf and is awkward to undo — and because the carve is a judgement call they may want to make differently. It runs as prose in the chat rather than through a plan file: a split changes no files, so there is no diff to iterate over, and routing it through `/plan` would end the run at an `/implement` handoff before any issue existed. Fold the enumeration-vs-cohesive question below into the same exchange when it's unclear.
+The gate is there because filing sub-issues writes to the tracker on the operator's behalf and is awkward to undo — and because the carve is a judgement call they may want to make differently. It runs as prose in the chat rather than through a plan file: a split changes no files, so there is no diff to iterate over, and routing it through `/plan` would end the run at a `/go` handoff before any issue existed. Fold the enumeration-vs-cohesive question below into the same exchange when it's unclear.
 
 #### Every slice is a sub-issue, including the first
 
@@ -125,16 +125,16 @@ A QA roundup of six small defects is usually **not** six sub-issues — it's one
 
 The usual case. Say so in a line, and go straight to Step 4 — there is nothing to approve.
 
-## Step 4 — Hand over to `/pr`
+## Step 4 — Hand over to `/plan`
 
-Load and follow `@.claude/skills/pr/SKILL.md`, passing as its arguments a **one-line** task — what the issue asks, plus the export path (`docs/issue/<n>/issue.md`) — and `<issue>` = the number the PR must close: the chosen child when you split, otherwise the issue itself, **never** the parent. The handover happens in this session, so `/pr` runs with the thread you just read still in context and the export on the branch; the argument is what fires the gate below, not a briefing. Don't paraphrase the issue back at yourself.
+Load and follow `@.claude/skills/plan/SKILL.md`, passing what the issue asks in **one line** plus the export path (`docs/issue/<n>/issue.md`), and `<issue>` = the number the eventual PR must close: the chosen child when you split, otherwise the issue itself, **never** the parent. The handover happens in this session, so `/plan` runs with the thread you just read still in context and the export on the branch. Don't paraphrase the issue back at yourself.
 
-Passing arguments is what makes `/pr`'s Step 1a plan gate fire, so in a web session the next thing that runs is `@.claude/skills/plan/SKILL.md`, whose deliverable is the pushed plan file and the copyable `/implement <branch>` block. **That is normally where this run ends.** Do not implement here and do not open the PR here: `/implement` Step 4 re-invokes `/pr` with no arguments once the work is finished, and that is what opens the draft.
+`/plan`'s deliverable is the plan file, published as a draft PR by its § "Publishing the plan", and the copyable `/go <branch>` block. **That is normally where this run ends.** Do not implement here: `/go` runs in a later session and hands the finished work back to `/pr` to refresh.
 
-The **only** waiver is `/pr`'s own — the operator explicitly saying no plan is needed, or a caller that already carries an approved plan, which routes through `@.claude/skills/implement/SKILL.md` § "Planless entry". Neither is this skill's to grant on its own judgement.
+The **only** waiver is the operator explicitly saying no plan is needed, which routes to `@.claude/skills/go/SKILL.md` § "Planless entry". It is not this skill's to grant on its own judgement.
 
-**Branch name:** `/pr` Step 2 invokes `@.claude/skills/branch-rename/SKILL.md`, which owns the form. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`.
+**Branch name:** `@.claude/skills/branch-rename/SKILL.md` owns the form, and the rename lands before `/plan` writes the plan file, whose name derives from the slug. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`.
 
-**Reporting:** `/pr` and `/plan` report their own results. Add only what this skill alone knows — which issue you took, whether you split it, and links to the children.
+**Reporting:** `/plan` and `/pr` report their own results. Add only what this skill alone knows — which issue you took, whether you split it, and links to the children.
 
 **Split-only session:** if the operator says the run's deliverable is the sub-issues themselves, with no code to be written in it, stop after Step 3 and report — there is nothing to hand over.
