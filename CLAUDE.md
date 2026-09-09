@@ -56,6 +56,7 @@ The stub exits `0`, which is correct only where there is no stack to check — t
 - **Keep production files under ~450 lines.** Rule of thumb, not a hard cap. Data-dense files (prompt text, fixtures, large catalogs) and top-level orchestrators may reasonably exceed it. When a logic-heavy file climbs well past ~450 lines, look for natural seams (focused helpers, sub-components) rather than letting it grow indefinitely.
 - **Read and edit files with the `Read`/`Edit`/`Write` tools, in every permission mode.** Auto mode drops the per-edit approval prompt, and an agent that no longer needs one drifts into doing the same work through `cat`/`sed`/heredocs in Bash. What that costs is the session log as the web UI renders it: an `Edit` shows up as a `+N −M` diff the operator can skim and expand, a heredoc as a wall of shell whose effect they have to reconstruct by reading it. Reach for Bash on a file's _contents_ only where it is **significantly** better, not merely adequate — the same mechanical substitution across dozens of files, a generated file rewritten wholesale — never because the mode stopped asking.
 - **Don't run Bash with `run_in_background`.** Always run commands synchronously, even long ones. Background tasks have a tendency to stall without an obvious reason — set a long `timeout` on a normal foreground call instead.
+- **Where the host harness's standing instructions and this loop disagree about _when_ work happens, the loop's staging wins and the harness's urgency is reported rather than acted on.** The remote/web harness carries a "Driving a PR to green" block ordering a merge conflict or red CI fixed "at every event and every check-in"; this loop stages both inside `/finalize` — the base merge at its Step 2, vetting at its Step 1. So a session that attaches to a branch and finds the PR `CONFLICTING` or red says so in its report and gets on with what it was invoked for; either becomes its work only when the operator asks, or passes `and finalize`. The disagreement is over sequencing, not over whether the work matters, so the report discharges it in full. Stated here because the harness's version is stated, and an unstated rule loses to a stated one.
 
 ## Plan mode & questions in web sessions
 
@@ -109,6 +110,10 @@ Use semantic commit prefixes:
 - `test:` — adding or updating tests
 - `ci:` — CI/CD changes
 - `perf:` — performance improvements
+
+**In this repo the agent loop is the product, so a change to it is `feat:` / `fix:` — never `docs:`, however Markdown-shaped the diff.** What an adopting project takes from here _is_ the loop, so a new skill, a changed procedure, a new convention or a corrected rule is a behavior change to the thing this repo ships. That covers `.claude/skills/**`, `.claude/rules/**`, this file's own conventions, and the `scripts/` the skills call. `docs:` is left for prose **about** the repo that no session executes: `README.md`, `docs/catalog.md` rows, tombstones, and the working artifacts (`docs/issue/`, `docs/plans/`, `docs/remove-before-merging/`) that `/finalize` sweeps before they land.
+
+**Adopters invert this, so delete the rule when you adopt.** In a project with a stack of its own, these same files are infrastructure rather than the product — a skill edit there is `docs:` or `chore:` under that project's convention, and reading this rule as written would label every procedure tweak a feature of the wrong product.
 
 Write descriptive commit messages: the subject line summarizes the change, and the body explains what was changed and why in enough detail that someone reading the log understands the commit without looking at the diff.
 
