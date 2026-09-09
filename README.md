@@ -4,7 +4,7 @@ Boilerplate for projects where Claude Code is a first-class collaborator.
 Language- and framework-agnostic.
 
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
-stack, **26 skills** (19 working out of the box, 7 stubs awaiting hydration) that
+stack, **28 skills** (20 working out of the box, 8 stubs awaiting hydration) that
 compose into a plan → implement → PR → land loop, the path-scoped `.claude/rules/`
 mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
 scripts behind it all.
@@ -14,7 +14,7 @@ per skill, script and file, grouped so you can tell how much of it you need:
 
 | Group | What it covers |
 | --- | --- |
-| **G0** | The sync path — how you pull later changes forward. |
+| **G0** | The sync path — how you pull later changes forward. Ships as a stub; hydrating it is filling in the watermark. |
 | **G1** | Prose & principles: `CLAUDE.md`, `.claude/rules/`, `/dry`, `/tighten-docs`. |
 | **G2** | The PR loop: `/plan`, `/go`, `/pr`, `/finalize` and the mechanical pieces they compose. |
 | **G3** | Issue & backlog: `/issue`, `/propose-issue`, `/audit-github-backlog`. |
@@ -76,9 +76,10 @@ The agent selects a subset against your repo's actual shape, mostly by
 inspection — expect it to ask only about your session type and your deploy/test
 surface.
 
-Either way, later changes here come forward with `/sync-upstream`, pointed at this
-repo by your own `upstream.json`. The infrastructure is adoptable **and**
-re-syncable; a fork is not a dead end.
+Either way, later changes here come forward with `/sync-agent-infra`, whose
+shipped watermark already names this repo — you fill in the rest (see
+[`ADOPTING.md`](ADOPTING.md) § "Hydrate the sync stub"). The infrastructure is
+adoptable **and** re-syncable; a fork is not a dead end.
 
 ## More
 

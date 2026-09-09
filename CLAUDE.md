@@ -160,7 +160,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/handle`** — attach to a branch and do whatever it needs: read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, and land-prep only if asked.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
-- **`/sync-upstream`** — pull the agent infrastructure forward from the repo this one adopted it from, triaging commit by commit. Universal: the source is whatever `.claude/skills/sync-upstream/upstream.json` names, so the same procedure serves every link in the chain — including a project that adopted from this repo and wants this repo's later changes.
+- **`/sync-agent-infra`** — pull the agent infrastructure forward from the repo this one adopted it from, triaging commit by commit. Ships as a stub, this repo having no source above it: hydration is filling in `.claude/skills/sync-agent-infra/upstream.json`, which already names this repo as the source an adopter syncs from.
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 - **`/implement`** — a redirect to `/go`, kept because handoff blocks written before the rename still say it.
 
@@ -176,7 +176,9 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 ### Stubs awaiting hydration
 
-Seven skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
+Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`, `/sync-agent-infra`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
+
+`/sync-agent-infra` is the exception to the *why*: its procedure is universal and usable as written, and what it lacks is the per-repo watermark to run against. Everything below still applies to it — a stub is a stub — but hydrating it is filling in JSON fields, not writing a procedure.
 
 **A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form: it exits `0` only because this repo has no stack to check, and in an adopting project it exits `1` until it runs that project's checks.
 

@@ -52,7 +52,7 @@ Plain `git clone`, never `gh repo clone`. This repo is public and git transport
 is not gated on your session's repository scope, so this is the one step that
 cannot fail on session configuration.
 
-`--depth 1` is right here and **wrong for `/sync-upstream`**, which needs full
+`--depth 1` is right here and **wrong for `/sync-agent-infra`**, which needs full
 history to resolve its watermark SHA. Don't carry this flag over to that skill;
 it has its own clone recipe and its own warning about `--depth`.
 
@@ -278,13 +278,20 @@ stated there: hydrate now, or delete. Hydrating means writing your project's rea
 commands in and **deleting the banner** at the top — a stub that still carries its
 banner is still a stub.
 
-### Repoint the sync watermark
+### Hydrate the sync stub
 
-`.claude/skills/sync-upstream/upstream.json` is a
-[`rewrite`](docs/catalog.md#three-dispositions-not-two). Write it for **your**
-repo — inheriting the clone's copy points your sync at a repo you cannot read and
-sets `lastSyncedSha` to a foreign history, which surfaces one sync later as an
-unresolvable SHA.
+`/sync-agent-infra` ships as a stub because its watermark,
+`.claude/skills/sync-agent-infra/upstream.json`, is a
+[`rewrite`](docs/catalog.md#three-dispositions-not-two) — the procedure needs no
+hydration at all, only the JSON. Write that file for **your** repo, then clear
+both stub markers: delete the `⚠️ **STUB.**` banner and drop `STUB` from the
+frontmatter `description`. Half of either leaves the skill failing assertion 4.
+
+`repo` arrives correct — the shipped value names this repo, which *is* your
+source. What must not survive is the placeholder `lastSyncedSha`: the skill's
+Step 1 stops on it, so an unhydrated tree cannot sync against a foreign history.
+If you took the infrastructure as a one-time snapshot and will not re-sync,
+delete the skill rather than carrying it unhydrated.
 
 ```json
 {
@@ -324,8 +331,8 @@ One map with honest reasons beats a second `postponed` map: the useful distincti
 is not *which* dictionary a path sits in but *whether its stated reason still
 holds*, and that has to be re-read at sync time either way.
 
-From here on, pulling later changes forward is just `/sync-upstream` — the same
-command this repo uses to track *its* own source. Nothing further to install.
+From here on, pulling later changes forward is just `/sync-agent-infra`, once
+hydrated per the section above. Nothing further to install.
 
 Each sync lands as a `chore:` PR whose subject is the first thing your `git log`
 shows — that skill's Step 8 covers titling the change rather than the sync.
@@ -460,8 +467,10 @@ silently:
 2. **The skills are actually loaded**: confirm the copied skills appear in the
    session's skill list. A skill in the wrong directory is invisible rather than
    broken.
-3. **The watermark names your source**: `upstream.json` points at the repo you
-   adopted from, with a `lastSyncedSha` that resolves there.
+3. **The sync stub is hydrated**:
+   `.claude/skills/sync-agent-infra/upstream.json` points at the repo you adopted
+   from, with a `lastSyncedSha` that resolves there rather than the shipped
+   placeholder, and both stub markers are cleared.
 4. **If you adopted G4**: confirm one GraphQL-flavored call now succeeds — e.g.
    `gh pr list -R <owner>/<repo>`. That is the assertion the shim exists to make
    true, and it either works or the hook isn't installed.
