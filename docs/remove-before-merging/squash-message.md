@@ -9,20 +9,20 @@ The agent infrastructure was written entirely from the adopter's
 side, pulling: ADOPTING.md is read over the network by the repo
 taking it on, docs/catalog.md is the inventory it selects from,
 and /sync-agent-infra keeps that selection current. Nothing served
-the source's side — standing in a repo and firing a new one out of
-it. Two callers wanted that: this boilerplate, whose only answer
-was a template fork that decides everything after every file has
-landed, and an adopter, for whom "another repo like this one"
+the source's side — standing in a working project and firing a new
+one out of it, which is the recurring next move once a real
+project runs on this infrastructure. "Another repo like this one"
 means its stack and its adaptations, not the boilerplate's.
 
-/spinoff <owner/name> is that operation, hydrated, in G0. It reads
-which shape of caller it stands in — catalog present or not — and
+/spinoff <owner/name> is that operation, hydrated, in G0. It
 triages three ways: agent infrastructure travels always, stack
 scaffolding travels when the stacks match, the product and
-anything path-scoped to it never. The seed splits by closure
-rather than taste — main takes one commit of infrastructure so
+anything path-scoped to it never — the per-path judgment being
+what makes it a skill rather than a script, since no adopter keeps
+an inventory to look the answer up in. The seed splits by closure
+rather than taste: main takes one commit of infrastructure so
 every later branch inherits the loop, a session-style branch takes
-the project plus a paused plan that /handle resumes from — because
+the project plus a paused plan that /handle resumes from, because
 check-skill-catalog.sh over the transitive closure of /handle
 collapses "the skills needed to run the loop" into all of them.
 The sibling-vs-chain watermark question is surfaced with its cost
@@ -30,20 +30,15 @@ and never defaulted, along with the two mechanics that fail
 silently: which SHA is honest under each answer, and the stale
 adopted paths a chained watermark inherits.
 
-The caller is read-only — no commit, branch, PR or issue lands
-there — so read is all /spinoff needs from it, which is all a
-public repo grants a stranger. Write access is needed only on the
-target's owner. The one step that could violate that by accident
-guards against it, asserting the target clone's origin before
-delegating to /pr, which aims at whatever cwd resolves to.
-
-ADOPTING.md's `## Template fork` goes entirely: its four steps are
-what the skill does, moved before the copy instead of after it,
-and two procedures for one operation drift. README's template
-button stays, since /spinoff runs from a checkout of this repo and
-a web session needs one in your own account — but it now yields a
-reusable launcher, not a project to prune in place, which is the
-path the deletion ends.
+It runs from adopters only, refusing when docs/catalog.md is
+present — the tell that a tree is this repo or an unpruned copy of
+it, where a spinoff is the wrong operation. That keeps the
+boilerplate-to-project direction where it already worked, as the
+template fork ADOPTING.md documents, so the two paths are one
+procedure each for two operations rather than two for one. It also
+keeps the caller read-only, with nothing written there and the
+target clone's origin asserted before /pr is delegated to, since
+/pr aims at whatever cwd resolves to.
 
 Closes #43
 
