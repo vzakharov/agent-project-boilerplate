@@ -97,6 +97,15 @@ actually costs. Rationale, and what was rejected:
      Substitute the real slug, add at most one line naming the task, and call the
      tool bare. Don't grow it into the plan itself: the dialog is where the
      operator decides whether to spend the click, not where they review a plan.
+     **Overwrite that file, never append** — a session re-entering plan mode is
+     handed the same path with the previous exit's text still in it, under a
+     harness-derived name that describes nothing (`how-hard-would-it-luminous-pumpkin.md`
+     in the dogfood run).
+   - **Don't spend the click on a turn that needs no writes.** Plan mode's
+     injected workflow ends every turn at `ExitPlanMode` or `AskUserQuestion`,
+     but a question answerable from reading is answerable from inside plan mode.
+     The exit is for writing the plan file; ask for it when there is something
+     to write.
    - Then run this skill from the top. Do **not** answer in chat prose instead,
      and do **not** carry the harness plan file's content over: the deliverable is
      `docs/plans/<slug>.draft.do-not-implement.md`.
