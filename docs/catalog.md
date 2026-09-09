@@ -9,7 +9,7 @@ Two audiences:
 - **Adopting a subset into an existing repo** — read this alongside
   [`ADOPTING.md`](../ADOPTING.md), which owns the procedure. This file owns the
   inventory; it does not restate the steps.
-- **`/sync-upstream`, on every run** — when a commit at the source adds a skill
+- **`/sync-agent-infra`, on every run** — when a commit at the source adds a skill
   that is in neither your `adopted` nor your `declined` list, the sync reads that
   skill's row here to surface the decision with its criteria attached.
 
@@ -37,9 +37,11 @@ inventory, so every item appears under exactly one, and
   files qualify, and both are load-bearing: `scripts/vet.sh` (its stub exits `0`
   for want of a stack to check; yours exits `1` until it runs your commands —
   which you already know) and
-  `.claude/skills/sync-upstream/upstream.json` (the source, SHA and adopted set
-  are per-repo by definition). Naming this disposition is what stops an adopter
-  inheriting a watermark pointed at a repo it cannot read.
+  `.claude/skills/sync-agent-infra/upstream.json` (the SHA and adopted set are
+  per-repo by definition; only `repo` ships correct). Naming this disposition is
+  what stops an adopter inheriting a placeholder SHA and a foreign `adopted` set
+  — the placeholder halts the skill, the foreign set fails silently by
+  under-filtering the candidate log.
 - **never** — describes or maintains *this* repo, so it is meaningless in yours.
 
 ## Groups
@@ -49,7 +51,7 @@ conditions, and any row can be escaped individually.
 
 | Group | Adopt when |
 | --- | --- |
-| [G0 — The sync path](#g0--the-sync-path) | Always, unless you want a one-time snapshot and no future updates. |
+| [G0 — The sync path](#g0--the-sync-path) | Always, unless you want a one-time snapshot and no future updates. Ships unhydrated: filling in the watermark is what makes it runnable. |
 | [G1 — Prose & principles](#g1--prose--principles) | Always. Zero external dependencies, no stack assumptions, no GitHub. |
 | [G2 — The PR loop](#g2--the-pr-loop) | A change is a branch → PR → squash-merge, on GitHub, with `gh` and `$GH_TOKEN` reachable. **In a web/remote session, needs G4.** |
 | [G3 — Issue & backlog](#g3--issue--backlog) | G2 **and** work is actually tracked as GitHub issues. Same web-session dependency on G4. |
@@ -63,16 +65,23 @@ conditions, and any row can be escaped individually.
 Adopting this group is what makes every later change at the source reachable.
 Skipping it leaves you with a snapshot.
 
+**It ships unhydrated**, this repo having no source of its own to sync from.
+Hydrating it is filling in the watermark, not writing a procedure: every step of
+the skill is usable as written. The [G6 hydrate-now-or-delete
+rule](#g6--stack-stubs) applies here too, and `scripts/check-skill-catalog.sh`
+enforces it the same way.
+
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/sync-upstream` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo | `/dry`, `/tighten-docs` (G1); `/pr` (G2); `/override-gh` (G4) | adopt |
-| `.claude/skills/sync-upstream/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, and what you adopted or declined. | — | — | **rewrite** |
+| `/sync-agent-infra` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tighten-docs` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
+| `.claude/skills/sync-agent-infra/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, and what you adopted or declined. Ships pointed at this repo with the rest as placeholders. | — | — | **rewrite** |
 
-Its Step 8 hands off to `/dry`, `/tighten-docs` and `/pr`. The first two come
-with G1, which you are adopting anyway. **`/pr` is the escape**: if you decline
-G2, strip that hand-off from the skill and land sync PRs however your repo
+Its Step 8 hands off to `/dry`, `/tighten-docs` and `/pr`, and cites
+`/squash-message` for how the sync's own squash record is titled. The first two
+come with G1, which you are adopting anyway. **G2 is the escape**: if you decline
+it, strip those two citations from the skill and land sync PRs however your repo
 normally does — `scripts/check-skill-catalog.sh` will otherwise report the
-dangling reference, which is the intended behavior rather than a nuisance.
+dangling references, which is the intended behavior rather than a nuisance.
 
 ### G1 — Prose & principles
 
@@ -172,7 +181,7 @@ a real decision rather than a mechanical rewrite:
 All three come back with the shim installed; they are the price of declining G4,
 not standing defects.
 
-**`/override-gh` travels beyond G4.** `/sync-upstream` (G0) and
+**`/override-gh` travels beyond G4.** `/sync-agent-infra` (G0) and
 `/audit-github-backlog` (G3) `@`-reference it, so **a repo that declines G4
 entirely still needs this one file** if it takes either of those — otherwise the
 reference dangles. Concretely: copy `.claude/skills/override-gh/` even when you
@@ -276,7 +285,7 @@ Four closure facts are counter-intuitive enough to state outright:
   its
   **rewrite** disposition rather than a choice: there is no version of G2 that
   does not run your checks. (Three more skills *name* it — `/go` to say vetting is
-  not its job, `/sync-upstream` and `/test-on-gh` as an example — so a grep
+  not its job, `/sync-agent-infra` and `/test-on-gh` as an example — so a grep
   overcounts the dependency.) Its one line calling
   `scripts/check-squash-message.sh` is the part a rewrite decides separately; the
   comment above that line says what dropping it costs.
