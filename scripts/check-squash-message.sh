@@ -1,7 +1,7 @@
 #!/bin/sh
-# Measure the squash proposal's copy-pasteable text against the size caps
-# `@.claude/skills/squash-message/SKILL.md` states as prose, and reject a
-# session link in the body, and fail when either holds. The skill's Step 3 is an
+# Hold the squash proposal's copy-pasteable text to the rules
+# `@.claude/skills/squash-message/SKILL.md` states as prose — size caps, and no
+# session link in the body — and fail when one breaks. The skill's Step 3 is an
 # agent reading its own output; this is the part of that target a machine can
 # settle.
 #
@@ -209,8 +209,8 @@ while IFS= read -r line || [ -n "$line" ]; do
   body_lines=$((body_lines + body_blanks_held + 1))
   body_blanks_held=0
 
-  # Both spellings of the harness attribution's session line: the trailer key it
-  # emits, and a bare URL that reached the body some other way.
+  # Both spellings: the trailer key the harness attribution emits, and a bare
+  # session URL that reached the prose some other way.
   case $line in
     *Claude-Session:* | *claude.ai/code/session*)
       body_session_count=$((body_session_count + 1))
