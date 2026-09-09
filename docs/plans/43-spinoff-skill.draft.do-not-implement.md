@@ -1,39 +1,68 @@
 > ⛔ **DRAFT — DO NOT IMPLEMENT.** This plan is not approved. Do not edit source while this file is named `*.draft.do-not-implement.md` — prep and spikes go in `tmp/`. On an explicit operator go-ahead, `git mv` it to `*.in-progress.md` and delete this banner (quoting the go-ahead in the commit) *before* touching code.
 
-# `/spinoff` — fire a new repo out of the one you are standing in
+# `/spinoff` — fire a sibling repo out of an adopter
 
 Closes [#43](https://github.com/vzakharov/agent-project-boilerplate/issues/43).
 
-Add a hydrated `/spinoff <owner/name>` skill in **G0**, and delete
-`ADOPTING.md`'s `## Template fork` section — plus the README route that points at
-it — in its favour. Everything here is prose and shell; there is no stack to
-touch.
+Add a hydrated `/spinoff <owner/name>` skill in **G0**. It runs **only from an
+adopter**, never from this repo, and refuses when it finds itself here.
+Everything is prose and shell; there is no stack to touch.
 
 ## What is missing today
 
 The infrastructure is written entirely from the **adopter's** side, pulling:
 `ADOPTING.md` is read once over the network by the repo taking it on,
 `docs/catalog.md` is the inventory it selects from, and `/sync-agent-infra` keeps
-that selection current. Nothing serves the **source's** side, pushing — standing
-in a repo and firing a new one out of it. Two callers want that, and both are
-real:
+that selection current. Nothing serves the **source's** side, pushing.
 
-- **From this repo.** Today's answer is *"Use this template"*: fork, then prune
-  and hydrate inside the fork. Every decision is made after every file has
-  already landed.
-- **From an adopter.** Once a real project runs on this infrastructure, the
-  recurring next move is *another repo like **this** one* — its stack, its
-  adaptations, its conventions — not like the boilerplate. Nothing serves it.
+The case that wants it: once a real project runs on this infrastructure, the
+recurring next move is *another repo like **this** one* — its stack, its
+adaptations, its conventions — not like the boilerplate. Nothing serves that at
+all. `vzakharov/vovazakharov.com` spinning off a second static site
+([its PR #38](https://github.com/vzakharov/vovazakharov.com/pull/38)) is the
+worked instance the issue cites, and the parts that were real work there were the
+three-way triage and the watermark decision; the rest was mechanical.
+
+## The scope cut: adopter-only
+
+**#43 also names this repo as a caller, and this plan drops that.** The skill
+serves one direction — adopter → sibling — and the boilerplate → new-project
+direction stays where it is, as *"Use this template"* plus
+`ADOPTING.md § Template fork`.
+
+Why the cut is right rather than merely smaller:
+
+- **The footguns all live on the dropped side.** Serving this repo means a
+  stranger clones or template-forks the boilerplate to have somewhere to invoke
+  the skill from, which is a fork in the fork list and a `/pr` step one slipped
+  `cwd` away from a PR on somebody else's repository. Nothing on the adopter side
+  has that shape: the caller is the invoker's own project.
+- **It leaves one procedure per operation, which is what the issue actually
+  wanted.** #43 argues `## Template fork` must go because two procedures for one
+  operation drift. Under this cut they are not one operation: a template fork
+  turns a copy of the boilerplate into a project, `/spinoff` derives a new repo
+  from a working one. Neither can stand in for the other, so neither rots against
+  the other.
+- **The dropped caller was the weaker of the two anyway.** From here the triage is
+  a catalog lookup, which `ADOPTING.md` already covers. The judgment the skill
+  exists for — deciding per path what travels out of a tree nobody has an
+  inventory of — only arises from an adopter.
+
+**Consequence to carry:** #43's `## What /spinoff replaces` section and its
+four-row mapping table are superseded, and the issue body will read as partly
+unimplemented. Worth a comment on the issue when this lands, so the next reader
+does not go looking for the deletion.
 
 ## Scope of the change
 
 | File | Change |
 | --- | --- |
 | `.claude/skills/spinoff/SKILL.md` | new — the skill, shipped hydrated |
-| `ADOPTING.md` | delete `## Template fork`; rework the two-ways-in split and the shared-tail heading |
-| `README.md` | reframe the template-fork route as the launcher it now is, add the `/spinoff` route, bump the skill count |
-| `docs/catalog.md` | one G0 row, and a G0 intro that names both directions |
+| `docs/catalog.md` | one G0 row, and a G0 intro naming both directions |
+| `README.md` | skill count only |
 | `CLAUDE.md` | one line in § "Working with skills" |
+
+`ADOPTING.md` is untouched.
 
 ## The skill
 
@@ -44,38 +73,31 @@ exists, `main` carries one commit of agent infrastructure, `check-skill-catalog.
 passes there, and the operator holds a copyable command that opens the next
 session in the new repo.
 
-### The caller is read-only
+### Two invariants, stated before the steps
 
-**`/spinoff` writes nothing to the repo it is invoked from.** No commit, no
-branch, no PR, no issue — the caller is a source of files and a source of the
-watermark, and every artifact the skill produces lands in the target. The skill
-states this as an invariant rather than leaving it to be inferred from the steps,
-because the access model depends on it: read is all the skill needs from the
-caller, which is all a public repo grants a stranger, and it is what makes
-`/spinoff` safe to run from a clone of somebody else's boilerplate.
+**Not from the boilerplate.** `docs/catalog.md` present in the caller → stop and
+point at `README.md`'s template route. One test, and it is the honest one: the
+catalog is what a tree has when it *is* this repo or an unpruned copy of it, and
+in either case a spinoff is the wrong operation — prune and hydrate first, and
+the pruned result is a legitimate caller later. Refusing here is also what keeps
+the fork-and-PR footguns off the board entirely.
 
-The write access the skill *does* need is on the **target's owner** — creating
-the repo and pushing to it — which is the invoker's own account or an org they
-can create repos in. If the target cannot be created, Step 4 stops and asks; it
-never falls back to writing somewhere it can.
-
-The one place this could break by accident is Step 4's `/pr` delegation, which
-runs against whatever `cwd` holds — and Bash `cwd` resets between calls in this
-harness. Step 4 carries the guard.
+**The caller is read-only.** No commit, branch, PR or issue lands there; the
+caller is a source of files and a source of the watermark, and every artifact
+lands in the target. The write access the skill needs is on the **target's
+owner** — creating the repo and pushing to it. If the target cannot be created,
+Step 3 stops and asks; it never falls back to writing somewhere it can. The one
+place this could break by accident is Step 3's `/pr` delegation, which runs
+against whatever `cwd` holds while Bash `cwd` resets between calls in this
+harness — so that step carries a guard.
 
 ### Step 1 — Read the caller
 
-The skill's input is the repo it is invoked from, at HEAD. Two shapes, and the
-skill reads which it is standing in rather than being told:
-
-- **`docs/catalog.md` present** → the caller is this boilerplate (or something
-  that kept the catalog). The catalog answers the triage outright: its `never`
-  rows are what does not travel, and its group rows are the rest.
-- **absent** → the caller is an adopter. Its tree is a superset — the
-  boilerplate's files, plus stack scaffolding (`tsconfig`, `eslint/`, a real
-  `vet.sh` instead of the stub), plus project-specific `.claude/rules/`, plus the
-  product — and no adopter maintains a catalog of its own. The triage is derived
-  per run, per Step 2.
+The skill's input is the repo it is invoked from, at HEAD: an adopter, whose tree
+is a superset of the boilerplate's — those files, plus stack scaffolding
+(`tsconfig`, `eslint/`, a real `vet.sh` instead of the stub), plus
+project-specific `.claude/rules/`, plus the product. No adopter maintains a
+catalog of its own, so the triage is derived per run rather than looked up.
 
 Also read here: the caller's own sync skill and watermark. **Locate it by its
 watermark file, not by name.** `/sync-agent-infra` itself prescribes that an
@@ -102,26 +124,22 @@ file is decided on its own `paths:` globs.
 `CLAUDE.md` and `README.md` travel as **rewrites, not copies**: the
 stack-agnostic sections carry across unchanged, and the ones describing the
 caller ("About this project", "Repository layout", "Vetting", "Working with
-skills") are written for the target. From this repo that is the same edit the
-old `## Template fork` step 3 asked for, moved before the copy.
+skills") are written for the target.
 
 That per-path judgment is what makes this a skill rather than a script.
 
 ### Step 3 — The watermark fork, surfaced with its cost
 
-`upstream.json` is the whole point of the link. Two defensible answers:
+The watermark is the whole point of the link. Two defensible answers, and the
+skill **surfaces the choice with its cost rather than defaulting it**:
 
-- **Sibling** — the new repo points at this boilerplate. Clean lineage; the
+- **Sibling** — the new repo points at the boilerplate. Clean lineage; the
   caller's stack-specific adaptations (its real `vet.sh`, above all) never flow
   forward and get re-derived on every sync.
 - **Chain** — the new repo points at the caller, which is what
   `/sync-agent-infra` already prescribes for a repo adopting from a repo. The
   adaptations carry, at the cost of the boilerplate reaching the new repo one hop
   later.
-
-The skill **surfaces the choice with its cost and does not default it**. It is
-live only for the adopter caller; called from here, the target's source is this
-repo and there is nothing to ask.
 
 Two mechanics the skill writes out, because getting either wrong is silent:
 
@@ -166,8 +184,7 @@ working in it" does not work.
    **Assert the directory before loading it** — `git -C <clone> remote get-url
    origin` must name the target — and stop if it does not. `/pr` pushes and
    opens a PR against whatever repo `cwd` resolves to, so a slipped `cwd` aims
-   the whole step at the caller. Failing loudly there is the difference between
-   a stopped run and a stray PR on someone else's repository.
+   the whole step at the caller: the operator's own working project, mid-flight.
 
 **Where the line between the two commits falls is not a judgment call, and the
 skill says so.** Closure decides it: `check-skill-catalog.sh` fails on a dangling
@@ -182,8 +199,8 @@ branch does not leave the repo inert. And the seed PR's diff is *the project*,
 not a hundred infrastructure files nobody will read in that context — they were
 already reviewed where they came from.
 
-**No plan to carry → step 3 and 4 do not run.** A spinoff whose project work has
-not been planned yet seeds `main` alone and hands over `/plan` in the target
+**No plan to carry → substeps 3 and 4 do not run.** A spinoff whose project work
+has not been planned yet seeds `main` alone and hands over `/plan` in the target
 instead of `/handle`. Seeding an empty branch would give phase 2 nothing to
 resume from.
 
@@ -214,140 +231,94 @@ in it.
 
 ## Companion edits
 
-### `ADOPTING.md`
-
-`## Template fork` is the same operation done by hand, and it **goes entirely**
-rather than coexisting with the skill: two procedures for one operation drift,
-and the fork path is the one that rots, being the one nobody re-reads. Its four
-steps are what the skill does, moved before the copy instead of after it:
-
-| `## Template fork` step | Becomes |
-| --- | --- |
-| Delete the `never` rows | Never copied in the first place |
-| Prune the groups you don't need | Step 2's triage against `docs/catalog.md` — same criteria, no deletes |
-| Fill in the `CLAUDE.md` stub | Written for the target as part of the seed commit |
-| Implement dep-install in the hook | Same, or left as the stub it is with the target's stack unknown |
-
-So the top-of-file *"pick the one that matches how you got here"* split changes
-shape rather than disappearing: **adopt into an existing repo** stays — the
-target pre-exists with its own history, which is genuinely a different
-operation — and **template fork** becomes a pointer to `/spinoff`. With one mode
-left, `## Shared tail (both modes)` loses its parenthetical and the "Both
-converge on…" line goes with the split it described.
-
-The tail's own content is untouched: an adopter still merges `CLAUDE.md`,
-rewrites `vet.sh`, hydrates or deletes the G6 stubs, hydrates the sync stub, and
-gets handed the setup script.
-
-### `README.md`
-
-**Both routes stay, because `/spinoff` has to be run from somewhere.** The skill's
-input is the repo it stands in, so a newcomer with nothing needs a checkout of
-this repo before they can invoke it — and in a web session, a checkout means a
-repo in their own account. *"Use this template"* is how they get one.
-
-So the button survives with its **purpose changed**: it is how you get a
-boilerplate you can open a session on, not a project you then prune in place. §
-"Create a new project from this template" becomes two steps rather than one
-route — template-fork this repo (or `git clone` it, locally), then run
-`/spinoff <owner/name>` from a session on it — and the `gh repo create
---template` recipe stays as the scriptable form of step one.
-
-The honest cost, stated in the README rather than glossed: you end up with two
-repos, the launcher fork and the project. The fork is reusable for every later
-spinoff, which is what makes that acceptable; naming it something like
-`agent-boilerplate-launcher` rather than after the first project is the
-suggestion that goes with it.
-
-What does **not** survive is prune-in-place as a documented path. A reader who
-template-forks and stops there has no next step on purpose — that is the
-procedure `## Template fork` carried and the skill replaces.
-
-The count in the opening paragraph moves from **28 skills (20 working, 8 stubs)**
-to **29 (21 working, 8 stubs)**.
-
 ### `docs/catalog.md`
 
 One G0 row, `adopt`:
 
-> `/spinoff` — Seed a new sibling repo out of the repo you are standing in:
+> `/spinoff` — Seed a new sibling repo out of the adopter you are standing in:
 > triage what travels, write the target's watermark, and hand over a session in
-> it. Requires `gh`, `$GH_TOKEN`, repo-creation rights. Pulls in `/pr` (G2).
+> it. Requires `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner.
+> Pulls in `/pr` (G2).
 
 G0's intro gains a sentence naming both directions — `/sync-agent-infra` pulls
 later changes in, `/spinoff` pushes a new repo out — since the group is now the
-whole source-and-target relationship rather than just the sync half. Unlike
-`/sync-agent-infra`, `/spinoff` **ships hydrated**: there is no per-repo state to
-fill in, because its input is the repo it is invoked from.
+whole source-and-target relationship rather than just the sync half.
+
+It also states the thing that reads as a defect otherwise: **both G0 skills are
+inert in this repo, for the same structural reason.** This tree is the root — no
+source above it to sync from, and not an adopter, so nothing to spin off from
+either. `/sync-agent-infra` ships as a stub for want of a watermark; `/spinoff`
+ships hydrated but refuses here. Downstream both work.
+
+### `README.md`
+
+Only the count in the opening paragraph: **28 skills (20 working, 8 stubs)** →
+**29 (21 working, 8 stubs)**. Both acquisition routes stay exactly as they are —
+the template button still creates a project from this repo, and
+`ADOPTING.md § Template fork` is still its next step.
 
 ### `CLAUDE.md`
 
 One line under § "Working with skills" → "Entry points and support", after
-`/from-branch`.
+`/from-branch`. It says adopter-only, since a reader scanning that list is
+otherwise going to try it here.
 
 ## Work items
 
-- [ ] Write `.claude/skills/spinoff/SKILL.md` with the frontmatter description,
-      the five steps above, and the `@`-references to `/pr` and
-      `/sync-agent-infra` § "The watermark".
-- [ ] Delete `ADOPTING.md` § "Template fork"; rework the two-ways-in split and
-      the shared-tail heading.
-- [ ] Rework `README.md` § "Create a new project from this template" into the
-      two-step launcher route; bump the skill count.
+- [ ] Write `.claude/skills/spinoff/SKILL.md`: frontmatter description (naming
+      the adopter-only constraint), the refusal gate, the five steps, and the
+      `@`-references to `/pr` and `/sync-agent-infra` § "The watermark".
 - [ ] Add the `docs/catalog.md` G0 row and extend the G0 intro.
+- [ ] Bump the `README.md` skill count.
 - [ ] Add the `CLAUDE.md` skill-list line.
-- [ ] `bash scripts/check-skill-catalog.sh` — the new skill needs exactly one
-      catalog row and no dangling references.
+- [ ] `bash scripts/check-skill-catalog.sh` — exactly one `/spinoff` row, no
+      dangling references, and the new skill must not trip assertion 4 (it ships
+      hydrated, so no banner and no `STUB` in the description).
+- [ ] Comment on #43 recording that the from-this-repo caller was cut and why.
 - [ ] `/dry`, `/tighten-docs`, then `/pr`.
 
 ## DRY notes
 
-- **The watermark's JSON shape is cited, not restated.** `/spinoff` writes a
-  `upstream.json`-shaped file, and `@.claude/skills/sync-agent-infra/SKILL.md`
-  § "The watermark" already owns the field-by-field contract, including the
-  `{path: note}` entry form and why `declined` reasons are written as present-tense
-  conditions. The skill states only what is *its own*: which SHA is honest under
-  each of the two fork answers, and the #40 inherited-`adopted` trap. A second
-  copy of the schema would be the first thing to drift.
+- **The watermark's JSON shape is cited, not restated.**
+  `@.claude/skills/sync-agent-infra/SKILL.md` § "The watermark" already owns the
+  field-by-field contract, including the `{path: note}` entry form and why
+  `declined` reasons are written as present-tense conditions. `/spinoff` states
+  only what is *its own*: which SHA is honest under each fork answer, and the #40
+  inherited-`adopted` trap. A second copy of the schema would be the first thing
+  to drift.
 - **The PR furniture is delegated, not reimplemented.** Opening the target's
   draft PR and posting its squash proposal is `@.claude/skills/pr/SKILL.md`'s
   job, loaded with the target clone as cwd. The only thing `/spinoff` contributes
-  is that cwd — worth one explicit sentence, since Bash `cwd` resets between
-  calls in this harness.
+  is that cwd and the assertion guarding it.
 - **Closure is asserted, not re-derived.** `scripts/check-skill-catalog.sh`
   already knows what a complete copy looks like; the skill runs it in the target
   rather than carrying its own list of what `/handle` reaches.
-- **The triage criteria are cited when the catalog exists and derived when it
-  does not** — that asymmetry is the skill's actual content, not a duplication.
-  From this repo, `docs/catalog.md`'s groups and `never` rows *are* the answer,
-  so the skill points at them. From an adopter there is nothing to point at, so
-  the three-way rule is stated once, here.
-- **`ADOPTING.md`'s deleted section is not moved, it is replaced.** The four
-  steps do not reappear anywhere as prose; each is absorbed into a step the skill
-  already performs, and the mapping table lives in the PR/squash record rather
-  than in a surviving doc. Keeping the table in `ADOPTING.md` would leave the
-  fork procedure legible enough to follow by hand, which is the drift the
-  deletion exists to prevent.
-- **No tombstone.** CLAUDE.md § "Writing things down" requires one for a retired
-  *doc*; this retires a section of a living file, whose history `git log -p
-  ADOPTING.md` already resolves, and the two surviving citations are both
-  rewritten in the same change rather than left dangling.
-- **Not extracted: a shared "seed a repo" helper between `/spinoff` and
-  `ADOPTING.md`.** They now describe opposite operations — one creates a target
-  from a source, the other merges a source into a pre-existing target — and the
-  only thing they still share is the environment-setup-script deliverable, which
-  is two sentences in one and a subsection in the other because the callers know
-  different amounts.
+- **The three-way triage is stated once, here, and has no counterpart to share
+  with.** The adopter-only cut is what makes this clean: with the from-this-repo
+  caller gone, the skill never needs the catalog-lookup form of the same
+  decision, so there is no second expression of it to keep in step.
+- **`ADOPTING.md` and `/spinoff` are not two statements of one procedure**, which
+  is the DRY question #43 raised and this cut answers. They describe different
+  operations over different inputs — a copy of the boilerplate becoming a
+  project, versus a working project deriving a new repo — and share only the
+  environment-setup-script deliverable, which is two sentences in one and a
+  subsection in the other because the callers know different amounts. Forcing a
+  shared home would mean writing prose that is true of both and specific to
+  neither.
+- **No tombstone, because nothing is retired.** `ADOPTING.md` keeps every
+  section it has.
 
 ## Settled
 
 *The skill is named `/spinoff`.* `/seed-repo` reads as though it operates on the
 current repo, and `/fork-out` collides with what "fork" already means on GitHub.
 
-*The README keeps both routes.* Dropping the template button was rejected on the
-bootstrapping ground: `/spinoff` runs from a checkout of this repo, and in a web
-session a checkout means a repo in your own account — so removing the button
-removes the only way a newcomer reaches the skill at all.
+*It runs from adopters only.* Serving this repo too was carried through two
+earlier drafts — first deleting `ADOPTING.md § Template fork` outright per #43,
+then keeping the README button as a "launcher" fork you invoke the skill from.
+Both were rejected as more machinery than the original intent (clone a sibling
+repo) justifies, and the launcher variant additionally invited stray forks and
+PRs against the boilerplate.
 
 ## Explicitly out of scope
 
