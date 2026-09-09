@@ -49,9 +49,12 @@ docs/plans/ holds a file that is not a draft. It lets /handle read a
 draft plan plus unanswered feedback as review of the plan — revise,
 reply, push, hand off again — while the same feedback without a draft
 plan stays the ordinary code-review lane, and a draft plan without
-feedback stays an ordinary go-ahead. That is why no third lane appears.
-It is defined once, in /plan's plan-file lifecycle section; anyone
-restating it elsewhere has created the drift the arrangement prevents.
+feedback stays an ordinary go-ahead, so no third lane appears. What the
+review channel does not carry is approval: a comment is always the
+revision half of /plan's approval gate, never the go-ahead, because
+prose in a thread has too many ways to read as assent for an agent to
+arbitrate. Source edits are unlocked by an invocation — /go, or a
+/handle finding no unanswered feedback — and by nothing else.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
