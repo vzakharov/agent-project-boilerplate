@@ -94,15 +94,33 @@ writing-down; under a mismatched one you carry the decision and re-express it.
 
 The three buckets, the one the spinoff is *for* first:
 
-- **Stack scaffolding — the organization half of the foundation.** The build and
-  lint configuration, the real `vet.sh`, the CI workflows, the test and
-  generated-asset tooling around them, and the directory and boundary system
-  below. Travels as files or as intent, per the fork above.
-- **Agent infrastructure** — travels unconditionally, so it needs no fork and no
-  argument: `.claude/` (skills, rules, hooks, settings), `scripts/` other than
-  `vet.sh`, `CLAUDE.md`, `README.md`, the editor and formatter config.
+- **Stack scaffolding — the organization half of the foundation.** The build,
+  lint and formatter configuration, the real `vet.sh`, the CI and deploy
+  workflows, the test and generated-asset tooling around them, and the directory
+  and boundary system below. Travels as files or as intent, per the fork above.
+- **Agent infrastructure — the loop itself**, which is stack-neutral and so
+  travels unconditionally, needing no fork and no argument: `.claude/skills/`,
+  `.claude/settings.json`, the `.claude/rules/` that survive the trap below, the
+  `scripts/` the loop's own skills call, `CLAUDE.md`, `README.md`, the editor
+  config.
 - **The product, and anything path-scoped to it** — does not travel, except by
   the hatch below.
+
+**No directory travels wholesale — `.claude/` and `scripts/` included.** Both mix
+the loop with the stack, so the criterion runs per path: a session-start hook
+that installs dependencies is stack scaffolding sitting in `.claude/hooks/`, and
+a script that renders the product's assets is product sitting in `scripts/`. Two
+shapes of this recur, and each is silent when taken by directory:
+
+- **Path-scoped rules.** A `.claude/rules/*.md` scoped to a directory the new
+  repo will not have sits beside three that should travel, and a directory-level
+  copy takes all four. Decide every rule file on its own `paths:` globs.
+- **Files that are half loop, half stack.** A session-start hook is typically
+  both: a proxy shim or credential fix that travels intact, beside a dependency
+  install that is stack-bound. Split it — the neutral half is a copy, the rest a
+  rewrite. Under a mismatched stack such a file cannot travel whole at all, and
+  copying it whole leaves a working loop wrapped around a bootstrap step that
+  fails on the new repo's first session.
 
 **The rules below name the *role* a path plays**, with ecosystems only as
 parenthetical examples: a rule written in one ecosystem's nouns is unusable from
@@ -132,11 +150,6 @@ the others. The cases the criterion does not settle alone:
   constraints and regenerate the resolution**: bounds, overrides, replacements
   and patches are decisions someone made, and they are the part a regenerate
   loses silently.
-
-**Path-scoped rules are the trap.** A `.claude/rules/*.md` scoped to a directory
-the new repo will not have sits beside three that should travel, and a
-directory-level copy takes all four. Decide every rule file on its own `paths:`
-globs.
 
 **Sort every travelling path into a copy or a rewrite**, because Step 4 lands
 them on that line. `CLAUDE.md`, `README.md` and `vet.sh` are rewrites: their
@@ -196,12 +209,14 @@ which bucket a path is in but **whether it arrives already reviewed**, and Step 
 already sorted every travelling path into a copy or a rewrite:
 
 - **Copies → `main`.** Reviewed where they came from, travelling unchanged:
-  `.claude/skills/**`, the `.claude/rules/` that survived the triage, `scripts/`
-  other than `vet.sh`, the editor config.
+  `.claude/skills/**`, the `.claude/rules/` that survived the triage, the
+  `scripts/` the loop's own skills call, the editor config.
 - **Rewrites → PR #1.** New work written for a repo nobody has looked at yet:
-  `CLAUDE.md`, `README.md`, `vet.sh`, the dependency declaration, the deploy
-  config, the app shell reduction, the layer skeleton. Putting these on `main`
-  would land the least-reviewed content through the one path that has no review.
+  `CLAUDE.md`, `README.md`, `vet.sh`, the lint and formatter configuration, the
+  dependency declaration, the deploy config, the session-start hook's
+  stack-bound half, the app shell reduction, the layer skeleton. Putting these on
+  `main` would land the least-reviewed content through the one path that has no
+  review.
 
 So `main` is the caller's tree reduced to **what the boilerplate itself would
 ship** — the loop, plus stubs where the caller had hydration — and PR #1 is the
@@ -235,16 +250,25 @@ copyable at all.
 
 Three consequences, each stated by a check rather than by taste:
 
-- **The watermark is the one rewrite that lands on `main`**, because an automated
-  check couples it to a copy. `check-skill-catalog.sh`'s assertion 4 requires a
-  skill's stub markers to agree with its hydration state, and the sync skill's
-  hydration *is* its watermark — so the skill file and its JSON land together or
-  `main` fails its own gate.
-- **A stub the caller had hydrated is re-stubbed on `main` and re-hydrated in PR
-  #1.** A hydrated `/release` encodes the *caller's* deploy setup, so it is a
-  rewrite by Step 2's criterion even though it sits in `.claude/`. Per-target
-  editability decides its home, not the directory. Under a mismatched stack this
-  is unconditional — a deploy lane for another language is not a starting point.
+- **A rewrite lands on `main` only where a check forces it there — and then it
+  lands hydrated for the target, never stubbed.** `check-skill-catalog.sh` ties
+  two knots of this kind. Assertion 4 requires a skill's stub markers to agree
+  with its hydration state, and the sync skill's hydration *is* its watermark, so
+  that skill and its JSON land together or `main` fails its own gate. Assertion 1
+  ties the same knot for any caller-hydrated stub that a *travelling* skill
+  `@`-references: omitting it dangles the reference, so it is hydrated for the
+  target on `main` — or both skills are dropped together, which is the other way
+  to keep the closure whole.
+- **Every other caller-hydrated stub is absent from `main` and arrives hydrated
+  in PR #1.** A hydrated `/release` encodes the *caller's* deploy setup, so it is
+  a rewrite by Step 2's criterion even though it sits in `.claude/`: per-target
+  editability decides its home, not the directory. **Do not re-stub it onto
+  `main`.** The target has no `docs/catalog.md`, and without one assertion 4
+  reads a stub as a stowaway to hydrate or delete rather than as shipped
+  inventory — so re-stubbing is the single disposition that fails the gate, where
+  both leaving it out and carrying it hydrated pass. Under a mismatched stack the
+  absence is unconditional: a deploy lane for another language is not a starting
+  point.
 - **`main`'s `vet.sh` exits non-zero**, per the contract its own header and the
   caller's `CLAUDE.md` § "Vetting" already state. `main` has no stack yet, so the
   honest script refuses to certify and PR #1 wires in the real checks. An exit-0
