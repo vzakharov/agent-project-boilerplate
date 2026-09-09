@@ -77,7 +77,7 @@ enforces it the same way.
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `/sync-agent-infra` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tighten-docs` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
-| `.claude/skills/sync-agent-infra/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, and what you adopted or declined. Ships pointed at this repo with the rest as placeholders. | — | — | **rewrite** |
+| `.claude/skills/sync-agent-infra/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
 | `/spinoff` | Seed a new sibling repo out of the adopter you are standing in: triage what travels, write the target's watermark, seed its `main` and a session branch, and hand over a session in it. Ships hydrated. | `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner; a caller that adopted this infrastructure rather than being it | `/sync-agent-infra` (this group); `/pr` (G2) | adopt |
 
 **Both skills are inert in this repo, for one structural reason: this tree is the

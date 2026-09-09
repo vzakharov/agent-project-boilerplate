@@ -35,6 +35,10 @@ what applies.
   "repo": "<owner>/<repo>",
   "lastSyncedSha": "<source HEAD at the last sync>",
   "lastSyncedAt": "<YYYY-MM-DD>",
+  "lineage": [
+    { "repo": "<owner>/<root>",   "atSha": "<root HEAD when the parent was born>" },
+    { "repo": "<owner>/<parent>", "atSha": "<parent HEAD when this repo was born>" }
+  ],
   "adopted": [
     "CLAUDE.md",
     "README.md",
@@ -51,6 +55,31 @@ what applies.
   wall of source commits into a handful of candidates.
 - **`declined`** — path → why-not. This is what keeps re-sync quiet: without it,
   every sync re-offers every skill the repo already refused.
+- **`lineage`** — optional provenance: the whole ancestry, **root first**, so the
+  repo actually synced from leads and each later entry is one hop further from
+  it. Each entry names an ancestor and its HEAD **at the moment the next link was
+  created**. `@.claude/skills/spinoff/SKILL.md` writes it by copying the caller's
+  array and appending the caller, so a sibling-of-a-sibling carries every hop in
+  birth order.
+
+**Where the ancestry is complete, `lineage[0]` names the same repo as `repo`, and
+that is not duplication — the two SHAs are different facts.** `lastSyncedSha` is
+where this repo has synced *to*, and it advances on every sync; `lineage[0].atSha`
+is where it started *from*, and it never moves. They coincide until the first
+sync and diverge forever after, which is what earns the field its place: that
+first sync overwrites the only other trace of the birth point.
+
+**An empty array means no ancestors; a missing one means nobody wrote them
+down.** The root ships `[]`, which is complete. A watermark filled in by hand
+from `ADOPTING.md` has no `lineage` at all, and that gap is not recoverable — so
+a spinoff from such a repo can honestly record only the one hop it knows, leaving
+`lineage[0]` naming the caller rather than `repo`. Never fabricate an entry from
+`lastSyncedSha`: that would state a birth point nobody recorded.
+
+**Nothing syncs from `lineage`.** This procedure reads `repo` and `lastSyncedSha`
+and nothing else. A sync that walked the ancestry would multiply the triage at
+every link, which is exactly the cost `/spinoff`'s always-point-at-the-root rule
+declines to pay.
 
 **An `adopted` entry may be a bare path or a single-key `{path: note}` object.**
 Both are adopted and both filter the log identically — read the key when an entry
@@ -71,8 +100,9 @@ stopped holding: a repo that declined the issue skills because it used Linear,
 and has since moved to GitHub issues, should be asked again. A reason that says
 `"never — …"` is the one that does not need re-reading.
 
-A repo with two sources would make this an array. Nothing here precludes that and
-nothing here builds it.
+A repo with two sources would make **`repo`** an array. Nothing here precludes
+that and nothing here builds it — and it is a separate question from `lineage`,
+which is provenance nothing syncs from.
 
 **`lastSyncedSha` is source HEAD at sync time, not the last commit taken.** A
 commit triaged and skipped is *done*; the reasoning lives in that sync's PR body.
