@@ -177,11 +177,10 @@ target.
 
 The target is **three paragraphs of prose, four at the outside**, inside the
 measured caps above — 80 chars of title, 50 lines of body at 72 wide. The
-opening says
-why the change exists; the rest say what it does about it, named at the level of
-the behavior, contract or module affected, plus anything that would trip someone
-editing that area later. Not a bullet-per-change inventory: detail that doesn't
-survive at that size was below the high-level picture and lives in the diff.
+opening says why the change exists; the rest say what it does about it, named at
+the level of the behavior, contract or module affected. Not a bullet-per-change
+inventory: detail that doesn't survive at that size was below the high-level
+picture and lives in the diff.
 
 Why the change exists is whatever is honest. Often that's a defect or a gap. Just
 as often it's planned work landing as planned, and then the opening says where the
@@ -200,18 +199,28 @@ This is `@.claude/skills/tighten-docs/SKILL.md`'s **Lens A (existence)** and
 inapplicable — narrating the change is a commit message's whole job, which is why
 that skill's Step 4 excludes commit messages and PR bodies from its own sweep.
 
-Three things a draft reaches for fail Lens A, however well written:
+Four things a draft reaches for fail Lens A, however well written:
 
 - **Standing context**, which a draft reaches for in the opening paragraph —
   what the project is, what the tooling is for, how the work is normally done. A
   reader who wants that has the repo; what only this commit can tell them is why
   it exists.
+- **A trap for whoever edits the area next.** The log answers what changed and
+  why; nobody opens a squash message to learn which files a render step hashes.
+  A constraint that has to be obeyed goes where the person about to break it is
+  already looking — a `.claude/rules/` file, or a docstring on the thing itself
+  — unless the change *is* that the constraint now exists. A "things to know
+  when editing here" paragraph is the tell. Cutting one is a **move, not a
+  deletion**: name the home each item lands in as you cut it, checking rather
+  than assuming it has one. An item with none gets one first — the body is
+  sometimes the only place a constraint was ever written down, and the tidy cut
+  is what loses it.
 - **An inventory of what the change declined to do** — commits skipped, options
   rejected. It leaves no trace in the tree for the record to explain.
 - **Internal restructuring that changed no behavior and no contract** — a split,
   a move, a rename, a file that got smaller — **where it rides along with other
   work**. The tree already shows where the code lives; the record is for what a
-  reader carries away before opening it. This is the one of the three with an
+  reader carries away before opening it. This is the one of the four with an
   exception: where the restructuring is what the PR was *for*, it is the record,
   and the body says why the old arrangement stopped holding and what the new one
   buys — still not a module-by-module tour. The same goes for a new boundary
@@ -227,6 +236,13 @@ and a project whose release bodies genuinely outgrow 50 lines edits its own copy
 of `scripts/check-squash-message.sh` — raising the constant, or teaching the
 script to recognize a release first and widen only there — as a reviewable
 change.
+
+**A re-run rewrites; it never accretes.** Step 2 starts from what the file
+already says, so the temptation on a refresh is to append the new scope and
+leave the rest standing — which walks the body past the cap one push at a time,
+and leaves superseded wording beside what replaced it. Cut and replace, and
+re-apply the paragraph target and the caps to the whole body every run. A
+proposal that grew every time the branch did is the tell.
 
 Overwrite the file with the tightened version, then **measure it**:
 
