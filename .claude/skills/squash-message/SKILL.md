@@ -162,6 +162,14 @@ number>)`. **One line, at most 80 chars** — the mandatory suffix eats ~10 of i
 <noreply@anthropic.com>` as the final line (or your other assigned vendor email
   if you aren't running on Claude Code) — the body is pasted verbatim, so the
   byline has to be inside it.
+  - **The byline is the last line: no session link after it.** This
+    **overrides the harness attribution block** that ends every commit message
+    with a `Claude-Session:` URL — that block is written for a branch's own
+    commits, which the squash discards. Several sessions work a branch here by
+    design, so the one link a squash record could carry is whichever of them
+    last touched the proposal, usually the finalize one — the session holding
+    least of the change's reasoning. `scripts/check-squash-message.sh` fails a
+    body that carries one.
 - **Hard-wrap the body at 72 chars with real newlines**, and keep it to **at most
   50 lines**. A git commit message doesn't soft-wrap; one long line per paragraph
   reads as an unwrapped wall in `git log`. Continuation lines of a bullet align
