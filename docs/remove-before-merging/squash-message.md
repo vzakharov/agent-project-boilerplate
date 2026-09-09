@@ -7,39 +7,40 @@ feat: absorb the built-in /plan collision in the plan skill (pr #42)
 ```
 Typing `/plan` in the Claude Code composer never reaches this repo's
 plan skill: `plan` is a built-in client command that submits no prompt
-and enables native plan mode instead — read-only, so the plan file the
-skill exists to write cannot be written from in there. The client
-offers no per-command suppression, and a client-side command is
-invisible to hooks and rules alike.
+and enables native plan mode instead, holding the session to read-only
+work. The client offers no per-command suppression, and a client-side
+command is invisible to hooks and rules alike, so the collision is
+absorbed in the skill rather than dodged by renaming it.
 
 The skill now carries the way out, keyed on being in plan mode rather
-than on how the session got there, since the UI mode switch lands in it
-just as the keystroke does. It is framed as plan mode's own exit rather
-than an override of it: the mode makes the harness plan file writable
-and ends the turn at ExitPlanMode, which is exactly the path taken.
-Leaving costs one operator approval, so it is spent immediately, and
-the harness plan file the dialog displays has its wording supplied
-verbatim — what this repo plans into, why plan mode conflicts with it,
-and that approving authorizes writing the plan file alone. That exit
-leaves the `do-not-implement` gate untouched, however much the approval
-reads like a go-ahead; rejecting it is how an operator keeps native
-plan mode, the dialog being the one place they are asked and its copy
-saying so outright.
+than on how the session got there, since the UI mode switch lands in
+it just as the keystroke does. It is framed as plan mode's own exit
+rather than an override of it: the mode makes the harness plan file
+writable and ends the turn at `ExitPlanMode`, which is exactly the
+path taken. That costs one operator approval, and it is asked for
+rather than routed around — the restriction gates `Edit`/`Write` and
+not Bash, so the plan file is reachable from inside the mode, and
+writing it there takes the approval instead of requesting it. The
+wording the dialog displays ships as a file the exit copies over the
+harness path, stating what this repo plans into, that approving
+authorizes writing the plan file alone, and that rejecting is how an
+operator keeps native plan mode — the dialog being the only place they
+are asked. The `do-not-implement` gate survives that approval however
+much it reads like a go-ahead.
 
-A UserPromptSubmit hook is what makes the convention land. Plan mode
+A `UserPromptSubmit` hook is what makes the convention land. Plan mode
 instructs the agent to supersede every other instruction it has, so
 prose in CLAUDE.md is the wrong weight for it; every hook payload
-carries the permission mode and the event accepts additionalContext, so
-the repo states its convention after the mode's own message, and again
-on every prompt while the mode is on.
+carries the permission mode and the event accepts additionalContext,
+so the repo states its convention after the mode's own message, and
+again on every prompt while the mode is on.
 
 The skill keeps its name. A rename could not have prevented the
 mistyped keystroke — a stub under the old name would be shadowed just
 as the skill is — and the collision is self-limiting, since reaching
 plan mode takes a deliberate keystroke or mode switch and therefore an
-operator who is present. Bare prose is the entry an operator types, and
-new skill names are checked against the client's built-ins from here
-on.
+operator who is present. Bare prose is the entry to type instead:
+`plan: <task>`, or just the task.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
