@@ -147,26 +147,40 @@ The new repo inherits the caller's foundation as a starting state and then
 diverges on its own.
 
 **Record the lineage even though nothing reads it yet.** The watermark gains an
-ordered `lineage` array — nearest ancestor first — with each entry naming the
-ancestor repo and its HEAD at the moment the next link was created:
+ordered `lineage` array holding the **whole ancestry, root first** — the repo
+actually synced from leads, and each later entry is one hop further from it. Each
+entry names an ancestor and its HEAD **at the moment the next link was created**:
 
 ```json
 "lineage": [
-  { "repo": "<owner>/<caller>", "atSha": "<caller HEAD at spinoff>" }
+  { "repo": "<owner>/<root>",   "atSha": "<root HEAD when the caller was born>" },
+  { "repo": "<owner>/<caller>", "atSha": "<caller HEAD at this spinoff>" }
 ]
 ```
 
-`/spinoff` **prepends the caller to the caller's own `lineage`**, so a
-sibling-of-a-sibling carries both hops. The root stays in `repo`/`lastSyncedSha`
-and is never duplicated into the array. **Absent means no recorded ancestry**, so
-every existing watermark and the hand-written adoption path stay valid unchanged.
+`/spinoff` **copies the caller's `lineage` and appends the caller**, so a
+sibling-of-a-sibling carries every hop in birth order.
+
+**`lineage[0]` names the same repo as `repo`, and that is not duplication —
+the two SHAs are different facts.** `lastSyncedSha` is where the repo has synced
+*to*, and it advances on every sync; `lineage[0].atSha` is where the repo started
+*from*, and it never moves. Recording the birth point is the whole reason the
+field earns its place: the first sync overwrites the only other trace of it.
+
+**A gap means nobody wrote it down, not that no ancestor exists.** Watermarks
+written by hand from `ADOPTING.md` have no `lineage`, so a spinoff from such a
+caller can honestly record only `[{ caller, HEAD }]` — the caller's own birth
+point is unrecoverable, and inventing one from `lastSyncedSha` would state a
+falsehood. Absent stays valid, and `/spinoff` never fabricates a missing entry.
+(Teaching `ADOPTING.md` to record a birth point would close the gap for future
+adopters; it is out of scope here and worth an issue.)
 
 The field is provenance, **not a second sync source** — the watermark's own note
 that *"a repo with two sources would make this an array"* is about `repo`, and
 conflating the two would make `/sync-agent-infra` start walking the chain, which
 is exactly what this step declines to do. Writing it now is cheap and the
-information is unrecoverable later: reconstructing which repo a tree came from,
-at which commit, is not something a future chained-sync feature could derive.
+information is unrecoverable later: which repo a tree came from, at which commit,
+is not something a future chained-sync feature could derive.
 
 Surviving from the current step, reframed now that there is no fork:
 
@@ -251,21 +265,16 @@ and the stack is the half needing per-target adaptation.
 
 ## Open questions
 
-**Q1 (`main`'s contents), Q2 (stack-agnostic phrasing, and the mismatched-stack
-mode), Q3 (the watermark) and Q4 (the vet gate) are all settled** and folded in
-above. One detail remains, and it is cosmetic — § 3 is written with (a) in force,
-so silence resolves it.
+**None.** All five are settled and folded in above: `main`'s contents (§ 4), the
+stack-agnostic phrasing and the mismatched-stack mode (§ 2), the watermark and
+its lineage (§ 3), the vet gate (§ 4), and the lineage entry shape (§ 3).
 
-**5. The `lineage` entry shape.**
-
-- **(a) `{ "repo": …, "atSha": … }`, nearest ancestor first. — recommended.**
-  Nearest-first makes "prepend the caller" the definition of the operation;
-  `atSha` reads as "this ancestor's HEAD when its descendant was created", which
-  is the uniform meaning for both a direct parent and an inherited entry.
-- (b) Root-first ordering, and/or a date field beside the SHA. Root-first reads
-  as a history; a date is friendlier to a human. Both were considered and
-  dropped: root-first makes the write an append at a computed index, and
-  `git log` in the ancestor already has the date for that SHA.
+*Rejected along the way, in one line each:* putting the whole foundation on
+`main`, or splitting `main` by provenance — both land the stack unreviewed. A
+chained watermark — chains compose, and every link multiplies the triage.
+Nearest-first lineage ordering, and a date beside each SHA — root-first puts the
+repo actually synced from at the head and makes the write a plain append, and
+`git log` in the ancestor already has the date.
 
 ## DRY notes
 
@@ -284,6 +293,11 @@ so silence resolves it.
   places; `lineage` is provenance nothing syncs from. Merging them would invite
   exactly the chain-walking § 3 declines. Both live in the same section, stated
   as distinct.
+- **`lineage[0].repo` restating `repo` is the one repetition here, and it is two
+  facts rather than one.** `lastSyncedSha` moves with every sync; `atSha` is
+  frozen at birth. The contract says so in the sentence that introduces the
+  array, so a reader who spots the repeat finds the reason at the same place
+  — which is the alternative to dropping the entry and losing the birth point.
 - **This revision removes a duplication rather than adding one.** `vet.sh` is
   currently stated in two triage buckets; § 2 gives it one home and folds it into
   the same rewrites-not-copies list.
@@ -335,6 +349,10 @@ frontmatter, and every other skill.
   `check-squash-message.sh`.
 - `jq . .claude/skills/sync-agent-infra/upstream.json` — parses, and the new field
   matches the shape § "The watermark" documents.
+- **Trace the three-generation example by hand** — root, an adopter, a spinoff of
+  that spinoff — and confirm each `lineage` reads root-first in birth order, that
+  `lineage[0].atSha` never equals a `lastSyncedSha` by construction, and that a
+  caller with no `lineage` yields a one-entry array rather than a fabricated root.
 - **Read Step 2 against a concrete tree** — `vzakharov/vovazakharov.com`, the case
   #43 cites — and confirm the criterion decides every path, including the domain
   declaration, the publish workflow, and the layer boundaries.
