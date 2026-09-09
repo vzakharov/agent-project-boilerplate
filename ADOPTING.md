@@ -259,11 +259,11 @@ exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='p
 ```
 
 The shipped stub **exits `0`**, which is true only of the boilerplate — a repo of
-prose and shell with nothing else to check. **Re-arm it to `exit 1` as your first
-edit**, and leave it armed until the file runs the commands above. An exit-0 stub
-over a real stack is worse than no script: `/finalize` passes step 1 and attests
-to a vet run that checked nothing, and a false green is harder to notice than a
-loud stop. This is why the file is a
+prose and shell with nothing else to check. **In your repo this file exits `1`
+until it runs the commands above.** An exit-0 stub over a real stack is worse
+than no script: `/finalize` passes step 1 and attests to a vet run that checked
+nothing, and a false green is harder to notice than a loud stop. This is why the
+file is a
 [`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
 [the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
 

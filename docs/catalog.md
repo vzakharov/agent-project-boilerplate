@@ -35,8 +35,8 @@ inventory, so every item appears under exactly one, and
 - **adopt** — copy as-is.
 - **rewrite** — copy the shape, replace the contents for your repo. Exactly two
   files qualify, and both are load-bearing: `scripts/vet.sh` (its stub exits `0`
-  here and is re-armed to `1` on adoption — you already know your own test
-  commands) and
+  for want of a stack to check; yours exits `1` until it runs your commands —
+  which you already know) and
   `.claude/skills/sync-upstream/upstream.json` (the source, SHA and adopted set
   are per-repo by definition). Naming this disposition is what stops an adopter
   inheriting a watermark pointed at a repo it cannot read.
@@ -271,7 +271,8 @@ Four closure facts are counter-intuitive enough to state outright:
   plan mode gives none of that even where it works correctly.
 - **`scripts/vet.sh` is not optional within G2.** `/finalize`, `/sync-branch` and
   `/watch-ci` run it, and `/finalize` attests to whatever it reports — so a stub
-  left un-re-armed certifies a run that checked nothing. Hence its
+  exiting 0 over an unchecked stack certifies a run that verified nothing. Hence
+  its
   **rewrite** disposition rather than a choice: there is no version of G2 that
   does not run your checks. (Three more skills *name* it — `/implement` to say vetting is
   not its job, `/sync-upstream` and `/test-on-gh` as an example — so a grep
