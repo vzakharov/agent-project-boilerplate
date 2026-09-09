@@ -6,11 +6,11 @@ description: "Seed a new sibling repository out of the project you are standing 
 invoked in, and hands back a command that opens the next session there.
 
 The caller is an **adopter**: a working project whose tree is the boilerplate's
-agent infrastructure plus a stack, plus its own conventions, plus a product. What
-makes the operation worth a skill is that the new repo wants to be a sibling of
-*that* — its stack, its adaptations, its `vet.sh` — rather than of the
-boilerplate, and no adopter keeps an inventory saying which of its files are
-which. The triage is derived per run.
+agent infrastructure plus a stack, plus its own conventions, plus a product. The
+new repo wants to be a sibling of *that* — its stack, its adaptations, its real
+`vet.sh` — rather than of the boilerplate, and no adopter keeps an inventory
+saying which of its files are which. So Step 2's triage is derived per run, and
+that per-path judgment is what makes this a skill rather than a script.
 
 End state: the target exists; its `main` carries one commit of agent
 infrastructure; `bash scripts/check-skill-catalog.sh` passes there; and the
@@ -30,8 +30,7 @@ source of files and a source of the watermark; every artifact this skill produce
 lands in the target. The write access the skill needs is on the **target's
 owner**. If the target cannot be created, Step 4 stops and asks — it never falls
 back to writing somewhere it can. The one place this breaks by accident is Step
-4's `/pr` delegation, which aims at whatever `cwd` resolves to; that substep
-carries a guard.
+4's `/pr` delegation, which is why that substep carries a guard.
 
 ## Environment note (read this before running gh)
 
@@ -179,5 +178,4 @@ old repo's rules resident.
 The report also carries the one thing no agent can apply: the target needs an
 **environment setup script**, which lives in Claude Code's environment settings
 and has no API behind it. Tell the operator to reuse the caller's, adapting the
-pins — the caller demonstrably has one, so there is nothing here to restate about
-what goes in it.
+pins; the caller demonstrably has one.
