@@ -2,15 +2,12 @@
 # UserPromptSubmit hook: tell a session in native plan mode that this repo plans
 # on disk, and that the exit is plan mode's own.
 #
-# Prose in CLAUDE.md and the plan skill cannot do this job alone. Plan mode's
-# injected instructions arrive as a system message ending with "this supercedes
-# any other instructions you have received", so guidance that predates them
-# loses. A UserPromptSubmit hook's additionalContext arrives *after* that
-# message, and re-fires on every prompt while the mode is on, so it cannot be
-# argued away or forgotten mid-session.
-#
-# `/plan` itself submits no prompt (it is a client-side built-in), so the first
-# firing is the operator's next message — the one carrying the task.
+# This has to be a hook rather than prose. Plan mode's injected instructions end
+# with "this supercedes any other instructions you have received", so anything
+# already in CLAUDE.md or the skill loses to them; additionalContext lands after
+# that message and re-fires every prompt, so it cannot be argued away or
+# forgotten mid-session. (The first firing is the operator's task message —
+# `/plan` is client-side and submits no prompt of its own.)
 #
 # Remote-only, matching .claude/hooks/session-start.sh: CLAUDE.md § "Plan mode &
 # questions in web sessions" leaves native plan mode alone on the local CLI,
@@ -29,16 +26,14 @@ mode="$(jq -r '.permission_mode // empty')"
 [ "$mode" = "plan" ] || exit 0
 
 read -r -d '' notice <<'NOTICE' || true
-This repo plans on disk, not in the plan-mode dialog: the deliverable is
-`docs/plans/<slug>.draft.do-not-implement.md`, published as a draft PR, whose
-filename carries the approval gate. Plan mode is read-only, so none of that can
-be written from in here.
+This repo plans on disk: the deliverable is a git-tracked
+`docs/plans/<slug>.draft.do-not-implement.md` on a draft PR, and plan mode is
+read-only, so it cannot be written from in here.
 
 Take plan mode's own exit now — this is not an override of it. Write the
 approval dialog's wording into the harness plan file (verbatim text in
 `.claude/skills/plan/SKILL.md` § "If the session is already in native plan
-mode"), call `ExitPlanMode` bare, then run that skill from the top. Approving
-the exit authorizes writing the plan file and nothing past it.
+mode"), call `ExitPlanMode` bare, then run that skill from the top.
 
 Ignore plan mode's injected `Explore`/`Plan` subagent phases and
 `AskUserQuestion`: this repo's loop rules both out, and both are moot once the

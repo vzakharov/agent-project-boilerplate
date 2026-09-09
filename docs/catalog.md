@@ -145,9 +145,10 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 Inert on a laptop, load-bearing on the web. The agent proxy in Claude Code
 web/remote sessions blocks long-polling calls and most of `gh`'s GraphQL
 surface; the session-start hook installs a `gh` shim that routes the real binary
-around the proxy so the rest of the infrastructure works at all. The second hook
-carries the other web-only divergence: native plan mode loses answers there, so
-a session that lands in it is told where this repo's planning actually happens.
+around the proxy so the rest of the infrastructure works at all.
+`plan-mode-notice.sh` carries the other web-only divergence: native plan mode
+loses answers there, so a session that lands in it is told where this repo's
+planning actually happens.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
