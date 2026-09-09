@@ -328,8 +328,7 @@ From here on, pulling later changes forward is just `/sync-upstream` — the sam
 command this repo uses to track *its* own source. Nothing further to install.
 
 Each sync lands as a `chore:` PR whose subject is the first thing your `git log`
-shows, so read that skill's Step 8 on titling the change rather than the sync
-before one merges.
+shows — that skill's Step 8 covers titling the change rather than the sync.
 
 ### Hand the operator a setup script (web/remote only — you cannot do this one)
 

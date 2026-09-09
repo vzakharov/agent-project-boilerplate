@@ -267,16 +267,14 @@ normally lands changes — the triage table still belongs wherever that record g
 **The squash record names the change, not the sync.** The `<essence>`
 `@.claude/skills/squash-message/SKILL.md` asks a title for is what landed in
 *this* tree — `chore: one job per loop skill, and a size cap on squash bodies`,
-not `chore: sync the agent boilerplate forward to 4998149`. A source SHA is a
+not `chore: sync the boilerplate forward to <source sha>`. A source SHA is a
 commit in another repository, unresolvable from the log it sits in, and "sync
-forward" names the transport, so the second title sends every future reader to
-the diff.
+forward" names the transport: the second title sends every reader to the diff.
 
 Provenance needs no prose. `upstream.json`'s `lastSyncedSha`, committed in Step
-7, records it exactly, and the per-commit `Ported from <repo>@<sha>` trailers
-from Step 5 do not survive a squash. "The repo we vendor from moved" is still the
-honest *why*, so it earns one clause of the body's opening sentence and nothing
-more; the rest of those lines belong to what changed.
+7, is the precise record and the only one that survives the squash. "The repo we
+vendor from moved" is still the honest *why*, so it earns one clause of the
+body's opening sentence and nothing more.
 
 ## Add what the next sync teaches you
 
