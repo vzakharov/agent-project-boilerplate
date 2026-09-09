@@ -1,39 +1,48 @@
 ---
 description: >-
-  Execute an already-approved plan end-to-end: implement it, then run the
-  mandatory quality passes (/dry, /tighten-docs) and open
-  a draft PR. Built to follow the /plan file-based stand-in, but also works with
-  a plain approved plan. Invoke as `/implement` (or `/implement <branch>` to
-  attach to an existing branch first).
+  The go-ahead: start working. Executes an approved plan end-to-end, then runs
+  the mandatory quality passes (/dry, /tighten-docs) and hands the PR to /pr.
+  Invoke as `/go` (continue in this session), `/go <branch|#PR|PR-url>` (attach
+  to that branch first), or `/go <task in prose>` (work with no plan behind it).
 ---
 
-This skill is the **execution phase** — what you do once a plan has the operator's go-ahead. It assumes approval already happened: invoking `/implement` (or reaching it via the `/plan` approval gate, or `/from-branch … implement`) **is** the go-ahead, so there's no plan cycle to open here. If you're mid-planning and the operator hasn't approved yet, that gate lives in `@.claude/skills/plan/SKILL.md` — resolve it there first, don't start coding.
+This skill is the **execution phase** — what you do once a plan has the operator's go-ahead. It assumes approval already happened: invoking `/go` (or reaching it via the `/plan` approval gate, or `/from-branch … go`) **is** the go-ahead, so there's no plan cycle to open here. If you're mid-planning and the operator hasn't approved yet, that gate lives in `@.claude/skills/plan/SKILL.md` — resolve it there first, don't start coding.
 
 Because that approval is an assumption, Step 1 puts it on the record: a `git mv` out of `*.draft.do-not-implement.md` whose commit message quotes the operator's literal go-ahead. Done retroactively it records nothing, so it precedes the first source edit rather than following it as cleanup.
 
-## Branch-name form
+## Argument shape
 
-`/implement <some/branch>` is shorthand for `/from-branch <some/branch> /implement` — attach to that existing branch, then run this skill. Load `@.claude/skills/from-branch/SKILL.md` and follow it to attach (it re-points the working tree and discards the auto-branch), then continue from Step 1 below. If no branch token was passed, `/implement` runs against the current branch as-is.
+Three shapes, separated by shape alone: **a task is prose, a target is a token.**
 
-The branch form is the **normal** entry point, not an edge case: it is the command a `/plan` session hands the operator at the end of its turn, so implementation usually starts in a session that has to attach before it can do anything (see `@.claude/skills/plan/SKILL.md` § "Handing off").
+> A first argument that is a **single whitespace-free token** — `claude/foo-a1b2`, `fix-sidebar-scroll`, `sidebar`, `#NNN`, a PR URL — is a **target**. Confirm it with `@.claude/skills/from-branch/SKILL.md` Step 1's `git ls-remote --heads origin <token>`; if it does not resolve, **stop and ask**. An argument carrying whitespace is a **task**.
 
-**Canary — a well-formed handoff is a branch token in a session's first user prompt; every other shape is a copy that didn't land intact.** The block exists to _open_ a session on a branch this one is not on, so it goes wrong in two mirrored ways: it lands in a session that already exists (a branch token where it does not belong), or it arrives stripped of its branch (nothing to attach to).
+No operator writes the work they want done as a single whitespace-free string — not `fix-sidebar-scroll`, because nobody hyphenates a sentence, and not `sidebar`, because a bare noun names a subject rather than a job. So the classifier does not have to recognise ref syntax, and must not narrow itself to it: a `/`-shaped test reads `fix-sidebar-scroll` as a task and implements it as one, which is the outcome the rule exists to prevent.
 
-- **`/implement <branch>` as the session's first user prompt, naming a branch other than the current one** is the intended cross-session path — attach as documented, no question.
-- **Any other `/implement <branch>` → stop and ask** whether they meant to implement here or in a fresh session. That covers both wrong-box tells: the branch is already the current one (dead weight — usually a reflex copy right after reading the plan), or an earlier user prompt in this session means the block was pasted into a session with a life of its own. Do not attach, do not flip the plan file, do not touch source until they answer. Without this the already-checked-out tell is invisible: `@.claude/skills/from-branch/SKILL.md` § "Failure modes to call out" says "Target branch already checked out — skip Steps 2–4 and proceed to Step 6", so the attach degrades into a silent no-op and implementation just starts.
-- **Bare `/implement` mid-session → no canary, no question.** That is the ordinary same-session go-ahead: the plan was made here and its context is in the conversation. Proceed straight to Step 1.
-- **Bare `/implement` as the session's first user prompt → establish what there is to implement before proceeding.** A session that has done nothing yet holds no plan in conversation, so the only implementable thing is a plan file on the branch already checked out. On a harness auto-branch, or with `docs/plans/` empty, the block was copied without its branch token — **ask which branch**, rather than reporting "no plan found" and sending the operator after the wrong problem. A plan file sitting on a non-auto branch (a session opened straight onto the feature branch) is legitimate — proceed to Step 1.
+A token that fails to resolve must **not** fall through to "task". The likely cause is a handoff block pasted into a session opened on the wrong repository, and implementing a branch name as if it were a task description is the worst available response — worse than one round-trip. A handoff that did not land intact gets a question, not a guess.
+
+- **`/go <target>`** is shorthand for `/from-branch <target> /go` — attach to that existing branch, then run this skill. Load `@.claude/skills/from-branch/SKILL.md` and follow it to attach (it re-points the working tree and discards the auto-branch), then continue from Step 1 below.
+- **`/go <task>`** enters at § "Planless entry" below, with that prose as the task.
+- **Bare `/go`** runs against the current branch as-is.
+
+The target form is the **normal** entry point, not an edge case: it is the command a `/plan` session hands the operator at the end of its turn, so implementation usually starts in a session that has to attach before it can do anything (see `@.claude/skills/plan/SKILL.md` § "Handing off").
+
+**Canary — a well-formed handoff is a target token in a session's first user prompt; every other shape is a copy that didn't land intact.** The block exists to _open_ a session on a branch this one is not on, so it goes wrong in two mirrored ways: it lands in a session that already exists (a target where it does not belong), or it arrives stripped of its target (nothing to attach to).
+
+- **`/go <target>` as the session's first user prompt, naming a branch other than the current one** is the intended cross-session path — attach as documented, no question.
+- **Any other `/go <target>` → stop and ask** whether they meant to implement here or in a fresh session. That covers both wrong-box tells: the branch is already the current one (dead weight — usually a reflex copy right after reading the plan), or an earlier user prompt in this session means the block was pasted into a session with a life of its own. Do not attach, do not flip the plan file, do not touch source until they answer. Without this the already-checked-out tell is invisible: `@.claude/skills/from-branch/SKILL.md` § "Failure modes to call out" says "Target branch already checked out — skip Steps 2–4 and proceed to Step 6", so the attach degrades into a silent no-op and implementation just starts.
+- **Bare `/go` mid-session → no canary, no question.** That is the ordinary same-session go-ahead: the plan was made here and its context is in the conversation. Proceed straight to Step 1.
+- **Bare `/go` as the session's first user prompt → establish what there is to implement before proceeding.** A session that has done nothing yet holds no plan in conversation, so the only implementable thing is a plan file on the branch already checked out. On a harness auto-branch, or with `docs/plans/` empty, the block was copied without its target token — **ask which branch**, rather than reporting "no plan found" and sending the operator after the wrong problem. A plan file sitting on a non-auto branch (a session opened straight onto the feature branch) is legitimate — proceed to Step 1.
 
 Asking costs one round-trip. The point is that the operator makes the call knowingly, rather than discovering afterwards that the session they meant to keep as a clean planning record started writing code.
 
 ## Planless entry
 
-A caller skill may enter here with a **task** in place of a plan — `@.claude/skills/from-branch/SKILL.md` Step 6's free-form follow-up, and `@.claude/skills/pr/SKILL.md` Step 1a's "no plan" waiver. In that mode:
+Work with no plan behind it enters here with a **task** in place of one — the operator's own `/go <task>`, or a caller skill's task text (`@.claude/skills/from-branch/SKILL.md` Step 6's free-form follow-up). In that mode:
 
-- **Step 1 is already satisfied** — the caller's task text is the plan. Start at Step 2; do not go looking under `docs/plans/`, and do not ask which plan to implement.
+- **Step 1 is already satisfied** — the task text is the plan. Start at Step 2; do not go looking under `docs/plans/`, and do not ask which plan to implement.
 - **Step 3 runs unchanged** — its passes are the reason this entry exists. The trailing `git mv` to `*.completed.md` is a no-op with no plan file.
-- **Step 4 runs unchanged.** A branch that already has a PR — the normal `/from-branch` case — stops at `/pr`'s own Step 1b pre-check, which reports the existing PR rather than opening a duplicate.
-- **The § "Branch-name form" canary does not apply.** It reads _user-typed_ prompts for a handoff block that lost its branch or landed in a session with a life of its own; a skill-to-skill dispatch already holding the task is neither.
+- **Step 4 runs unchanged.** A branch that already has a PR — the normal `/from-branch` case — reaches `/pr`'s refresh mode, which fills the PR in rather than opening a duplicate; one that doesn't gets a PR created from the commits.
+- **The § "Argument shape" canary does not apply.** It reads _user-typed_ prompts for a handoff block that lost its target or landed in a session with a life of its own; a skill-to-skill dispatch already holding the task is neither.
 
 Planless is not gateless: locating a plan is the only thing this entry skips.
 
@@ -50,7 +59,7 @@ The primary target is a `/plan` stand-in file:
 
 The plan file's name encodes its lifecycle state (see `@.claude/skills/plan/SKILL.md` § "Plan file lifecycle"). Act on it **before writing any code**:
 
-- `*.draft.do-not-implement.md` — not yet cleared. Reaching this skill **is** the go-ahead (the operator invoked `/implement`, approved at `/plan`'s gate, or launched `/from-branch … implement`), so **`git mv` it to `*.in-progress.md` as your first action**. In the **same commit**, also **delete the line-1 ⛔ draft banner** — once the file is `in-progress`, a banner that still says "DO NOT IMPLEMENT" contradicts its own state — and quote the operator's literal go-ahead in the commit message (e.g. `chore: begin implementing <slug> (go-ahead: "…")`). Do this before editing source — a file still named `do-not-implement`, or still carrying the banner, means you have not been cleared, and writing the go-ahead out verbatim is the moment to catch a misread. When the plain-approved-plan case has no file at all, there's nothing to flip; the operator's in-chat go-ahead stands.
+- `*.draft.do-not-implement.md` — not yet cleared. Reaching this skill **is** the go-ahead (the operator invoked `/go`, approved at `/plan`'s gate, or launched `/from-branch … go`), so **`git mv` it to `*.in-progress.md` as your first action**. In the **same commit**, also **delete the line-1 ⛔ draft banner** — once the file is `in-progress`, a banner that still says "DO NOT IMPLEMENT" contradicts its own state — and quote the operator's literal go-ahead in the commit message (e.g. `chore: begin implementing <slug> (go-ahead: "…")`). Do this before editing source — a file still named `do-not-implement`, or still carrying the banner, means you have not been cleared, and writing the go-ahead out verbatim is the moment to catch a misread. When the plain-approved-plan case has no file at all, there's nothing to flip; the operator's in-chat go-ahead stands.
 - `*.in-progress.md` — **a session has this plan open.** The name is a claim, not a resume point: picking it up unasked puts two agents on the same plan and the same branch at once, each overwriting the other's commits. **Report it and ask** — unless the operator's own invocation says to take it over ("continue where the last session left off", "the last session died, pick it up"), which is the escape hatch for a session that ended without the chance to release the file. On that go-ahead only, treat it exactly as a `*.paused.md`.
 - `*.paused.md` — released partway through by an earlier session → yours to continue. `git mv` it to `*.in-progress.md` as your first action (it is claimed now), then read the record of what is done and what is left and continue from there, rather than re-running finished work.
 - `*.completed.md` — implementation already finished → don't silently re-run; report and ask.
@@ -77,11 +86,11 @@ These run **every time**, in order, and override any contrary "wrap up after imp
 
 Then **`git mv` the plan to `docs/plans/<slug>.completed.md`** and commit — implementation and its quality passes are done. (`/finalize` sweeps the whole `docs/plans/` tree at squash regardless, so this flip is just the honest end-state marker for an operator watching the branch.)
 
-## Step 4 — Draft PR
+## Step 4 — Fill in the PR
 
-Implementing an approved plan is itself the operator's request for a PR, so it satisfies the system prompt's "don't open a PR unless asked" gate. Load `@.claude/skills/pr/SKILL.md` and follow it (it pushes and opens the draft with a derived title/body).
+Load `@.claude/skills/pr/SKILL.md` and follow it with no args. Which of its modes the call reaches is the branch's to decide — refresh on a branch `/plan` published, create on a planless one that never got a PR. Either way this step satisfies the system prompt's "don't open a PR unless asked" gate, the operator's go-ahead being the request.
 
-The **only** exception is an explicit "no PR" from the operator (e.g. `/implement, no PR`) — then stop after Step 3 and report.
+The **only** exception is an explicit "no PR" from the operator (e.g. `/go, no PR`) — then stop after Step 3 and report.
 
 ## Do NOT
 

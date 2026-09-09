@@ -94,12 +94,13 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/plan` | Write the plan to a reviewable `docs/plans/` file and ask questions as numbered prose; the filename is the approval gate. | — | `/finalize`, `/implement` | adopt |
-| `/implement` | Execute an approved plan: flip the plan file, do the work, run the quality passes, open the draft PR. | — | `/dry`, `/tighten-docs` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
-| `/pr` | Rename the auto-branch, push, open the draft PR, post the squash proposal. | `gh` | `/branch-rename`, `/implement`, `/qa-checklist`, `/squash-message` | adopt |
+| `/plan` | Write the plan to a `docs/plans/` file whose name is the approval gate, publish it as a draft PR so it is reviewed as a diff, and ask questions as numbered prose. | `gh` | `/finalize`, `/go`, `/pr` | adopt |
+| `/go` | The go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it. | — | `/dry`, `/tighten-docs` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
+| `/implement` | Redirect to `/go`, for handoff blocks written before the rename. | — | `/go` | conditional — see below |
+| `/pr` | Own the PR object: rename the auto-branch, push, then open the draft PR or refresh the one that exists. | `gh` | `/branch-rename`, `/qa-checklist`, `/squash-message` | adopt |
 | `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. | `gh`, `scripts/vet.sh` | `/check-merge`, `/from-branch`, `/plan`, `/squash-message`; **conditionally** `/issue` (G3), `/watch-ci` (G5) | adopt |
-| `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. | `gh` | `/finalize`, `/implement` | adopt |
-| `/handle` | Pick up a branch and do what it needs: attach, read off whether it carries an unimplemented plan or unanswered review feedback, run that lane, land-prep only if asked. | `gh`; `scripts/export-github-item.py` (G3) for the review lane's thread export | `/from-branch`, `/implement`, `/finalize` | adopt |
+| `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. | `gh` | `/finalize`, `/go` | adopt |
+| `/handle` | Pick up a branch and do what it needs: attach, read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, land-prep only if asked. | `gh`; `scripts/export-github-item.py` (G3) for the review lane's thread export | `/from-branch`, `/go`, `/plan`, `/finalize` | adopt |
 | `/branch-rename` | Rename a harness auto-branch (`claude/<adjective>-<noun>-<hash>`) to a semantic name, keeping the random suffix. | `gh` | `/pr` | adopt |
 | `/squash-message` | Produce and post the copy-ready squash title/body for a PR; owns the format and the draft-then-tighten discipline. | `gh`, `jq` | `/tighten-docs` (G1) | adopt |
 | `/qa-checklist` | Generate a QA checklist from the branch's change and write it into the PR body, with each step classified for automatability. | `gh`, `python3` ≥3.9, `scripts/pr-body.py` | — | adopt |
@@ -124,7 +125,7 @@ you plan in Linear, Jira or a doc, decline the group and record why in
 | --- | --- | --- | --- | --- |
 | `/issue` | Export and read a GitHub issue, split it into natively-linked sub-issues when the scope demands, then hand the work to `/pr`. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr`, `/plan` (G2) | adopt |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. | G2, `gh`, `jq` | `/plan` (G2) | adopt |
-| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan, prioritising `P0`–`P3` everything it keeps. Mutates nothing on GitHub. | G2, `gh` | `/implement`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
+| `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan, prioritising `P0`–`P3` everything it keeps. Mutates nothing on GitHub. | G2, `gh` | `/go`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
 | `scripts/export-github-item.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`, or a PR (plus review threads, each one's resolved/unresolved state, and diff hunks) into `docs/pr/<n>/`. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` (G2), `scripts/gh_export/` | — | adopt |
 | `scripts/gh_export/` | The exporter's pieces, one module per concern: argument parsing, the REST/GraphQL client, attachment download, and a renderer each for the header and comments, the review threads, and the timeline. | `python3` ≥3.9, `scripts/lib/github.py` (G2) | — | adopt |
 
@@ -260,17 +261,17 @@ Four closure facts are counter-intuitive enough to state outright:
 
 - **`/plan` travels with G2 even for a local-only adopter.** A web-session bug is
   what prompted it, so a local repo reasonably assumes it can skip it. Two
-  reasons not to. The references: `/implement`, `/finalize`, `/propose-issue` and
+  reasons not to. The references: `/go`, `/finalize`, `/propose-issue` and
   `/audit-github-backlog` all cite it, so dropping it means stripping those too.
   And the bug is no longer the point — a plan on disk is reviewable from another
   machine, holds a **DRY notes** section the operator can argue with before any
-  code exists, and ends by handing over a copy-pasteable `/implement <branch>`
+  code exists, and ends by handing over a copy-pasteable `/go <branch>`
   line that starts the next session with the approval already recorded. Native
   plan mode gives none of that even where it works correctly.
 - **`scripts/vet.sh` is not optional within G2.** `/finalize`, `/sync-branch` and
   `/watch-ci` run it, and `/finalize` stops loudly without it. Hence its
   **rewrite** disposition rather than a choice: there is no version of G2 that
-  does not run your checks. (Three more skills *name* it — `/implement` to say vetting is
+  does not run your checks. (Three more skills *name* it — `/go` to say vetting is
   not its job, `/sync-upstream` and `/test-on-gh` as an example — so a grep
   overcounts the dependency.)
 - **`/finalize` reaches into G3 and G5 conditionally.** Its working-artifact
@@ -279,6 +280,21 @@ Four closure facts are counter-intuitive enough to state outright:
   degrades gracefully — but the `@`-references still dangle if you decline those
   groups. Strip the two citations, or adopt the groups.
 - **`/override-gh` is pulled in by G0 and G3**, not just G4. See G4 above.
+
+Two G2 rows are adopter choices rather than defaults:
+
+- **`/go` is a local name, not a contract.** It reads ambiguously in a Go
+  project, and this is a stack-agnostic boilerplate. Rename it to whatever your
+  language or framework leaves unambiguous; `scripts/check-skill-catalog.sh`
+  verifies the pointers once you have.
+- **The `/implement` redirect is worth taking only where `/implement` was already
+  the shipped name** — that is where a handoff block in a live plan file or PR
+  comment might still say it. Never adopted `/implement` → take `/go` alone and
+  put `.claude/skills/implement/` in `declined`: there is no downstream caller to
+  redirect, and the stub would be a permanent extra row standing in for a name
+  the repo never had. Already adopted it → ask the operator whether the backwards
+  compatibility is worth that extra row, and record either answer in
+  `upstream.json` so the question does not come back.
 
 ## Keeping this file honest
 
