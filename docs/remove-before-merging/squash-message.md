@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-fix: #40 give the boilerplate no upstream of its own (pr #41)
+feat: #40 ship the sync path as an unhydrated stub (pr #41)
 ```
 
 ```
@@ -27,9 +27,11 @@ The watermark itself becomes the adopter's template: repo already
 names this repo, which is every adopter's source, and the SHA, date
 and adopted set are placeholders they fill in — safe to ship
 because the skill refuses to run on a placeholder SHA. G0 keeps
-both rows and says the sync path arrives unhydrated, while
-CLAUDE.md, README.md and ADOPTING.md drop their citations of a
-source this repo does not have.
+both rows and says the sync path arrives unhydrated; CLAUDE.md,
+README.md and ADOPTING.md drop their citations of a source this
+repo does not have, and each says that hydrating this stub is
+filling in JSON rather than writing a procedure, which is what
+separates it from the seven stack-bound ones.
 
 Closes #40
 
