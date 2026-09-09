@@ -211,10 +211,10 @@ Four things a draft reaches for fail Lens A, however well written:
   already looking — a `.claude/rules/` file, or a docstring on the thing itself
   — unless the change *is* that the constraint now exists. A "things to know
   when editing here" paragraph is the tell. Cutting one is a **move, not a
-  deletion**: name the home each item lands in as you cut it, and an item that
-  turns out to have none gets one first. Assert it by checking, not by
-  assumption — the body is sometimes the only place a constraint was ever
-  written down, and then the tidy cut is what loses it.
+  deletion**: name the home each item lands in as you cut it, checking rather
+  than assuming it has one. An item with none gets one first — the body is
+  sometimes the only place a constraint was ever written down, and the tidy cut
+  is what loses it.
 - **An inventory of what the change declined to do** — commits skipped, options
   rejected. It leaves no trace in the tree for the record to explain.
 - **Internal restructuring that changed no behavior and no contract** — a split,
