@@ -1,6 +1,14 @@
 #!/bin/bash
 # Vet: the fast checks the agent runs before pushing review-ready work.
 #
+# ADOPTERS: restoring `exit 1` at the bottom is the first edit to make here, and
+# it stays until this file runs your real checks. The boilerplate ships it
+# exiting 0 because that repo has no stack to check — prose and shell, fully
+# covered by the call below. Anywhere else that exit is a false green: step 1 of
+# `/finalize` passes, its attestation records a vet run, and nothing was
+# compiled, linted or tested. An unarmed stub certifies more than a missing
+# script ever could.
+#
 # Wire these up for your stack (lint, type-check, format-check, fast tests).
 # Serial:
 #   pnpm lint && pnpm typecheck && pnpm test:unit
@@ -23,5 +31,7 @@ set -euo pipefail
 
 "$(dirname "$0")/check-squash-message.sh"
 
-echo "TODO: implement vetting for this project (see CLAUDE.md → Vetting)." >&2
-exit 1
+echo "vet: no stack-specific checks are configured; the checks above are the run." >&2
+echo "vet: an adopting project restores \`exit 1\` here until it wires its own in" >&2
+echo "     (see the ADOPTERS note at the top, and CLAUDE.md → Vetting)." >&2
+exit 0
