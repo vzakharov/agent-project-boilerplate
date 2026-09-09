@@ -12,15 +12,18 @@ skill exists to write cannot be written from in there. The client
 offers no per-command suppression, and a client-side command is
 invisible to hooks and rules alike.
 
-The skill now carries the way out, framed as plan mode's own exit
-rather than as an override of it: the mode makes the harness plan file
-writable and ends the turn at ExitPlanMode, which is exactly the path
-taken. Leaving costs one operator approval, so it is spent immediately,
-and the harness plan file that the approval dialog displays has its
-wording supplied verbatim — what this repo plans into, why plan mode
-conflicts with it, and that approving authorizes writing the plan file
-alone. That exit leaves the `do-not-implement` gate untouched, however
-much the approval reads like a go-ahead.
+The skill now carries the way out, keyed on being in plan mode rather
+than on how the session got there, since the UI mode switch lands in it
+just as the keystroke does. It is framed as plan mode's own exit rather
+than an override of it: the mode makes the harness plan file writable
+and ends the turn at ExitPlanMode, which is exactly the path taken.
+Leaving costs one operator approval, so it is spent immediately, and
+the harness plan file the dialog displays has its wording supplied
+verbatim — what this repo plans into, why plan mode conflicts with it,
+and that approving authorizes writing the plan file alone. That exit
+leaves the `do-not-implement` gate untouched, however much the approval
+reads like a go-ahead, and an operator who says they want native plan
+mode keeps it for the rest of the session.
 
 A UserPromptSubmit hook is what makes the convention land. Plan mode
 instructs the agent to supersede every other instruction it has, so
@@ -31,10 +34,11 @@ on every prompt while the mode is on.
 
 The skill keeps its name. A rename could not have prevented the
 mistyped keystroke — a stub under the old name would be shadowed just
-as the skill is — and the collision is self-limiting, since falling
-into it requires typing `/plan` and therefore being at the keyboard.
-Bare prose is the entry an operator types, and new skill names are
-checked against the client's built-ins from here on.
+as the skill is — and the collision is self-limiting, since reaching
+plan mode takes a deliberate keystroke or mode switch and therefore an
+operator who is present. Bare prose is the entry an operator types, and
+new skill names are checked against the client's built-ins from here
+on.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
