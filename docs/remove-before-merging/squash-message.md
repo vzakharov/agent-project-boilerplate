@@ -22,10 +22,8 @@ defensive prose that existed only to guard an argument /pr should never
 have accepted. What remains is three modes over the PR object, one of
 them the old duplicate-PR guard inverted into a refresh: an existing PR
 is the expected state at the end of implementation, so it gets filled
-in rather than declined. The QA checklist and squash proposal are
-written from the plan at open time and reconciled against the real diff
-at refresh, which keeps both derivations single-sourced and only gives
-one of them a second input shape.
+in rather than declined, its body and QA checklist re-derived from the
+real diff that the plan could only predict.
 
 /implement becomes /go, converging the command with the vocabulary
 /plan's approval gate already listens for, and the skill it names is no
@@ -35,11 +33,9 @@ is a branch to attach to, confirmed by ls-remote and stopping to ask
 when it does not resolve, and anything with a space in it is a task to
 do. Testing for whitespace rather than for ref syntax is what keeps
 fix-sidebar-scroll from being implemented as a sentence. The old path
-stays as a redirect stub, because the handoff block is a
-copyable command living in plan files and PR comments that outlive the
-rename — permanent here, and offered downstream only to a repo that
-shipped /implement, whose operator decides whether the compatibility is
-worth the extra row. Two things deliberately keep the old word: the
+stays as a redirect stub, because the handoff block is a copyable
+command living in plan files and PR comments that outlive the rename.
+Two things deliberately keep the old word: the
 *.draft.do-not-implement.md suffix, where it is a warning rather than a
 command, and /from-branch's follow-up keywords, which gain "go" instead
 of trading it.
