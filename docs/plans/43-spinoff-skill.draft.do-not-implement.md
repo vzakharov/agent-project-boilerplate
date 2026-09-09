@@ -31,7 +31,7 @@ real:
 | --- | --- |
 | `.claude/skills/spinoff/SKILL.md` | new — the skill, shipped hydrated |
 | `ADOPTING.md` | delete `## Template fork`; rework the two-ways-in split and the shared-tail heading |
-| `README.md` | replace the template-fork route with the `/spinoff` route; bump the skill count |
+| `README.md` | reframe the template-fork route as the launcher it now is, add the `/spinoff` route, bump the skill count |
 | `docs/catalog.md` | one G0 row, and a G0 intro that names both directions |
 | `CLAUDE.md` | one line in § "Working with skills" |
 
@@ -43,6 +43,25 @@ real:
 exists, `main` carries one commit of agent infrastructure, `check-skill-catalog.sh`
 passes there, and the operator holds a copyable command that opens the next
 session in the new repo.
+
+### The caller is read-only
+
+**`/spinoff` writes nothing to the repo it is invoked from.** No commit, no
+branch, no PR, no issue — the caller is a source of files and a source of the
+watermark, and every artifact the skill produces lands in the target. The skill
+states this as an invariant rather than leaving it to be inferred from the steps,
+because the access model depends on it: read is all the skill needs from the
+caller, which is all a public repo grants a stranger, and it is what makes
+`/spinoff` safe to run from a clone of somebody else's boilerplate.
+
+The write access the skill *does* need is on the **target's owner** — creating
+the repo and pushing to it — which is the invoker's own account or an org they
+can create repos in. If the target cannot be created, Step 4 stops and asks; it
+never falls back to writing somewhere it can.
+
+The one place this could break by accident is Step 4's `/pr` delegation, which
+runs against whatever `cwd` holds — and Bash `cwd` resets between calls in this
+harness. Step 4 carries the guard.
 
 ### Step 1 — Read the caller
 
@@ -144,6 +163,11 @@ working in it" does not work.
    name; derive a fresh `claude/<slug>-<hash>` otherwise.
 4. **Open the draft PR there and post the squash proposal** by loading
    `@.claude/skills/pr/SKILL.md` with the target clone as the working directory.
+   **Assert the directory before loading it** — `git -C <clone> remote get-url
+   origin` must name the target — and stop if it does not. `/pr` pushes and
+   opens a PR against whatever repo `cwd` resolves to, so a slipped `cwd` aims
+   the whole step at the caller. Failing loudly there is the difference between
+   a stopped run and a stray PR on someone else's repository.
 
 **Where the line between the two commits falls is not a judgment call, and the
 skill says so.** Closure decides it: `check-skill-catalog.sh` fails on a dangling
@@ -217,12 +241,27 @@ gets handed the setup script.
 
 ### `README.md`
 
-§ "Create a new project from this template" is the route that sends readers to
-the deleted section, so it is replaced rather than repointed: open a session on
-this repo (or a clone of it) and run `/spinoff <owner/name>`. The `gh repo create
---template` recipe goes with it — the skill creates the repo, so a
-pre-created template fork is a tree the skill would have to reconcile with rather
-than a head start.
+**Both routes stay, because `/spinoff` has to be run from somewhere.** The skill's
+input is the repo it stands in, so a newcomer with nothing needs a checkout of
+this repo before they can invoke it — and in a web session, a checkout means a
+repo in their own account. *"Use this template"* is how they get one.
+
+So the button survives with its **purpose changed**: it is how you get a
+boilerplate you can open a session on, not a project you then prune in place. §
+"Create a new project from this template" becomes two steps rather than one
+route — template-fork this repo (or `git clone` it, locally), then run
+`/spinoff <owner/name>` from a session on it — and the `gh repo create
+--template` recipe stays as the scriptable form of step one.
+
+The honest cost, stated in the README rather than glossed: you end up with two
+repos, the launcher fork and the project. The fork is reusable for every later
+spinoff, which is what makes that acceptable; naming it something like
+`agent-boilerplate-launcher` rather than after the first project is the
+suggestion that goes with it.
+
+What does **not** survive is prune-in-place as a documented path. A reader who
+template-forks and stops there has no next step on purpose — that is the
+procedure `## Template fork` carried and the skill replaces.
 
 The count in the opening paragraph moves from **28 skills (20 working, 8 stubs)**
 to **29 (21 working, 8 stubs)**.
@@ -253,8 +292,8 @@ One line under § "Working with skills" → "Entry points and support", after
       `/sync-agent-infra` § "The watermark".
 - [ ] Delete `ADOPTING.md` § "Template fork"; rework the two-ways-in split and
       the shared-tail heading.
-- [ ] Replace `README.md` § "Create a new project from this template"; bump the
-      skill count.
+- [ ] Rework `README.md` § "Create a new project from this template" into the
+      two-step launcher route; bump the skill count.
 - [ ] Add the `docs/catalog.md` G0 row and extend the G0 intro.
 - [ ] Add the `CLAUDE.md` skill-list line.
 - [ ] `bash scripts/check-skill-catalog.sh` — the new skill needs exactly one
@@ -300,29 +339,15 @@ One line under § "Working with skills" → "Entry points and support", after
   is two sentences in one and a subsection in the other because the callers know
   different amounts.
 
-## Open questions
+## Settled
 
-**1. The skill's name.** The issue leaves it open.
+*The skill is named `/spinoff`.* `/seed-repo` reads as though it operates on the
+current repo, and `/fork-out` collides with what "fork" already means on GitHub.
 
-- **(a) `/spinoff`** *(recommended, and written into this plan)* — the issue's own
-  leading name, reads as a verb from either caller, and collides with nothing.
-- (b) `/seed-repo` — names the mechanism (`main` gets a seed commit) but reads
-  like it operates on the current repo.
-- (c) `/fork-out` — accurate about direction, but "fork" already means something
-  specific on GitHub that this is not.
-
-**2. Does the *"Use this template"* button survive in `README.md`?**
-
-- **(a) No — replaced entirely by the `/spinoff` route** *(recommended, and
-  written into this plan)*. The issue's argument against two procedures for one
-  operation applies to the README as much as to `ADOPTING.md`, and with
-  `## Template fork` gone the button leads to a fork with no documented next
-  step.
-- (b) Keep it as a secondary route for someone who wants the files without an
-  agent session — at the cost of the fork path being back, undocumented.
-
-Both carry recommendations, so the plan is implementable as written; an answer
-that differs is a revision, and silence means the recommendations stand.
+*The README keeps both routes.* Dropping the template button was rejected on the
+bootstrapping ground: `/spinoff` runs from a checkout of this repo, and in a web
+session a checkout means a repo in your own account — so removing the button
+removes the only way a newcomer reaches the skill at all.
 
 ## Explicitly out of scope
 
