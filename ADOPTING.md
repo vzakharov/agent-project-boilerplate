@@ -261,14 +261,14 @@ only for the checks that failed:
 exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
 ```
 
-**What it must exit is `CLAUDE.md` § "Vetting"'s contract, and that section is
-its home** — read it there. In short: `exit 1` from the moment a stack is present
-and unchecked, because an exit-0 stub over a real stack makes `/finalize` pass
-step 1 and attest to a vet run that checked nothing; `exit 0` while there is no
-stack yet, the two built-in checks below being the whole run. That is why the
-file is a [`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a
-choice, for [the reason the catalog
-gives](docs/catalog.md#closure-is-not-optional).
+**What it must exit is [`CLAUDE.md` § "Vetting"](CLAUDE.md#vetting)'s contract,
+and that section is its home** — read it there, because the exit turns on a
+condition the shipped stub cannot show you. What is at stake at this step: an
+exit-0 stub over a real stack makes `/finalize` pass step 1 and attest to a vet
+run that checked nothing, and a false green is harder to notice than a loud
+stop. That is why the file is a
+[`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
+[the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
 
 Two lines in `vet.sh` — the calls to `scripts/check-skill-catalog.sh` and
 `scripts/check-squash-message.sh` — are not stack-specific, so decide each

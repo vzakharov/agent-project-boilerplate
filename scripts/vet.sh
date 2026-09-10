@@ -1,10 +1,9 @@
 #!/bin/bash
 # Vet: the fast checks the agent runs before pushing review-ready work.
 #
-# ADOPTERS: what this file must exit is CLAUDE.md → Vetting's contract, which
-# turns on whether your repo has a stack yet — `exit 0` while the two calls below
-# are the whole run, `exit 1` from the moment a stack is present and unchecked.
-# Read it there rather than inferring it from what this stub does.
+# ADOPTERS: what this file must exit is CLAUDE.md → Vetting's contract. Read it
+# there rather than inferring it from what this stub does — the exit turns on
+# whether your repo has a stack yet, which is not a thing this file can see.
 #
 # Wire these up for your stack (lint, type-check, format-check, fast tests).
 # Serial:
