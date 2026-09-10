@@ -7,7 +7,7 @@
 - **Draft:** yes
 - **Merged:** _not merged_
 - **Created:** 2026-09-10T11:02:40Z
-- **Updated:** 2026-09-10T17:08:15Z
+- **Updated:** 2026-09-10T20:59:52Z
 - **Closed:** _not closed_
 - **Labels:** _none_
 
@@ -18,40 +18,48 @@
 ## Summary
 
 - **Adds `/detemplate`**, the lever the template-fork path was missing while every other stage of the loop had one (`/plan`, `/go`, `/finalize`, `/issue`, `/spinoff`). It takes the project brief as its argument and **routes through `/plan`** rather than acting directly, so the prune — a large, largely irreversible diff over a tree nobody has reviewed — is reviewed as a diff first. It **deletes itself last**, which is why nothing cites it as an `@`-reference: one would dangle afterwards in the tree of whoever just ran it.
-- **Recognizes a fork nobody has detemplated.** A session asked to build a feature in such a tree routes to the skill first, on the catalog's presence plus an `origin` that is not this repo — the same predicate `/spinoff` refuses on, and the clause that also stops a session pruning this repo itself. `/spinoff`'s refusal message now splits by origin: template button for the boilerplate, `/detemplate` for an unpruned fork. The standing notice lives in `CLAUDE.md`'s "About this project" stub, which the run rewrites, so it retires with the condition it describes.
-- **Converts the by-hand run's findings into procedure**: the load-bearing ordering that deletes `docs/catalog.md` **first** (flipping `check-skill-catalog.sh` assertion 4 to enforcing, and un-refusing `/spinoff`), `docs/img/`'s missing catalog row, the fork-side `lastSyncedSha` derivation git cannot give you, the absent `lineage` field, and per-group reverse closure as a new `docs/catalog.md` section.
-- **The vet contract gains its missing clause and a single home.** `scripts/vet.sh` already exits `0`, so a stackless fork works today — but the rule was stated in **five** places (one more than the plan counted: `CLAUDE.md` § "Stubs awaiting hydration" restated it verbatim), each telling an adopter to set `exit 1` with no exception for a repo that has no stack yet. A fork following that literally fails `/finalize` step 1 on every prose-only PR. `CLAUDE.md` § "Vetting" is now the home; the other four point at it.
-- **Open question 1 resolved on its recommendation (1a).** `/spinoff` Step 4 asserted a **non-zero** `vet.sh` on a seeded `main` that deliberately has no stack, which the clarified rule contradicts. It now asserts the honest pair: the script passes **and** names no stack-specific checks. The invariant it was protecting — that the stack and its checks arrive together in PR #1 — is restated as what must *not* happen: the caller's real `vet.sh` reaching `main`.
+- **The brief becomes the project's first issue.** A run deliberately writes no source, so without this the operator's description of what they are building survives only as a `CLAUDE.md` paragraph — a place to read it, not a place to work from. Step 5.5 files it through `/propose-issue` (skipped where the run drops G3), and Step 7 hands over a copyable `/issue #N <title>` for the session after this PR merges. A scarce brief makes a scarce issue: the step exists to *keep* what the operator said, not to interview them for more.
+- **Recognizes a fork nobody has detemplated, and the frontmatter is what does the routing.** The section describing the mechanism is only read *after* the description has sent someone there, so the description names the **repository** rather than the situation: a tree whose `origin` is not `vzakharov/agent-project-boilerplate` while this description exists is a fork to route, and the boilerplate settles that against the working directory in its own system prompt at no round-trip. A run deletes the skill, so those really are the only two cases. Both guards match the full `owner/repo` and never the substring `boilerplate`, which would refuse a legitimate `acme-boilerplate`. `/spinoff`'s refusal splits by the same signal, and `CLAUDE.md`'s "About this project" stub carries the standing notice for a session that never reads the skill list.
+- **`gh`'s absence becomes a litmus test for an unset environment setup script.** The session-start hook installs no `gh` — it shims one already on `PATH` — so where the setup script is unset or omits `apt-get install -y gh` there is nothing to shim, and every `gh`-dependent skill fails later, far from the cause. The hook now reports that into the session context (stdout, which Claude Code folds into context) naming what the operator must add and where, instead of a stderr line nobody reads. It needs no change to anyone's existing setup script, and `/override-gh` is the signal's home.
+- **Converts the by-hand run's findings into procedure**: the load-bearing ordering that deletes the catalog **first** (flipping `check-skill-catalog.sh` assertion 4 to enforcing, and un-refusing `/spinoff`), `docs/img/`'s missing catalog row, the fork-side `lastSyncedSha` derivation git cannot give you, the absent `lineage` field, and per-group reverse closure as a new catalog section. Two dispositions are pre-decided rather than asked: `/implement` goes (a tree one commit old has no handoff block old enough to say it), and so does this skill.
+- **The vet contract gains its missing clause and a single home.** `scripts/vet.sh` already exits `0`, so a stackless fork works today — but the rule was stated in **five** places, each telling an adopter to set `exit 1` with no exception for a repo that has no stack yet. A fork following that literally fails `/finalize` step 1 on every prose-only PR. `CLAUDE.md` § "Vetting" is now the home; the other four point at it, and it gains the **third stack-coupled site** no agent can move — the environment setup script, which a toolchain change leaves stale unless the report says what to paste in.
+- **Open question 1 resolved on its recommendation (1a).** `/spinoff` Step 4 asserted a **non-zero** `vet.sh` on a seeded `main` that deliberately has no stack, which the clarified rule contradicts. It now asserts the honest pair: the script passes **and** names no stack-specific checks, with the invariant restated as what must not happen — the source repo's own `vet.sh` reaching `main`.
 - `ADOPTING.md` § "Template fork" becomes a pointer at the skill, leaving the subset-adoption path whole for the agent that reads that file over the network with no skills installed. Its watermark recipe gains `lineage` and the fork-side SHA problem.
 - Finding 7 — the G5/G2 grouping defect — is out of scope here; it is #49.
 
 ## QA Checklist
 
-- [ ] `skill-reads` — read `.claude/skills/detemplate/SKILL.md` end to end and confirm the procedure is executable as written: Step 0's two-way refusal, Step 3's derivation, and Step 5's ordering with the catalog first and the self-deletion second-to-last
-- [ ] `spinoff-assert` — confirm the resolution of open question 1: `/spinoff` Step 4 now asserts `vet.sh` exits `0` while naming no stack-specific checks, with the real invariant restated as "the caller's real `vet.sh` must not reach `main`". Say if you wanted (b) or (c) instead
-- [ ] `vet-agree` — `grep -rn 'exit 1\|exits `0`' CLAUDE.md ADOPTING.md docs/catalog.md scripts/vet.sh` and confirm exactly one site states the rule (`CLAUDE.md` § "Vetting") and the rest point at it
+- [ ] `skill-reads` — read `.claude/skills/detemplate/SKILL.md` end to end and confirm the procedure is executable as written: Step 0's two-way refusal, Step 3's derivation, and Step 5's ordering with the catalog first, the issue at 5.5 and the self-deletion second-to-last
+- [ ] `issue-handoff` — confirm the Step 5.5 / Step 7 pair reads right: the issue carries the brief without interviewing for more, is skipped where G3 is dropped, and the handover block is `/issue #N <title>` for a *fresh* session after merge
+- [ ] `gh-litmus` — hide `gh` from `PATH` and run the hook (`PATH=<dir-without-gh> bash .claude/hooks/session-start.sh`): it prints the operator-facing notice, exits `0`, and does not block the session
+- [ ] `frontmatter-routes` — confirm `/detemplate` appears in a fresh session's skill list and that its description, read cold, sends an agent in a non-boilerplate tree to § "Recognizing an undetemplated fork" — while costing an agent in *this* repo nothing but a glance at its own working directory
+- [ ] `slug-exact` — `grep -rn 'boilerplate' .claude/skills/detemplate .claude/skills/spinoff CLAUDE.md` and confirm every guard matches the full `vzakharov/agent-project-boilerplate`, never the bare substring
+- [ ] `spinoff-assert` — confirm the resolution of open question 1: `/spinoff` Step 4 now asserts `vet.sh` exits `0` while naming no stack-specific checks. Say if you wanted (b) or (c) instead
+- [ ] `vet-agree` — `grep -rn 'exit 1\|exits `0`' CLAUDE.md ADOPTING.md .claude/skills/sync-agent-infra/catalog.md scripts/vet.sh` and confirm exactly one site states the rule (`CLAUDE.md` § "Vetting") and the rest point at it
 - [ ] `vet-behavior` — `bash scripts/vet.sh` still exits `0` here; `git diff origin/main..HEAD -- scripts/vet.sh` touches only comments and `echo` strings, no control flow
 - [ ] `no-dangle` — `grep -rn '@\.claude/skills/detemplate' .` returns nothing outside `docs/`, so the self-deletion cannot strand a pointer; `bash scripts/check-skill-catalog.sh` exits `0`
-- [ ] `skill-loads` — confirm `/detemplate` appears in a fresh session's skill list, and that its description matches an ordinary build request in an undetemplated tree rather than only the command
-- [ ] `closure-counts` — spot-check the counts in `docs/catalog.md` § "Reverse closure" against the tree: one `@`-reference into G6, six files of self-guarding bare-name prose, two live `@`-references to `watch-ci` in `/finalize`, two dead names in `/override-gh`
+- [ ] `closure-counts` — spot-check the counts in the catalog's § "Reverse closure" against the tree: one `@`-reference into G6, six files of self-guarding bare-name prose, two live `@`-references to `watch-ci` in `/finalize`, two dead names in `/override-gh`
 - [ ] `readme-route` — read `README.md` § "Create a new project from this template" and confirm the handover to `/detemplate <what you're building>` reads right for someone who has just clicked the template button
 
 | Item | Automatable | Covered? | Notes |
 |------|-------------|----------|-------|
 | `skill-reads` | manual-only | — | Judgement on whether a procedure is followable; no assertion expresses it |
+| `issue-handoff` | manual-only | — | Same: the shape of a handover is a reading, not an assertion |
+| `gh-litmus` | integration | ❌ | Runnable exactly as written, and run this session; nothing in the repo runs it on a schedule |
+| `frontmatter-routes` | manual-only | — | The harness loads skills; nothing in-repo can assert a description triggers |
+| `slug-exact` | unit | ❌ | Greppable, but the check is the grep in the item |
 | `spinoff-assert` | manual-only | — | The plan's one open question, implemented on its recommendation — reversible on request |
-| `vet-agree` | unit | ✅ | Greppable, but nothing asserts it — the check is the grep in the item |
+| `vet-agree` | unit | ❌ | Greppable, but nothing asserts it — the check is the grep in the item |
 | `vet-behavior` | unit | ✅ | `scripts/vet.sh` is itself the assertion; the diff is comment-only |
 | `no-dangle` | unit | ✅ | `scripts/check-skill-catalog.sh` assertion 1, which the vet run calls |
-| `skill-loads` | manual-only | — | The harness loads skills; nothing in-repo can assert the description triggers |
-| `closure-counts` | unit | ❌ | Greppable per group; re-verified by hand this run, and assertion 1 catches a dangling `@`-reference either way |
+| `closure-counts` | unit | ❌ | Greppable per group; assertion 1 catches a dangling `@`-reference either way |
 | `readme-route` | manual-only | — | Doc-audience judgement for a reader who is not in the repo yet |
 
 Closes #50
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-https://claude.ai/code/session_013ijQErk5wXVDHL36CDVGBC
+https://claude.ai/code/session_01BNJ1X97QtmDGa6VoGSMLze
 
 
 ---
@@ -81,30 +89,33 @@ the prune is reviewed as a diff before anything is deleted. Its
 ordering is load-bearing at one point: the catalog goes first, which
 flips `check-skill-catalog.sh` assertion 4 from listing the stubs to
 enforcing their prune. The watermark is derived from the fork's
-creation time, git having no ancestry to read where the single commit
-is unrelated to the source. The skill deletes itself last, so nothing
-cites it as an `@`-reference — one would dangle afterwards, in the
-tree of whoever just ran it. `ADOPTING.md` § "Template fork" becomes
-a pointer at it, and the catalog gains per-group reverse-closure
-counts plus the `docs/img/` row it never had.
+creation time, git having no ancestry where the single commit is
+unrelated to the source. The run writes no source, so the brief is
+filed as the project's first issue and handed back as `/issue #N`,
+rather than surviving only as a `CLAUDE.md` paragraph. The skill
+deletes itself last, so nothing cites it as an `@`-reference — one
+would dangle in the tree of whoever just ran it. `ADOPTING.md`
+§ "Template fork" becomes a pointer at it, and the catalog gains
+per-group reverse-closure counts and the `docs/img/` row it lacked.
 
-A session asked to build a feature in such a fork routes there first,
-on the catalog's presence plus an origin that is not this repo — the
-predicate `/spinoff` already refuses on, so its refusal splits by
-origin: the template button for the boilerplate, `/detemplate` for an
-unpruned fork. The standing notice lives in `CLAUDE.md`'s "About this
-project" stub, which the run rewrites, so it retires with the
-condition it describes.
+A session asked to build something in such a fork routes there first,
+and the frontmatter is what routes it: naming the boilerplate's
+literal `owner/repo` costs a reader nothing to check, where naming the
+situation would need judgement. `/spinoff` refuses on the same signal,
+splitting by it — the template button for the boilerplate,
+`/detemplate` for an unpruned fork — and `CLAUDE.md`'s "About this
+project" stub carries the notice for a session that never reads the
+skill list. The run rewrites that stub, retiring the notice with it.
 
 The vet contract gains its missing clause and a single home. Five
 places told an adopter to make `scripts/vet.sh` exit 1 until it runs
 real checks, with no exception for a repo that has no stack yet — so a
 fork following that literally fails `/finalize` step 1 on every
-prose-only PR, teaching the loop to route around the vet run. Exiting
-0 is right while the built-in checks are the whole run; `CLAUDE.md`
-§ "Vetting" states that once and the other four point at it. So does
-`/spinoff`'s seeded `main`, which now asserts a passing `vet.sh` that
-names no stack-specific checks.
+prose-only PR. `CLAUDE.md` § "Vetting" states the rule once, adds the
+environment setup script as the third site a stack change moves, and
+the other four point at it. The one part of that site detecting itself
+is `gh`: finding none to shim, the session-start hook now reports the
+missing setup script into the session context instead of onto stderr.
 
 Closes #50
 
@@ -120,7 +131,7 @@ _Generated by [Claude Code](https://claude.ai/code)_
 
 ## Review threads
 
-### `.claude/skills/detemplate/SKILL.md`:13 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:13 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -143,9 +154,17 @@ _Generated by [Claude Code](https://claude.ai/code)_
 
 why not just "end state is `/plan`'s"? where does `/issue` come in any of this?
 
+**@vzakharov** — 2026-09-10T17:51:57Z
+
+Right — corrected to `/plan`'s. `/issue` was a slip; it ends at `/plan`, not the other way round. Though your next comment does bring `/issue` in for real, one stage later. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/detemplate/SKILL.md`:10 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:10 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -177,6 +196,49 @@ the issue can we as detailed or as scarce as the user's request. If the informat
 so then, after detemplating, the skill can give the operator a copypastable block along the lines of "after merging this PR, create a new session and type `/issue #N <issue title>`".
 
 or maybe I'm overthinking it all, you let me know. real talk.
+
+
+**@vzakharov** — 2026-09-10T17:52:09Z
+
+Not overthinking — implemented as you described. Real talk on the one thing Id push back on and the one thing Id add:
+
+The core of it is right and it fixes a real hole. A run deliberately writes no source, so without the issue the brief survives only as a `CLAUDE.md` paragraph — a place to read it, not a place to work from.
+
+What Id push back on: nothing. The "dont interview them to pad it" clause is in, because thats where this would go wrong — an agent that treats the issue as a spec-gathering exercise turns a two-word brief into twenty questions.
+
+What Id add: it needs one condition. Step 1 already probes whether the repo tracks work as issues (G3); where it doesnt, filing one is wrong, so the brief stays in `CLAUDE.md` and the report says so.
+
+And the scarce-brief case composes better than you might expect: `/issue` already splits an over-broad issue when the scope demands, so "were writing an automatic job search app" as one issue is a legitimate input to the next session rather than a problem.
+
+Landed as Step 5.5 (file it via `/propose-issue`) plus a new Step 7 that hands over `/issue #N <title>` for the session after this PR merges. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
+**@vzakharov** — 2026-09-10T18:36:25Z
+
+> whether the repo tracks work as issues
+
+but it's a *new* repo, with *full* boilerplate copied. How can it work or not work with them? I'd say, it always does -- it's a different thing than when it's an existing repo with its own process. In this setup, to a degree, we can dictate the process (convention over configuration).
+
+**@vzakharov** — 2026-09-10T20:00:38Z
+
+Convinced, and it is worse than a preference — the probe was wrong. Step 1 ran `gh api repos/$R/issues?per_page=1 | length` to decide whether G3 travels, which on a tree one commit old always returns 0. So it concluded "this repo does not track work as issues" about the very repo Step 5.5 was about to file the first issue in.
+
+Your framing is the fix: the fork has no process to discover, it inherits this one's. `ADOPTING.md` asks that question of a repo with a history of its own, and I carried the question across without noticing the premise did not.
+
+So, convention over configuration:
+
+- the probe is gone from Step 1, with a note saying why a count measures the fork's age rather than its intent;
+- G3 travels by default and Step 5.5 files unconditionally;
+- an operator who plans in Linear or Jira **declines G3 at plan review** — a decision they state, in a diff they are already reading, rather than one the step infers behind them;
+- the catalog's G3 rule ("only if work is genuinely tracked as GitHub issues") keeps standing for a subset adopter and gains the fork's reversed default beside it.
+
+4f9b91f
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
 
 
 ---
@@ -214,6 +276,16 @@ or maybe I'm overthinking it all, you let me know. real talk.
 **@vzakharov** — 2026-09-10T16:49:12Z
 
 `override-gh` is already present for exactly saying that -- do you think it's needed as belts and braces?
+
+**@vzakharov** — 2026-09-10T17:52:21Z
+
+Agreed, it was redundant — cut. `/override-gh`s description is in every sessions skill list, so the generic restatement bought nothing. What stays is the fork-specific half, which `/override-gh` does *not* cover: a fresh fork is the one place `gh` may genuinely be absent.
+
+Same restatement exists in `/spinoff` and `/from-branch`. Left alone here to keep this PRs scope, but say the word and Ill sweep them. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
 
 ---
 
@@ -255,9 +327,21 @@ or maybe I'm overthinking it all, you let me know. real talk.
 
 doesn't the boilerplate provide the code pastable for operator in the setup script? can't there be a litmus test to see if it's not set and warn the operator? (This btw relates not just to this skill but generally running anything where override-gh is adopted.)
 
+**@vzakharov** — 2026-09-10T17:52:22Z
+
+Yes to both, and it turned out the litmus needs no setup-script change at all — `.claude/hooks/session-start.sh` is in-repo and already runs at session start.
+
+It installs no `gh`; it shims one already on `PATH`. So "no `gh` to shim" *is* the litmus: the setup script is unset or missing `apt-get install -y gh`. It used to print that to stderr and continue, which reaches nobody. It now prints to stdout — Claude Code folds a SessionStart hooks stdout into the session context — naming what the operator must add and where, and telling the agent to relay it.
+
+So no operator rewrites their script for the litmus to exist. As you say this is general, not `/detemplate`-specific: `/override-gh` is now its home ("absent that notice, `gh` is present and shimmed"), `ADOPTING.md` and the catalog point there, and `/detemplate` just points too. Verified by running the hook with `gh` hidden from `PATH`. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/detemplate/SKILL.md`:122 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:141 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -389,9 +473,17 @@ doesn't the boilerplate provide the code pastable for operator in the setup scri
 
 btw, let's make ditching the `/implement` stub pre-decided, without asking the operator
 
+**@vzakharov** — 2026-09-10T17:52:35Z
+
+Done — Step 4 now pre-decides it, no question to the operator. The reasoning it states: the catalogs "ask the operator" is about a repo that *shipped* `/implement` under its own history and may have live handoff blocks saying it. A tree one commit old cannot have one, so there is nothing to redirect. Added the fork clause to the catalog bullet too, so the two do not disagree. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/detemplate/SKILL.md`:148 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:148 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -549,9 +641,17 @@ btw, let's make ditching the `/implement` stub pre-decided, without asking the o
 
 how would it have any stack if it's a fork of the boilerplate itself? or are you envisioning the situation when someone did some work on a forked template before realizing they should've detemplated?
 
+**@vzakharov** — 2026-09-10T17:52:36Z
+
+The second one — someone pushed a stack before realising they should have detemplated first. Rewritten to say so: leaving the exit alone is *the normal case* (a fork taken to start a project has no stack), and wiring real checks is the exception for a tree that already grew one. It read as an even split before, which it is not. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/detemplate/SKILL.md`:157 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:191 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -718,9 +818,19 @@ how would it have any stack if it's a fork of the boilerplate itself? or are you
 
 ah, so here's where you right about it. I'm guessing we do need a litmus test, checked at the very beginning, and asked to rerun if not present. (Ideally we don't need to change the current setup script itself for the litmus to be present -- otherwise every operator will have to rewrite their script. Possible but better avoided.)
 
+**@vzakharov** — 2026-09-10T17:52:38Z
+
+This is where the previous thread landed — same fix, and it needs no change to anyones existing setup script. `.claude/hooks/session-start.sh` is in-repo, runs at session start, and finding no `gh` to shim now reports that into the session context instead of onto stderr. So the litmus is present for every adopter automatically, and the notice names the paste-able line and where the setting lives.
+
+Not "rerun if not present", though: the hook still exits 0 and the session continues. Refusing to start would block work that needs no `gh` at all, and the setup script only takes effect on a restart anyway — so the agent is told to relay it before running anything `gh`-dependent, which is where it actually bites. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/detemplate/SKILL.md`:184 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:219 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -914,9 +1024,19 @@ ah, so here's where you right about it. I'm guessing we do need a litmus test, c
 
 Yeah, again, at this point there's -- in the standard case -- no stack yet. But it's worth adding somewhere (not in this skill) for the agent to tell the user to change the setup script according to stack changes.
 
+**@vzakharov** — 2026-09-10T17:52:45Z
+
+Right, and that is now stated outside this skill. `CLAUDE.md` § "Vetting" already named `scripts/vet.sh` and the session-start hooks dependency install as the two sites that move when a stack lands; it now names the environment setup script as the third — the one no agent can move, so a toolchain change (new runtime, bumped pin, new system dependency, package-manager swap) is unfinished until the report says what the operator must add there.
+
+`/detemplate` itself keeps only the no-stack case as normal, per the thread above. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/detemplate/SKILL.md`:223 — unresolved
+### `.claude/skills/detemplate/SKILL.md`:276 — resolved
 
 ```diff
 @@ -0,0 +1,223 @@
@@ -1151,6 +1271,22 @@ To read this, the agent needs to use the skill -- which won't be used unless the
 
 The risk ofc is that the agent working in the boilerplate repo *by intent* -- as we're doing now -- might be overly cautious and read this anyway, probably concluding the right thing, but spending an expensive round trip on that. Can we dogfood? Do you see it's the boilerplate repo in your basic system prompt, or do you need additional actions to figure out "where you are"?
 
+**@vzakharov** — 2026-09-10T17:52:57Z
+
+Dogfooded, and the answer is good: **yes, I can see it from the system prompt, no tool call.** This sessions prompt carries `Primary working directory: /home/user/agent-project-boilerplate` and a repository-scope line naming `vzakharov/agent-project-boilerplate`. So the boilerplate-by-intent case costs nothing — I read the description, check the path already in front of me, and move on. Worst case (a local session with an ambiguous cwd) it is one `git remote -v`, not a round trip to you.
+
+That is what makes your version work, so the frontmatter now screams it — but keyed on the **repository**, not the situation:
+
+> A run deletes this skill, so this description exists in exactly two places: the boilerplate itself, and a fork nobody has detemplated. If the repository you are in is not `vzakharov/agent-project-boilerplate`, load this skill and read § "Recognizing an undetemplated fork" before doing anything else, whatever you were asked.
+
+Naming the repo rather than the situation is what keeps the false-positive cheap: "is this an undetemplated fork?" needs judgement, `owner/repo != literal` does not. And the self-deletion is what makes the premise hold — the description cannot exist in a detemplated tree, so those really are the only two cases.
+
+You are right that the section itself was doing no routing work. It now says so and stops explaining itself: it is what gets read *after* the description sent someone there, which is why the description has to carry the trigger. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
 ### `.claude/skills/spinoff/SKILL.md`:38 — unresolved
@@ -1189,9 +1325,17 @@ The risk ofc is that the agent working in the boilerplate repo *by intent* -- as
 
 is "the boilerplate" unambiguous enough? We sure a legit adopting project having "boilerplate" in its name won't get false-positived?
 
+**@vzakharov** — 2026-09-10T17:53:08Z
+
+Good catch — it was not unambiguous, and `acme-boilerplate` is exactly the false positive. Both guards now name the full `vzakharov/agent-project-boilerplate` and say outright to match `owner/repo`, never the substring `boilerplate`. `/detemplate` Step 0 gets the same clause, since the two partition on one signal and a mismatch there would be worse — it would prune the wrong tree rather than merely refuse. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
 ---
 
-### `.claude/skills/spinoff/SKILL.md`:299 — unresolved
+### `.claude/skills/spinoff/SKILL.md`:299 — resolved
 
 ```diff
 @@ -278,13 +290,17 @@ Three consequences, each stated by a check rather than by taste:
@@ -1218,9 +1362,96 @@ is "the boilerplate" unambiguous enough? We sure a legit adopting project having
 
 who's the "caller" again in this discourse? trying to figure out what this paragraph means.
 
+**@vzakharov** — 2026-09-10T17:53:09Z
+
+The adopter you invoked `/spinoff` from — defined 260 lines earlier, which is too far to carry. Rewritten to "the source repos own `vet.sh`", with the gloss "the working one you are standing in, which runs its lint, types and tests", so the sentence stands on its own.
+
+The paragraph means: do not copy that script onto the new repos `main`. `main` has no stack yet, so a real `vet.sh` there would certify checks against code that does not exist — green, and meaningless, until PR #1 lands. Also dropped the trailing "the seed refuses nothing because it has nothing to refuse", which was making the same point a third time. 2c64122
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+
+---
+
+### `.claude/skills/detemplate/SKILL.md`:67 — unresolved
+
+```diff
+@@ -60,14 +64,21 @@ needs probing, and is decidable by inspection:
+ git remote -v                                  # Step 0's origin clause, and the fork's name
+ gh api "repos/$R" --jq .default_branch         # the trunk G2 assumes
+ gh api "repos/$R" --jq .allow_squash_merge     # does the squash discipline apply?
+-gh api "repos/$R/issues?per_page=1" --jq length        # is work tracked as issues? (G3)
+ gh api "repos/$R/actions/workflows" --jq .total_count  # is there CI? (G5)
+```
+
+**@vzakharov** — 2026-09-10T20:49:22Z
+
+again, no actions can be here for the same reason we removed issues: it's been just templated from the boilerplate repo. pls sweep for similar misunderstandings.
+
+**@vzakharov** — 2026-09-10T20:59:37Z
+
+Right, and worse than a repeat — this one is zero *structurally*, not just early: the boilerplate ships no `.github/` at all, so a template copy carries none and `actions/workflows` returns 0 in every fresh fork forever. The step read that as "no CI" and dropped G5 on a repo that has had no chance to have any.
+
+The sweep, and the test it produced. A probe here **reads a setting, never a count**:
+
+- `default_branch`, `allow_squash_merge` — kept. They have values on the fork's first day, chosen by whoever created it or inherited from their org's defaults, and they gate what the loop *may* do rather than describing what the repo has done.
+- open issues (G3), registered workflows (G5) — both gone. Counts, zero for reasons about the fork's age, handed back as if they were your intent.
+
+So G3 and G5 both travel by default now, declined at plan review. For G5 that costs a fork with no CI yet only the files: its skills wait for a workflow rather than requiring one.
+
+Two more the sweep turned up, both fixed in the same commit:
+
+- Step 6 still quoted the session-start hook's *old* stderr one-liner and called the missing shim silent — stale as of this PR's own hook change, which reports into the session context.
+- `/spinoff`'s `main`-floor rule, which is your other comment — answered there.
+
+Checked and left alone: Step 4's `/implement` disposition and Step 5.7's `vet.sh` clause already reason from the fork's age in the right direction, and the G4/G6 questions are asked as prose rather than probed.
+
+930c660
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+---
+
+### `.claude/skills/spinoff/SKILL.md`:305 — unresolved
+
+```diff
+@@ -296,11 +298,11 @@ Three consequences, each stated by a check rather than by taste:
+   making is the pair: the script passes **and** it names no stack-specific
+   checks. A non-zero exit here would be a `main` whose `/finalize` cannot pass
+   for a reason the contract calls legitimate.
+-  **What must not happen is the caller's real `vet.sh` reaching `main`** —
+-  carried across, it certifies a stack that is not there yet, and the false green
+-  sits unchallenged until PR #1 lands. The step's invariant is that PR #1 is
+-  where the stack and its checks arrive together; the seed refuses nothing
+-  because it has nothing to refuse.
++  **What must not happen is the source repo's own `vet.sh` reaching `main`** —
++  the working one you are standing in, which runs its lint, types and tests.
++  Carried across, it certifies a stack the target does not have yet, and the
++  false green sits unchallenged until PR #1 lands. The target's stack and the
++  checks over it arrive together, in PR #1, or not at all.
+```
+
+**@vzakharov** — 2026-09-10T20:53:22Z
+
+So what happens then? The new repo's `main` always reds until pr1 lands?
+
+**@vzakharov** — 2026-09-10T20:59:52Z
+
+Yes — and that's the bug in the sentence: it names the wrong symptom. Carried across, the source's `vet.sh` doesn't certify a stack that isn't there, it *fails* on it — `pnpm lint` with no `package.json`, `cargo clippy` with no `Cargo.toml`. So the new repo's `main` reds from the moment it is seeded and every PR against it opens red until something lands the stack. No false green anywhere; the rule is right, the reason given for it wasn't.
+
+Which also makes it the *same* defect as the bullet just above rather than a different one — a `main` whose `/finalize` cannot pass for a reason the contract calls legitimate — just reached from the other side. Rewritten to say that.
+
+930c660
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
 ---
 
 ## Timeline (status, references, and other events)
 
 - **2026-09-10T11:43:06Z** @vzakharov renamed from «feat: #50 plan a skill for the template-fork path» to «feat: #50 give the template-fork path a detemplating skill».
 - **2026-09-10T17:08:15Z** @vzakharov reviewed (COMMENTED): https://github.com/vzakharov/agent-project-boilerplate/pull/52#pullrequestreview-5169852179.
+- **2026-09-10T20:54:20Z** @vzakharov reviewed (COMMENTED): https://github.com/vzakharov/agent-project-boilerplate/pull/52#pullrequestreview-5172134176.
