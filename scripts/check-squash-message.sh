@@ -141,6 +141,17 @@ is_blank() {
   esac
 }
 
+# The caps are terminal columns, so they count characters — but `${#line}`
+# counts bytes under `dash`, and under `bash` outside a UTF-8 locale, which
+# agrees only while the message is ASCII. Deleting UTF-8 continuation bytes
+# (`10xxxxxx`) leaves one byte per character. `wc -m` is the other route and is
+# worse: it reports bytes under `LC_ALL=C` and otherwise needs a UTF-8 locale
+# present under a name that differs between glibc and macOS.
+char_len() {
+  s=$(printf '%s' "$1" | LC_ALL=C tr -d '\200-\277')
+  printf '%s' "${#s}"
+}
+
 # True when the line still holds whitespace once its own indent and any trailing
 # spaces are gone — i.e. it is more than one unwrappable token and so had a
 # wrapped form available to it.
@@ -193,9 +204,10 @@ while IFS= read -r line || [ -n "$line" ]; do
       continue
     fi
     title_lines=$((title_lines + 1))
-    [ "${#line}" -le "$title_widest" ] || title_widest=${#line}
-    if [ "${#line}" -gt "$TITLE_MAX_CHARS" ]; then
-      title_over="${title_over}${NL}    ${#line} chars: ${line}"
+    len=$(char_len "$line")
+    [ "$len" -le "$title_widest" ] || title_widest=$len
+    if [ "$len" -gt "$TITLE_MAX_CHARS" ]; then
+      title_over="${title_over}${NL}    ${len} chars: ${line}"
     fi
     continue
   fi
@@ -222,10 +234,11 @@ while IFS= read -r line || [ -n "$line" ]; do
   # Exempt lines stay out of the widest-line figure, so a passing run never
   # reports a width above the cap.
   if is_wrappable "$line"; then
-    [ "${#line}" -le "$body_widest" ] || body_widest=${#line}
-    if [ "${#line}" -gt "$BODY_MAX_WIDTH" ]; then
+    len=$(char_len "$line")
+    [ "$len" -le "$body_widest" ] || body_widest=$len
+    if [ "$len" -gt "$BODY_MAX_WIDTH" ]; then
       body_over_count=$((body_over_count + 1))
-      body_over="${body_over}${NL}    line ${body_lines} (${#line} chars): ${line}"
+      body_over="${body_over}${NL}    line ${body_lines} (${len} chars): ${line}"
     fi
   fi
 done <"$SRC_FILE"
