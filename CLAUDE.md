@@ -112,7 +112,7 @@ Use semantic commit prefixes:
 - `ci:` — CI/CD changes
 - `perf:` — performance improvements
 
-**In this repo the agent loop is the product, so a change to it is `feat:` / `fix:` — never `docs:`, however Markdown-shaped the diff.** What an adopting project takes from here _is_ the loop, so a new skill, a changed procedure, a new convention or a corrected rule is a behavior change to the thing this repo ships. That covers `.claude/skills/**`, `.claude/rules/**`, this file's own conventions, and the `scripts/` the skills call. `docs:` is left for prose **about** the repo that no session executes: `README.md`, `docs/catalog.md` rows, tombstones, and the working artifacts (`docs/issue/`, `docs/plans/`, `docs/remove-before-merging/`) that `/finalize` sweeps before they land.
+**In this repo the agent loop is the product, so a change to it is `feat:` / `fix:` — never `docs:`, however Markdown-shaped the diff.** What an adopting project takes from here _is_ the loop, so a new skill, a changed procedure, a new convention or a corrected rule is a behavior change to the thing this repo ships. That covers `.claude/skills/**`, `.claude/rules/**`, this file's own conventions, and the `scripts/` the skills call. `docs:` is left for prose **about** the repo that no session executes: `README.md`, catalog rows, tombstones, and the working artifacts (`docs/issue/`, `docs/plans/`, `docs/remove-before-merging/`) that `/finalize` sweeps before they land.
 
 **Adopters invert this, so delete the rule when you adopt.** In a project with a stack of its own, these same files are infrastructure rather than the product — a skill edit there is `docs:` or `chore:` under that project's convention, and reading this rule as written would label every procedure tweak a feature of the wrong product.
 
@@ -193,7 +193,7 @@ it protects: the skills are densely cross-referenced, and a
 `@.claude/skills/<name>/SKILL.md` pointer to a file that isn't there fails
 **silently** — the agent follows the surviving prose and skips the step it
 couldn't load. The script also asserts that every skill has exactly one row in
-`docs/catalog.md`, which is what keeps that inventory from drifting as skills
-are added.
+`.claude/skills/sync-agent-infra/catalog.md`, which is what keeps that inventory
+from drifting as skills are added.
 
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
