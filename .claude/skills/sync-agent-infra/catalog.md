@@ -151,6 +151,11 @@ Adopt on top of G2, and only if work is genuinely tracked as GitHub issues. If
 you plan in Linear, Jira or a doc, decline the group and record why in
 `upstream.json`'s `declined` map so re-sync stops offering it.
 
+**A fork reverses the default.** The rule above weighs the group against a
+process the repo already has; a whole-tree fork has none and inherits this
+one's, so `/detemplate` keeps G3 unless the operator says otherwise — and files
+the project's first issue on the way through.
+
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `/issue` | Export and read a GitHub issue, split it into natively-linked sub-issues when the scope demands, then hand the work to `/pr`. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr`, `/plan` (G2) | adopt |

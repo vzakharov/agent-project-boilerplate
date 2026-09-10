@@ -64,13 +64,20 @@ needs probing, and is decidable by inspection:
 git remote -v                                  # Step 0's origin clause, and the fork's name
 gh api "repos/$R" --jq .default_branch         # the trunk G2 assumes
 gh api "repos/$R" --jq .allow_squash_merge     # does the squash discipline apply?
-gh api "repos/$R/issues?per_page=1" --jq length        # is work tracked as issues? (G3)
 gh api "repos/$R/actions/workflows" --jq .total_count  # is there CI? (G5)
 ```
 
 **Use the REST form throughout** — `gh <noun> <verb> --json` is GraphQL and 403s
 in a proxied session before the shim is installed, which is the state a fresh
 fork starts in.
+
+**Nothing here probes whether the repo tracks work as issues, because the fork
+has no process to discover — it inherits the loop's.** `ADOPTING.md` asks that
+of a repo with a history of its own; a fork one commit old has none, and a
+count of its issues measures its age rather than its intent. So G3 travels by
+default and Step 5.5 files the first issue unconditionally. Convention over
+configuration: an operator who tracks work in Linear or Jira declines G3 during
+plan review, which is a decision they state, not one this step infers.
 
 **The stack, including "no stack yet."** That is the normal state of a fork taken
 to start a project, and the state `CLAUDE.md` § "Vetting"'s no-stack-yet clause
@@ -157,9 +164,9 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    brief, any spec the operator attached, and any answer they gave for the
    prune's sake that also describes the product. A scarce brief makes a scarce
    issue: the issue exists to *keep* what they said, not to elicit more, and
-   `/issue` splits an over-broad one when the next session gets there. Skip it
-   only where the run drops G3 — work is not tracked as issues there, so the
-   `CLAUDE.md` brief is the whole record and the report says so.
+   `/issue` splits an over-broad one when the next session gets there. The only
+   thing that cancels this is the operator declining G3 at plan review (Step 1),
+   and then the `CLAUDE.md` brief is the whole record and the report says so.
 6. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
    markers: the banner and the `STUB` in its frontmatter description. Assertion 4
    fails a half-cleared pair.
