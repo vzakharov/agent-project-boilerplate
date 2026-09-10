@@ -20,12 +20,12 @@ plans and issue exports published for review.
 Two further groups are stated rather than asked, a session having to
 settle them with nobody present and neither varying by project.
 Agent-facing files — CLAUDE.md, .claude/skills/**, .claude/rules/**,
-code — are English, the skills citing each other's headings and
-matching some strings literally, so translating them breaks the loop
-rather than localizing it. Conversation follows whatever language the
-exchange opened in, an exchange being no standing artifact. Either is
-a project's to override, but an override is a decision someone makes,
-not a blank left open.
+code — are English, the reader there being the model: it follows
+English most reliably, and other scripts spend several times the
+tokens saying the same thing. Conversation answers each message in
+the language that message was written in, a reply being no standing
+artifact. Either is a project's to override, but an override is a
+decision someone makes, not a blank left open.
 
 That makes the section fill-only rather than deletable: the two stated
 groups live in it, so an English-only project writes "English" on the

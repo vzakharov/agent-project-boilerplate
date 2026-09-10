@@ -167,12 +167,14 @@ reading this rather than by asking:
   and the plans and issue exports published for review. It goes in the language
   **the team** reads, which is not automatically the one a given session runs in.
 - **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**`,
-  and code: comments, docstrings, identifiers. The skills cite each other's
-  headings and match some strings literally, so translating them breaks the loop
-  rather than localizing it.
-- **Conversation — the language the exchange opened in.** Session replies, issue
-  and PR comments, review replies. No standing artifact, so each follows the
-  person asking rather than a project-wide answer.
+  and code: comments, docstrings, identifiers. The reader here is the model: it
+  follows English instructions most reliably, and other scripts spend several
+  times the tokens saying the same thing — a cost every session pays on every
+  load.
+- **Conversation — the language it was asked in.** Session replies, issue and PR
+  comments, review replies. No standing artifact, so each reply matches the
+  message it answers: the same person writes in one language here and another
+  there, and expects each answer back in kind.
 
 The last two are still this project's to override — a team that wants its skills
 in its own language writes that here — but an override is a decision someone

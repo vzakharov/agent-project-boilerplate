@@ -33,12 +33,11 @@ Then three groups, of which only the first is a question:
   plans and issue exports published for review. It takes the language **the
   team** reads, which is not automatically the one a given session runs in.
 - **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`,
-  `.claude/rules/**`, and code. The skills cite each other's headings and match
-  some strings literally, so translating them breaks the loop rather than
-  localizing it.
-- **Conversation — the language the exchange opened in.** Session replies, issue
-  and PR comments, review replies. No standing artifact, so each follows the
-  person asking.
+  `.claude/rules/**`, and code. The reason is token economy and how reliably the
+  model follows what it reads, not any property of the skills themselves.
+- **Conversation — the language it was asked in.** Session replies, issue and PR
+  comments, review replies. No standing artifact, so each reply matches the
+  message it answers — per message, not per person.
 
 The last two are stated rather than asked, and a session settles them by reading
 the section. They remain overridable — a team that wants its skills in its own
