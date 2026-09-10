@@ -14,30 +14,33 @@ the prune is reviewed as a diff before anything is deleted. Its
 ordering is load-bearing at one point: the catalog goes first, which
 flips `check-skill-catalog.sh` assertion 4 from listing the stubs to
 enforcing their prune. The watermark is derived from the fork's
-creation time, git having no ancestry to read where the single commit
-is unrelated to the source. The skill deletes itself last, so nothing
-cites it as an `@`-reference — one would dangle afterwards, in the
-tree of whoever just ran it. `ADOPTING.md` § "Template fork" becomes
-a pointer at it, and the catalog gains per-group reverse-closure
-counts plus the `docs/img/` row it never had.
+creation time, git having no ancestry where the single commit is
+unrelated to the source. The run writes no source, so the brief is
+filed as the project's first issue and handed back as `/issue #N`,
+rather than surviving only as a `CLAUDE.md` paragraph. The skill
+deletes itself last, so nothing cites it as an `@`-reference — one
+would dangle in the tree of whoever just ran it. `ADOPTING.md`
+§ "Template fork" becomes a pointer at it, and the catalog gains
+per-group reverse-closure counts and the `docs/img/` row it lacked.
 
-A session asked to build a feature in such a fork routes there first,
-on the catalog's presence plus an origin that is not this repo — the
-predicate `/spinoff` already refuses on, so its refusal splits by
-origin: the template button for the boilerplate, `/detemplate` for an
-unpruned fork. The standing notice lives in `CLAUDE.md`'s "About this
-project" stub, which the run rewrites, so it retires with the
-condition it describes.
+A session asked to build something in such a fork routes there first,
+and the frontmatter is what routes it: naming the boilerplate's
+literal `owner/repo` costs a reader nothing to check, where naming the
+situation would need judgement. `/spinoff` refuses on the same signal,
+splitting by it — the template button for the boilerplate,
+`/detemplate` for an unpruned fork — and `CLAUDE.md`'s "About this
+project" stub carries the notice for a session that never reads the
+skill list. The run rewrites that stub, retiring the notice with it.
 
 The vet contract gains its missing clause and a single home. Five
 places told an adopter to make `scripts/vet.sh` exit 1 until it runs
 real checks, with no exception for a repo that has no stack yet — so a
 fork following that literally fails `/finalize` step 1 on every
-prose-only PR, teaching the loop to route around the vet run. Exiting
-0 is right while the built-in checks are the whole run; `CLAUDE.md`
-§ "Vetting" states that once and the other four point at it. So does
-`/spinoff`'s seeded `main`, which now asserts a passing `vet.sh` that
-names no stack-specific checks.
+prose-only PR. `CLAUDE.md` § "Vetting" states the rule once, adds the
+environment setup script as the third site a stack change moves, and
+the other four point at it. The one part of that site detecting itself
+is `gh`: finding none to shim, the session-start hook now reports the
+missing setup script into the session context instead of onto stderr.
 
 Closes #50
 
