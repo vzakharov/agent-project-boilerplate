@@ -36,7 +36,8 @@ Two ways in. Pick the one that matches how you got here:
   selection.
 
 Both converge on the [shared tail](#shared-tail-both-modes), which is where the
-four steps they have in common are written once.
+four steps they have in common are written once. The fork route reaches it
+through a skill rather than by reading on — see that section below.
 
 ## Adopt into an existing repo
 
@@ -216,23 +217,25 @@ Then continue to the shared tail.
 
 *"Use this template"* already gave you every file, so there is nothing to select
 and nothing to clone — your work is removing what doesn't apply and hydrating
-what does.
+what does. That means deleting the [`never`
+rows](.claude/skills/sync-agent-infra/catalog.md#never) that
+describe the template, pruning the groups this project won't use and stripping
+the `@`-references pointing into them, hydrating or deleting the [G6
+stubs](.claude/skills/sync-agent-infra/catalog.md#g6--stack-stubs), and filling in the stubs the
+[shared tail](#shared-tail-both-modes) names. It is a large, largely
+irreversible diff over a tree nobody has reviewed.
 
-1. **Delete the `never` rows.** `README.md` (replace it with your project's),
-   `ADOPTING.md`, `.claude/skills/sync-agent-infra/catalog.md`, and anything
-   under `docs/plans/` or `docs/remove-before-merging/` — see the [Never
-   rows](.claude/skills/sync-agent-infra/catalog.md#never). They describe or
-   maintain the template.
-2. **Prune the groups you don't need**, using the catalog exactly as the
-   subset-adoption path does — the criteria are the same, you are just deleting
-   instead of copying. Resolve the closure in reverse: if you delete a group,
-   strip the `@`-references pointing into it.
-3. **Fill in the "About this project" stub** at the top of `CLAUDE.md`.
-4. **Implement dep-install in `.claude/hooks/session-start.sh`** so remote
-   sessions start with a current `node_modules` / `venv` / equivalent — the stub
-   noted in its [G4 row](.claude/skills/sync-agent-infra/catalog.md#g4--remote-session-plumbing).
+**In the fork, that whole run is `/detemplate <what you're building>`** — a
+skill the template ships, which routes through `/plan` so the pruning is
+reviewed as a diff before anything is deleted, and deletes itself once the tree
+is a project. The procedure lives there rather than here because a fork's form
+of it differs from the subset path's at three points a shared statement could
+only hedge: the watermark SHA has no clone to read, `scripts/vet.sh` takes its
+no-stack-yet state rather than an adopter's `exit 1`, and the catalog has to go
+*first* so the stub prune is enforced by the vet run instead of remembered.
 
-Then continue to the shared tail.
+So there is nothing to apply by hand from here: open a session in your new fork
+and run that command.
 
 ## Shared tail (both modes)
 
@@ -264,14 +267,15 @@ only for the checks that failed:
 exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
 ```
 
-The shipped stub **exits `0`**, which is true only of the boilerplate — a repo of
-prose and shell with nothing else to check. **In your repo this file exits `1`
-until it runs the commands above.** An exit-0 stub over a real stack is worse
-than no script: `/finalize` passes step 1 and attests to a vet run that checked
-nothing, and a false green is harder to notice than a loud stop. This is why the
-file is a
-[`rewrite`](.claude/skills/sync-agent-infra/catalog.md#three-dispositions-not-two) rather than a choice, for
-[the reason the catalog gives](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional).
+**What it must exit is [`CLAUDE.md` § "Vetting"](CLAUDE.md#vetting)'s contract,
+and that section is its home** — read it there, because the exit turns on a
+condition the shipped stub cannot show you. What is at stake at this step: an
+exit-0 stub over a real stack makes `/finalize` pass step 1 and attest to a vet
+run that checked nothing, and a false green is harder to notice than a loud
+stop. That is why the file is a
+[`rewrite`](.claude/skills/sync-agent-infra/catalog.md#three-dispositions-not-two)
+rather than a choice, for [the reason the catalog
+gives](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional).
 
 Two lines in `vet.sh` — the calls to `scripts/check-skill-catalog.sh` and
 `scripts/check-squash-message.sh` — are not stack-specific, so decide each
@@ -305,6 +309,7 @@ delete the skill rather than carrying it unhydrated.
   "repo": "vzakharov/agent-project-boilerplate",
   "lastSyncedSha": "<this repo's HEAD at the moment you cloned it>",
   "lastSyncedAt": "<YYYY-MM-DD>",
+  "lineage": [{ "repo": "vzakharov/agent-project-boilerplate", "atSha": "<the same sha>" }],
   "adopted": ["CLAUDE.md", ".claude/skills/pr/", "scripts/check-merge.sh"],
   "declined": { ".claude/skills/issue/": "we track work in Linear, not GitHub issues" }
 }
@@ -314,10 +319,26 @@ delete the skill rather than carrying it unhydrated.
 - `lastSyncedSha` is the HEAD you cloned (`git -C <scratchpad>/boilerplate rev-parse HEAD`).
   Recording it now is what makes the *next* sync a small diff instead of a
   re-triage of everything.
+- `lineage` is where your repo *started*, and it is the field a hand-filled
+  watermark loses. It starts equal to `lastSyncedSha` and diverges permanently on
+  your first sync, which advances `lastSyncedSha` and leaves `lineage[0].atSha`
+  alone — so that first sync overwrites the only other trace of the birth point.
+  Write it now, in the same breath.
 - `adopted` lists what you actually took, at whatever granularity is true —
   directories or files.
 - `declined` maps path → why-not. Fill this in as you go; it is what keeps
   re-sync quiet.
+
+**A template fork has no clone to read the SHA out of.** Its single commit has no
+ancestry in this repo, so `rev-parse HEAD` names a commit that exists nowhere
+here. Derive the mark from the fork's creation time instead — the newest source
+commit at or before it:
+
+```bash
+gh api repos/<owner>/<fork> --jq .created_at
+gh api repos/vzakharov/agent-project-boilerplate/commits --paginate \
+  --jq '.[] | [.sha, .commit.committer.date] | @tsv'
+```
 
 **A decline is not a verdict for all time**, which is why the map stores a reason
 rather than a bare list. Most declines are conditional — *no CI yet*, *work isn't
@@ -357,9 +378,10 @@ So the deliverable for this step is **text in your report** that the operator ca
 paste into that setting. Two things make it worth the paragraph:
 
 - **It is where `gh` comes from.** `apt-get install -y gh` belongs in it. Without
-  `gh` on `PATH`, G4's hook prints `gh not found on PATH; skipping gh proxy shim`
-  and continues — so the shim silently never installs and every `gh`-dependent
-  skill fails later, far from the cause.
+  `gh` on `PATH`, G4's hook cannot install the shim, and every `gh`-dependent
+  skill fails later, far from the cause — so the hook reports the absence into
+  the session context, which is the litmus test for a setup script that is unset
+  or missing the install. It is the only part of this step that detects itself.
 - **It is the only place the toolchain version can be pinned** for remote
   sessions, and `scripts/vet.sh` running under the wrong one is a confusing
   failure.
