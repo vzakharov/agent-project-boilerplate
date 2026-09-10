@@ -27,12 +27,14 @@ copyable command that opens the next session in the new repo.
 
 ## Two invariants
 
-**Not from the boilerplate.** If the caller has `docs/catalog.md`, **stop** and
-point at that repo's `README.md` § "Create a new project from this template".
-The catalog is what a tree has when it *is* the boilerplate or an unpruned copy
-of one, and in either case a spinoff is the wrong operation — the template route
-plus `ADOPTING.md` produce a project, and that pruned result is a legitimate
-caller here later.
+**Not from the boilerplate.** If the caller has a catalog — glob
+`.claude/skills/*/catalog.md`, don't test the canonical
+`.claude/skills/sync-agent-infra/catalog.md`, since an adopter renames that
+directory after *its* own source — **stop** and point at that repo's `README.md`
+§ "Create a new project from this template". The catalog is what a tree has when
+it *is* the boilerplate or an unpruned copy of one, and in either case a spinoff
+is the wrong operation — the template route plus `ADOPTING.md` produce a project,
+and that pruned result is a legitimate caller here later.
 
 **The caller is read-only.** No commit, branch, PR or issue lands in it. It is a
 source of files and a source of the watermark; every artifact this skill produces
@@ -53,9 +55,9 @@ use `git -C <clone>`, in every command meant to run in the target.
 
 ## Step 1 — Read the caller
 
-Read the caller at HEAD, starting with the refusal: **`docs/catalog.md` present
-→ stop**, per § "Not from the boilerplate" above. Otherwise two things come out
-of the tree:
+Read the caller at HEAD, starting with the refusal: **any
+`.claude/skills/*/catalog.md` present → stop**, per § "Not from the boilerplate"
+above. Otherwise two things come out of the tree:
 
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by its watermark
@@ -212,8 +214,12 @@ which bucket a path is in but **whether it arrives already reviewed**, and Step 
 already sorted every travelling path into a copy or a rewrite:
 
 - **Copies → `main`.** Reviewed where they came from, travelling unchanged:
-  `.claude/skills/**`, the `.claude/rules/` that survived the triage, the
-  `scripts/` the loop's own skills call, the editor config.
+  `.claude/skills/**` except
+  [`sync-agent-infra/catalog.md`](../sync-agent-infra/catalog.md), the
+  `.claude/rules/` that survived the triage, the `scripts/` the loop's own skills
+  call, the editor config. That exception is redundant with § "Two invariants" —
+  a well-formed caller has no catalog at all — and is kept so a leaked copy
+  cannot travel.
 - **Rewrites → PR #1.** New work written for a repo nobody has looked at yet:
   `CLAUDE.md`, `README.md`, `vet.sh`, the lint and formatter configuration, the
   dependency declaration, the deploy config, the session-start hook's
@@ -266,7 +272,7 @@ Three consequences, each stated by a check rather than by taste:
   in PR #1.** A hydrated `/release` encodes the *caller's* deploy setup, so it is
   a rewrite by Step 2's criterion even though it sits in `.claude/`: per-target
   editability decides its home, not the directory. **Do not re-stub it onto
-  `main`.** The target has no `docs/catalog.md`, and without one assertion 4
+  `main`.** The target has no catalog, and without one assertion 4
   reads a stub as a stowaway to hydrate or delete rather than as shipped
   inventory — so re-stubbing is the single disposition that fails the gate, where
   both leaving it out and carrying it hydrated pass. Under a mismatched stack the

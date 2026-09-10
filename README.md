@@ -9,7 +9,8 @@ compose into a plan → implement → PR → land loop, the path-scoped `.claude
 mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
 scripts behind it all.
 
-Per-item descriptions live in **[`docs/catalog.md`](docs/catalog.md)** — one row
+Per-item descriptions live in
+**[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md)** — one row
 per skill, script and file, grouped so you can tell how much of it you need:
 
 | Group | What it covers |
