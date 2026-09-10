@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-feat: give the catalog a collision-proof path (pr #47)
+feat: move the catalog off a path an adopter can own (pr #47)
 ```
 
 ```
@@ -9,22 +9,25 @@ feat: give the catalog a collision-proof path (pr #47)
 might already own: the inventory of this repo's agent infrastructure,
 and the sentinel that tells `scripts/check-skill-catalog.sh` and
 `/spinoff` whether they are standing in the source repo. A product
-catalog at that path flipped assertion 4 from "an unhydrated stub is a
-stowaway" to "stubs are shipped inventory" — silently, so a skill
-written for another project's deploy path cleared the vet run.
+catalog at that path takes the skill checks over an unrelated table
+and flips the stub assertion from "an unhydrated stub is a stowaway"
+to "stubs are shipped inventory".
 
-The catalog is now `docs/agent-infra-catalog.md`, with the script
-constant, the adoption docs and the four skills that cite it
-repointed. It stays under `docs/`, which no acquisition step copies:
-that is what makes its absence downstream structural rather than a
-prune someone has to remember, and it is why the file does not move
-into a skill directory, where every wholesale `.claude/skills/**` copy
-would carry the sentinel along to the target.
+The inventory now lives at
+`.claude/skills/sync-agent-infra/catalog.md`, namespaced where nothing
+but this infrastructure can claim it, beside the skill that reads it
+from a clone on every sync. That home puts it inside the tree
+acquisition copies wholesale, so the two steps that do the copying —
+`/spinoff`'s seed of the target's `main` and `ADOPTING.md`'s copy
+step — exclude it by name, and the file opens with a banner saying it
+is never vendored and should be deleted wherever it turns up
+downstream.
 
-Presence still answers both questions with one file. A fork that keeps
-shipping stubs genuinely has a catalog, so a separate marker would add
-a file to prune — and an omitted prune fails the same silent way this
-change removes.
+A copy that leaks anyway announces itself. The catalog carries a row
+for `ADOPTING.md` and one per path an adopter declined, and the check
+requires every row's path to exist — so a tree that should not hold
+the file fails on rows it can never satisfy, at the vet run that
+follows the leak.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
