@@ -4,10 +4,10 @@
 # ADOPTERS: this file exits non-zero until it runs your project's real checks —
 # `exit 1` at the bottom, and it stays there until they are wired in. Exiting 0
 # is correct only where there is no stack to check, as in the boilerplate, whose
-# prose and shell the call below covers entirely. Over an unchecked stack that
-# same exit is a false green: step 1 of `/finalize` passes, its attestation
-# records a vet run, and nothing was compiled, linted or tested. A script that
-# certifies without checking is worse than no script at all.
+# prose, shell and one tested module the calls below cover entirely. Over an
+# unchecked stack that same exit is a false green: step 1 of `/finalize` passes,
+# its attestation records a vet run, and nothing was compiled, linted or tested.
+# A script that certifies without checking is worse than no script at all.
 #
 # Wire these up for your stack (lint, type-check, format-check, fast tests).
 # Serial:
@@ -19,7 +19,7 @@
 # Parallel, printing only what failed (worth it once the serial run is the wait):
 #   exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
 #
-# The two lines below are not stack-specific. Replacing everything around them
+# The three lines below are not stack-specific. Replacing everything around them
 # is what this file is for, so decide each on its own rather than sweeping it
 # away with the stack:
 #
@@ -32,6 +32,11 @@
 #     `/squash-message` states, passing quietly when a branch has no proposal.
 #     Dropping it leaves nothing catching a proposal edited by hand or outgrown
 #     by a later base merge.
+#   test_authorship.py — the export's agent/human labelling, which `/handle`
+#     reads to tell its own replies from an operator's. Run by path, never
+#     through `unittest discover`: `scripts/` carries no `__init__.py`, and
+#     discovery over a namespace package reports `Ran 0 tests ... OK` and exits
+#     0 — the false green this file's whole note is about.
 #
 # See CLAUDE.md → Vetting for the contract.
 
@@ -39,6 +44,7 @@ set -euo pipefail
 
 "$(dirname "$0")/check-skill-catalog.sh"
 "$(dirname "$0")/check-squash-message.sh"
+"$(dirname "$0")/test_authorship.py"
 
 echo "vet: no stack-specific checks are configured; the checks above are the run." >&2
 echo "vet: a project with a stack exits 1 here until its own checks are wired in" >&2
