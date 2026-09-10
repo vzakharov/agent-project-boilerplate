@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-feat: #50 give the template-fork path a de-templating skill (pr #52)
+feat: #50 give the template-fork path a detemplating skill (pr #52)
 ```
 
 ```
@@ -9,7 +9,7 @@ A fresh "Use this template" fork arrives carrying every skill except
 the one that turns it into a project, so the operator composes that
 prompt by hand while every other stage of the loop has a lever.
 
-`/de-template <brief>` is that lever. It routes through `/plan` rather
+`/detemplate <brief>` is that lever. It routes through `/plan` rather
 than acting directly, so the pruning is reviewed as a diff before
 anything is deleted, and it refuses where `docs/catalog.md` is absent
 — `/spinoff`'s guard read backwards, the two partitioning cleanly. Its
