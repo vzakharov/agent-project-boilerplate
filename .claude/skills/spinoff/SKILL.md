@@ -217,10 +217,9 @@ already sorted every travelling path into a copy or a rewrite:
   `.claude/skills/**` except
   [`sync-agent-infra/catalog.md`](../sync-agent-infra/catalog.md), the
   `.claude/rules/` that survived the triage, the `scripts/` the loop's own skills
-  call, the editor config. The carve-out is belt-and-braces: the § "Two
-  invariants" refusal means a well-formed caller has no catalog to copy, so
-  finding one here means the caller is carrying a leaked copy — which travels no
-  further, and which the refusal should have caught.
+  call, the editor config. That exception is redundant with § "Two invariants" —
+  a well-formed caller has no catalog at all — and is kept so a leaked copy
+  cannot travel.
 - **Rewrites → PR #1.** New work written for a repo nobody has looked at yet:
   `CLAUDE.md`, `README.md`, `vet.sh`, the lint and formatter configuration, the
   dependency declaration, the deploy config, the session-start hook's

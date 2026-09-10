@@ -207,12 +207,10 @@ column — [Closure is not
 optional](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional) explains what breaks if you
 don't, and lists the four counter-intuitive cases. Don't re-derive them.
 
-Copy the resolved set from the clone into your repo — but **not
-`.claude/skills/sync-agent-infra/catalog.md`**. Taking `/sync-agent-infra` means
-taking its directory, and the catalog sits in it: a `never` row that describes
-the source repo, and whose presence downstream tells
-`scripts/check-skill-catalog.sh` it is looking at that repo. Then continue to the
-shared tail.
+Copy the resolved set from the clone into your repo — but **not**
+[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md#never),
+which taking `/sync-agent-infra` otherwise brings along inside its directory.
+Then continue to the shared tail.
 
 ## Template fork
 
