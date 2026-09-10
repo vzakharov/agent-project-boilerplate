@@ -8,39 +8,38 @@ feat: #50 give the template-fork path a detemplating skill (pr #52)
 A fresh "Use this template" fork arrives carrying every skill except
 the one that turns it into a project, so the operator composes that
 prompt by hand while every other stage of the loop has a lever.
+`/detemplate <brief>` is that lever, routed through `/plan` so the
+prune is reviewed as a diff before anything is deleted. The catalog
+goes first, which flips `check-skill-catalog.sh` assertion 4 from
+listing the stubs to enforcing their prune. The watermark comes from
+the fork's creation time, git having no ancestry where the single
+commit is unrelated to the source. The brief becomes the project's
+first issue, handed back as `/issue #N`, the run itself writing no
+source. And the skill deletes itself last, so nothing may cite it as
+an `@`-reference — one would dangle in the tree that just ran it.
 
-`/detemplate <brief>` is that lever, and it routes through `/plan`, so
-the prune is reviewed as a diff before anything is deleted. Its
-ordering is load-bearing at one point: the catalog goes first, which
-flips `check-skill-catalog.sh` assertion 4 from listing the stubs to
-enforcing their prune. The watermark is derived from the fork's
-creation time, git having no ancestry where the single commit is
-unrelated to the source. The run writes no source, so the brief is
-filed as the project's first issue and handed back as `/issue #N`,
-rather than surviving only as a `CLAUDE.md` paragraph. The skill
-deletes itself last, so nothing cites it as an `@`-reference — one
-would dangle in the tree of whoever just ran it. `ADOPTING.md`
-§ "Template fork" becomes a pointer at it, and the catalog gains
-per-group reverse-closure counts and the `docs/img/` row it lacked.
+Its profiling reads settings, never counts. A fork one commit old has
+no process to discover — it inherits the loop's — so its open issues
+and registered workflows are zero for reasons about its age. G3 and G5
+travel by default and are declined at plan review instead, a decision
+the operator states rather than one a step infers behind them.
 
 A session asked to build something in such a fork routes there first,
 and the frontmatter is what routes it: naming the boilerplate's
 literal `owner/repo` costs a reader nothing to check, where naming the
 situation would need judgement. `/spinoff` refuses on the same signal,
-splitting by it — the template button for the boilerplate,
-`/detemplate` for an unpruned fork — and `CLAUDE.md`'s "About this
-project" stub carries the notice for a session that never reads the
-skill list. The run rewrites that stub, retiring the notice with it.
+and `CLAUDE.md`'s "About this project" stub carries the notice for a
+session that never reads the skill list — until the run rewrites that
+stub and retires the notice with it.
 
 The vet contract gains its missing clause and a single home. Five
 places told an adopter to make `scripts/vet.sh` exit 1 until it runs
-real checks, with no exception for a repo that has no stack yet — so a
-fork following that literally fails `/finalize` step 1 on every
-prose-only PR. `CLAUDE.md` § "Vetting" states the rule once, adds the
-environment setup script as the third site a stack change moves, and
-the other four point at it. The one part of that site detecting itself
-is `gh`: finding none to shim, the session-start hook now reports the
-missing setup script into the session context instead of onto stderr.
+real checks, with no exception for a repo that has no stack yet, which
+fails `/finalize` step 1 on every prose-only PR a fork opens.
+`CLAUDE.md` § "Vetting" states it once, adds the environment setup
+script as the third site a stack change moves, and the other four
+point at it. The part of that site detecting itself is `gh`: finding
+none to shim, the session-start hook reports into the session context.
 
 Closes #50
 
