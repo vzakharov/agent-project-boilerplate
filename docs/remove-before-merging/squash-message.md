@@ -1,24 +1,30 @@
 Proposed squash title/body:
 
 ```
-docs: #49 move watch-tick-common.sh's catalog row into G2 (pr #51)
+refactor: #49 split the repo resolver out of watch-tick-common.sh (pr #51)
 ```
 
 ```
 scripts/lib/watch-tick-common.sh was catalogued under G5 — CI &
-landing, but scripts/check-merge.sh sources it as well as G5's
-scripts/ci-watch-tick.sh does. check-merge.sh is what /check-merge
-runs, and /finalize and /sync-branch both reach it from there, so an
-adopter taking G2 and declining G5 — the normal case for a repo with
-no CI — deleted a file the PR loop needs and lost its landing step.
+landing, but scripts/check-merge.sh sourced it too, and that script is
+what /check-merge runs and what /finalize and /sync-branch reach
+through it. An adopter taking G2 and declining G5 — the normal case
+for a repo with no CI — deleted a file the PR loop needs and lost its
+landing step.
 
-The row now sits in G2. Groups partition the inventory, so the file
-can only live in one, and G2 is the group that cannot do without it.
-Both sourcing scripts' rows cite it under Requires, group-tagged from
-G5 in the form scripts/export-github-item.py's row already uses for
-scripts/lib/github.py. The row's description names the shared
-plumbing behind both callers rather than the watch-tick scripts
-alone, and README's G5 blurb stops claiming plural polling scripts.
+Only one of the file's three functions was shared. check-merge.sh
+called the repo resolver and nothing else; sleep-until-the-next-tick
+and reset-the-state-file belong to ci-watch-tick.sh's polling loop,
+which a stateless one-shot is the opposite of. The resolver is now
+gh_resolve_repo in scripts/lib/gh-repo.sh under G2, with its own
+prog-prefix variable, and watch-tick-common.sh keeps the two tick
+helpers under G5.
+
+check-merge.sh therefore sources nothing outside its own group, so a
+G2-only adopter's PR loop is self-contained. ci-watch-tick.sh sources
+both files, and its catalog row cites the G2 one group-tagged — the
+form export-github-item.py's row already uses for lib/github.py. No
+function changed behavior.
 
 Closes #49
 
