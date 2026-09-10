@@ -153,6 +153,44 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
+## Language
+
+> _Replace this stub with this project's language decision — or, if the project
+> is English throughout, **delete this section** and record that in
+> `.claude/skills/sync-agent-infra/upstream.json`'s `declined` map._
+
+A project whose people read one language and whose agent-facing instruction set
+is written in another has to settle which is used where. That is six decisions,
+not one, and an answer covering only the first row leaves the other five to be
+made implicitly, one file at a time, by whoever writes that file:
+
+| Surface | What it covers, and what pulls it |
+| --- | --- |
+| Durable docs | `README.md` and anything else a human reads to decide something, versus `CLAUDE.md`, `.claude/skills/**` and `.claude/rules/**`, which nothing but an agent loads |
+| Transient working artifacts | `docs/plans/`, `docs/issue/`, `docs/pr/` — swept before merge and read, while they live, by the session working against them, so they can take the agent's side even where the durable docs do not |
+| Commit and PR text | commit subjects and bodies, PR titles and bodies — the `git log` and the review surface, so this row follows whoever reviews |
+| Skill-emitted prose | the bodies `/pr`, `/squash-message` and `/qa-checklist` compose, which land on GitHub under whatever the row above settled |
+| Conversation | issue and PR comments, review replies, session replies — reasonably the language each exchange opened in rather than one fixed answer, an exchange being no standing artifact |
+| Code | comments, docstrings, identifiers |
+
+**Deleting this section is a real answer, and the normal one.** A project that is
+English throughout keeps nothing here: a section saying "English, no split"
+plants the question in every session that loads this file for a project with
+nothing to decide. So this section's disposition is a stub skill's — hydrate now,
+or delete — and a deletion is recorded where every other decline is:
+
+```json
+"declined": {
+  "CLAUDE.md § Language": "English throughout — revisit if we ship to a non-English market"
+}
+```
+
+Phrase the reason as a condition in the present tense, per `ADOPTING.md`'s rule
+for that map, because that is what leaves the decision re-openable: once the
+section is gone the tree carries no prompt at all, so `/sync-agent-infra`
+re-offering an entry whose stated condition stopped holding is the way back to
+the question. A bare `"n/a"` loses that.
+
 ## Working with skills
 
 This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
@@ -207,3 +245,19 @@ couldn't load. The script also asserts that every skill has exactly one row in
 from drifting as skills are added.
 
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
+
+### Markers are not yours to reword
+
+Some strings in this loop are **matched literally by another skill**, which makes
+them fixed points rather than wording: not reworded, not translated. Renaming the
+`## QA Checklist` heading and translating it are one defect, not two — the skill
+looks for that text, fails to find it, and writes a second section beside the one
+it could not read.
+
+**The test is how a skill finds the thing.** If it locates a section by its
+heading rather than by its position, that heading is a marker; if it finds a
+comment by its opening line, that line is one. Today that means the `## Summary`
+and `## QA Checklist` headings in a PR body, the `Proposed squash title/body:`
+lead on the squash comment, and the semantic commit prefixes above. The test is
+the durable half of this, so a marker introduced later is covered without an edit
+here.
