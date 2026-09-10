@@ -35,17 +35,19 @@ INTERVAL="${INTERVAL:-60}"
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 STATE_FILE="${REPO_ROOT}/.git/ci-watch-state.json"
 WT_PROG="ci-watch-tick"
+GH_REPO_PROG="$WT_PROG"
 
 # shellcheck source=scripts/lib/watch-tick-common.sh
 source "${REPO_ROOT}/scripts/lib/watch-tick-common.sh"
+# shellcheck source=scripts/lib/gh-repo.sh
+source "${REPO_ROOT}/scripts/lib/gh-repo.sh"
 
 # Handle --reset before doing any gh work.
 if [[ "${1:-}" == "--reset" ]]; then
   wt_reset_state "$STATE_FILE"
 fi
 
-# Resolve repo flag and "owner/repo" for gh (see scripts/lib/watch-tick-common.sh).
-wt_resolve_repo
+gh_resolve_repo  # sets NWO, REPO_FLAG
 nwo="$NWO"
 repo_flag=()
 if ((${#REPO_FLAG[@]})); then repo_flag=("${REPO_FLAG[@]}"); fi

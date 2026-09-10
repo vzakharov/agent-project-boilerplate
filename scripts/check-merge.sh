@@ -32,11 +32,11 @@
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-WT_PROG="check-merge"
-PROG="$WT_PROG"
+PROG="check-merge"
+GH_REPO_PROG="$PROG"
 
-# shellcheck source=scripts/lib/watch-tick-common.sh
-source "${REPO_ROOT}/scripts/lib/watch-tick-common.sh"
+# shellcheck source=scripts/lib/gh-repo.sh
+source "${REPO_ROOT}/scripts/lib/gh-repo.sh"
 
 for tool in gh jq git; do
   command -v "$tool" >/dev/null 2>&1 || {
@@ -51,7 +51,7 @@ if [[ -z "$branch" ]]; then
   exit 1
 fi
 
-wt_resolve_repo  # sets NWO, REPO_FLAG
+gh_resolve_repo  # sets NWO, REPO_FLAG
 
 # Resolve the repo default branch (don't hardcode "main") — the fallback target
 # when the branch has no PR yet.

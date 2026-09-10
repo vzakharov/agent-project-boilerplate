@@ -135,7 +135,8 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | `/qa-checklist` | Generate a QA checklist from the branch's change and write it into the PR body, with each step classified for automatability. | `gh`, `python3` ≥3.9, `scripts/pr-body.py` | — | adopt |
 | `/check-merge` | Check once whether the PR's base advanced or the PR landed since the branch was last attested, and reconcile the squash proposal. | `gh`, `scripts/check-merge.sh` | `/finalize`, `/from-branch`, `/squash-message` | adopt |
 | `/sync-branch` | Bring a branch up to date with its merge target, resolving mechanically and logically in one merge commit. | `gh`, `scripts/vet.sh` | `/check-merge` | adopt |
-| `scripts/check-merge.sh` | The git/GitHub polling behind `/check-merge`. | `gh`, `jq`, `git` | — | adopt |
+| `scripts/check-merge.sh` | The git/GitHub polling behind `/check-merge`. | `gh`, `jq`, `git`, `scripts/lib/gh-repo.sh` | — | adopt |
+| `scripts/lib/gh-repo.sh` | Resolve `owner/repo` for `gh`, falling back to parsing the `origin` remote when a sandboxed proxy defeats `gh`'s own detection. | `bash` | — | adopt |
 | `scripts/pr-body.py` | Pull a PR body to `docs/pr/<n>/body.md` for local editing and PATCH it back. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` | — | adopt |
 | `scripts/lib/github.py` | Shared GitHub plumbing for the stdlib-only Python scripts: the proxy-then-direct `fetch` ladder every request goes through, token resolution, `origin` repo detection, and the `die` they report through. | `python3` ≥3.9 | — | adopt |
 | `scripts/check-squash-message.sh` | Measure the squash proposal against the size caps `/squash-message` states, locating it in the worktree or in history once `/finalize` has swept it. POSIX `sh`. | `sh`; `git` for the history rungs | — | adopt |
@@ -217,8 +218,8 @@ than editing two skills to remove the citation.
 | --- | --- | --- | --- | --- |
 | `/bootstrap-workflow-dispatch` | Register a `workflow_dispatch` workflow in Actions metadata with a one-shot branch-scoped push trigger, so `gh workflow run` stops 404ing on a branch whose workflow has not reached the default branch yet. | GitHub Actions, `gh`, push access to the branch | `/test-on-gh` (G6), `/watch-ci` | adopt |
 | `/watch-ci` | Watch an in-flight GitHub Actions run incrementally, surfacing failures as they happen so fixes can go out mid-run. | GitHub Actions, `gh`, `scripts/ci-watch-tick.sh`; **G4 on the web** | — | adopt |
-| `scripts/ci-watch-tick.sh` | One polling tick of a CI run: what changed since the last tick. | `gh`, `jq` | — | adopt |
-| `scripts/lib/watch-tick-common.sh` | Shared shell helpers for the watch-tick scripts. | `bash` | — | adopt |
+| `scripts/ci-watch-tick.sh` | One polling tick of a CI run: what changed since the last tick. | `gh`, `jq`, `scripts/lib/watch-tick-common.sh`, `scripts/lib/gh-repo.sh` (G2) | — | adopt |
+| `scripts/lib/watch-tick-common.sh` | The watch loop's tick helpers: the elapsed-aware sleep between ticks, and the `--reset` state-file removal. | `bash` | — | adopt |
 
 The group's three CI-facing skills partition one timeline.
 `/bootstrap-workflow-dispatch` ends the moment `gh workflow run` stops 404ing,
