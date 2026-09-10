@@ -167,10 +167,10 @@ reading this rather than by asking:
   and the plans and issue exports published for review. It goes in the language
   **the team** reads, which is not automatically the one a given session runs in.
 - **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**`,
-  and code: comments, docstrings, identifiers. The reader here is the model: it
-  follows English instructions most reliably, and other scripts spend several
-  times the tokens saying the same thing — a cost every session pays on every
-  load.
+  and code: comments, docstrings, identifiers. The reader here is the agent:
+  they follow English instructions most reliably, and other scripts spend
+  several times the tokens saying the same thing — a cost every session pays on
+  every load.
 - **Conversation — the language it was asked in.** Session replies, issue and PR
   comments, review replies. No standing artifact, so each reply matches the
   message it answers: the same person writes in one language here and another
