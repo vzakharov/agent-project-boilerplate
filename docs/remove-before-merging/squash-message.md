@@ -10,34 +10,34 @@ the one that turns it into a project, so the operator composes that
 prompt by hand while every other stage of the loop has a lever.
 
 `/detemplate <brief>` is that lever, and it routes through `/plan`, so
-the pruning is reviewed as a diff before anything is deleted. Its
+the prune is reviewed as a diff before anything is deleted. Its
 ordering is load-bearing at one point: the catalog goes first, which
 flips `check-skill-catalog.sh` assertion 4 from listing the stubs to
-enforcing their prune. The watermark's `lastSyncedSha` and `lineage`
-are derived from the fork's creation time, git having no ancestry to
-give in a tree whose single commit is unrelated to the source. The
-skill deletes itself last, so nothing cites it as an `@`-reference —
-one would dangle afterwards, in the tree of whoever just ran it.
+enforcing their prune. The watermark is derived from the fork's
+creation time, git having no ancestry to read where the single commit
+is unrelated to the source. The skill deletes itself last, so nothing
+cites it as an `@`-reference — one would dangle afterwards, in the
+tree of whoever just ran it. `ADOPTING.md` § "Template fork" becomes
+a pointer at it, and `docs/catalog.md` gains per-group reverse-closure
+counts plus the `docs/img/` row it never had.
 
-A session asked to build a feature in such a fork routes here first,
-on the catalog's presence plus an origin that is not this repo. That
-is the predicate `/spinoff` already refuses on, and the clause that
-stops a session pruning this repo itself; the notice lives in
-`CLAUDE.md`'s "About this project" stub, which the run rewrites, so it
-retires with the condition it describes.
+A session asked to build a feature in such a fork routes there first,
+on the catalog's presence plus an origin that is not this repo — the
+predicate `/spinoff` already refuses on, so its refusal splits by
+origin: the template button for the boilerplate, `/detemplate` for an
+unpruned fork. The standing notice lives in `CLAUDE.md`'s "About this
+project" stub, which the run rewrites, so it retires with the
+condition it describes.
 
-The vet rule gains its missing clause. Four places told an adopter to
-make `scripts/vet.sh` exit 1 until it runs real checks, with no
-exception for a repo that has no stack yet — so a fork following that
-literally fails `/finalize` step 1 on every prose-only PR, teaching
-the loop to route around the vet run. Exiting 0 is right while the
-built-in checks are the whole run.
-
-`ADOPTING.md` § "Template fork" becomes a pointer, leaving the
-subset-adoption path whole for the session that reads that file over
-the network with no skills installed. `docs/catalog.md` gains the
-per-group reverse-closure counts the prune needs, and the row
-`docs/img/` never had.
+The vet contract gains its missing clause and a single home. Five
+places told an adopter to make `scripts/vet.sh` exit 1 until it runs
+real checks, with no exception for a repo that has no stack yet — so a
+fork following that literally fails `/finalize` step 1 on every
+prose-only PR, teaching the loop to route around the vet run. Exiting
+0 is right while the built-in checks are the whole run; `CLAUDE.md`
+§ "Vetting" states that once and the other four point at it. So does
+`/spinoff`'s seeded `main`, which now asserts a passing `vet.sh` that
+names no stack-specific checks.
 
 Closes #50
 
