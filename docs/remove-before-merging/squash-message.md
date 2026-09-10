@@ -11,33 +11,33 @@ decide that — so the decision got made implicitly, one file at a time,
 by whichever session wrote that file. Language now sits in the set an
 adopter settles explicitly, beside the G6 stubs and scripts/vet.sh.
 
-CLAUDE.md § "Language" is the prompt: a stub an adopter replaces with
-its answer, and a table of the six surfaces that answer has to cover:
-durable docs, transient working artifacts, commit and PR text,
-skill-emitted prose, conversation, and code. Each drifts for its own
-reason, so a reader who settles only "which language the docs are in"
-has decided one row of six. The boilerplate picks no default, and the
-disposition is a G6 stub's: hydrate now, or delete. An English-only
-project deletes the section rather than answering it — one reading "no
-split needed" plants the question in every session that loads the file
-for a project with nothing to decide — and records that as a declined
-entry in upstream.json, phrased as a condition, which is what lets
-/sync-agent-infra re-open the question if the condition stops holding.
+CLAUDE.md § "Language" is where it gets settled, and it asks for one
+line: the language the team reads — the team's, not whichever one a
+given session runs in. That governs human-facing prose: README, the
+docs a person reads to decide something, commit and PR text, and the
+plans and issue exports published for review.
 
-§ "Working with skills" carries the part that is nobody's to answer:
-a string another skill locates by matching its text is fixed. Renaming
-the `## QA Checklist` heading and translating it are one defect, each
-yielding a second section beside the one /qa-checklist could not find,
-so the rule binds English-only projects too — which is why it sits
-outside the section most of them delete. It states a recognition test
-alongside the current markers, so one added later needs no edit there.
+Two further groups are stated rather than asked, a session having to
+settle them with nobody present and neither varying by project.
+Agent-facing files — CLAUDE.md, .claude/skills/**, .claude/rules/**,
+code — are English, the skills citing each other's headings and
+matching some strings literally, so translating them breaks the loop
+rather than localizing it. Conversation follows whatever language the
+exchange opened in, an exchange being no standing artifact. Either is
+a project's to override, but an override is a decision someone makes,
+not a blank left open.
+
+That makes the section fill-only rather than deletable: the two stated
+groups live in it, so an English-only project writes "English" on the
+first line and keeps the rest as the place a session reads them off.
 
 The prompt reaches both acquisition routes: ADOPTING.md's shared tail
 for the subset path, where the byte-counting caveat of #53 also lives
 because that file is never copied into an adopter's tree, and
 /detemplate for the fork path, which reads the brief's own language as
-evidence and asks rather than inferring. /spinoff treats the caller's
-answer as a candidate default a sibling re-decides.
+evidence and states the answer in the plan even when every signal
+points at English. /spinoff treats the caller's answer as a candidate
+default a sibling re-decides.
 
 Closes #54
 
