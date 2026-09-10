@@ -35,10 +35,12 @@ directory after *its* own source — **stop**. A spinoff is the wrong operation
 either way, but the two cases want different answers, so read `origin` before
 replying:
 
-- **`origin` names the boilerplate** → this *is* the boilerplate. Point at its
-  `README.md` § "Create a new project from this template": what the caller wants
-  is a fork, not a sibling.
-- **`origin` names anything else** → an unpruned fork, carrying the template's
+- **`origin` is `vzakharov/agent-project-boilerplate`** → this *is* the
+  boilerplate. Point at its `README.md` § "Create a new project from this
+  template": what the caller wants is a fork, not a sibling. Match the full
+  `owner/repo` — an adopter may legitimately be called `acme-boilerplate`, and a
+  substring test would refuse it.
+- **`origin` is anything else** → an unpruned fork, carrying the template's
   own inventory and no project yet. Point at `/detemplate <what you're
   building>`, the skill that fork ships to convert itself.
 
@@ -296,11 +298,11 @@ Three consequences, each stated by a check rather than by taste:
   making is the pair: the script passes **and** it names no stack-specific
   checks. A non-zero exit here would be a `main` whose `/finalize` cannot pass
   for a reason the contract calls legitimate.
-  **What must not happen is the caller's real `vet.sh` reaching `main`** —
-  carried across, it certifies a stack that is not there yet, and the false green
-  sits unchallenged until PR #1 lands. The step's invariant is that PR #1 is
-  where the stack and its checks arrive together; the seed refuses nothing
-  because it has nothing to refuse.
+  **What must not happen is the source repo's own `vet.sh` reaching `main`** —
+  the working one you are standing in, which runs its lint, types and tests.
+  Carried across, it certifies a stack the target does not have yet, and the
+  false green sits unchallenged until PR #1 lands. The target's stack and the
+  checks over it arrive together, in PR #1, or not at all.
 
 **Why the `main` floor cannot be carved smaller.** Closure decides it:
 `check-skill-catalog.sh` fails on a dangling `@.claude/skills/…` reference, and

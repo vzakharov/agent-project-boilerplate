@@ -378,9 +378,10 @@ So the deliverable for this step is **text in your report** that the operator ca
 paste into that setting. Two things make it worth the paragraph:
 
 - **It is where `gh` comes from.** `apt-get install -y gh` belongs in it. Without
-  `gh` on `PATH`, G4's hook prints `gh not found on PATH; skipping gh proxy shim`
-  and continues — so the shim silently never installs and every `gh`-dependent
-  skill fails later, far from the cause.
+  `gh` on `PATH`, G4's hook cannot install the shim, and every `gh`-dependent
+  skill fails later, far from the cause — so the hook reports the absence into
+  the session context, which is the litmus test for a setup script that is unset
+  or missing the install. It is the only part of this step that detects itself.
 - **It is the only place the toolchain version can be pinned** for remote
   sessions, and `scripts/vet.sh` running under the wrong one is a confusing
   failure.

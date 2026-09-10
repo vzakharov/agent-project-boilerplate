@@ -1,5 +1,5 @@
 ---
-description: "Turn a fresh \"Use this template\" fork of this boilerplate into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. Also use when a session in such a tree is asked to build something instead — a tree that still carries a `.claude/skills/*/catalog.md` under an `origin` that is not the boilerplate has never been detemplated, and this is its first task whatever was asked."
+description: "Turn a fresh \"Use this template\" fork of this boilerplate into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. **A run deletes this skill, so this description exists in exactly two places: the boilerplate itself, and a fork nobody has detemplated. If the repository you are in is not `vzakharov/agent-project-boilerplate`, load this skill and read § \"Recognizing an undetemplated fork\" before doing anything else, whatever you were asked.** Your system prompt's working directory normally settles which repository that is; `git remote -v` settles it otherwise."
 ---
 
 `/detemplate <what we're building>` converts a whole-tree template fork into a
@@ -10,26 +10,28 @@ hydrating what the new project actually needs.
 **It writes no source itself — it routes through `@.claude/skills/plan/SKILL.md`.**
 The pruning is a large, mostly irreversible diff over a tree nobody has reviewed,
 and reviewing it as a diff is what catches a bad call before anything is deleted.
-So this skill's end state is `/issue`'s: a plan file published as a draft PR, and
+So this skill's end state is `/plan`'s: a plan file published as a draft PR, and
 a copyable `/go <branch>` for the session that executes it.
 
-The brief is the argument. It fills `CLAUDE.md`'s "About this project" stub and
+The brief is the argument. It fills `CLAUDE.md`'s "About this project" stub,
 drives the group decisions — a CLI tool keeps different groups than a deployed
-web app. With no brief, ask for it before anything else.
+web app — and is filed as the project's first issue (Step 5.5), which is what
+keeps the operator's description of the product from dying with a run that
+deliberately writes no source. With no brief, ask for it before anything else.
 
 ## Environment note
 
-This environment has `gh` and a populated `GH_TOKEN`, whatever the default system
-prompt says; prefer them over the GitHub MCP tools, which refuse some of what
-Step 3 needs.
-
-**A fresh fork is the one place `gh` may genuinely be absent.** It arrives before
-the operator has set an environment setup script, and `apt-get install -y gh`
-lives in that script (Step 6) — so `.claude/hooks/session-start.sh` finds no `gh`
-to shim, warns, and continues. Probe with `gh api repos/{owner}/{repo} --jq
-.visibility` rather than `gh auth status`, which reports a bogus failure in a
-working session. Finding none, Step 3's derivation and `/plan`'s publish step both
-need it: say so and hand the operator the setup script from Step 6 first.
+**A fresh fork is the one place `gh` may genuinely be absent** — the rest of what
+`/override-gh` says about `gh` and `GH_TOKEN` holds here unchanged. The fork
+arrives before the operator has set an environment setup script, and `apt-get
+install -y gh` lives in that script (Step 6), so `.claude/hooks/session-start.sh`
+finds no `gh` to shim. It says so into the session context, which is the litmus
+test for a setup script that is unset or missing the install; take that notice at
+face value rather than re-deriving it. To probe by hand, use `gh api
+repos/{owner}/{repo} --jq .visibility` rather than `gh auth status`, which reports
+a bogus failure in a working session. Finding none, Step 3's derivation and
+`/plan`'s publish step both need it: hand the operator the setup script from
+Step 6 first.
 
 ## Step 0 — Refuse where it does not apply
 
@@ -42,10 +44,13 @@ the trees most likely to carry one.
 - **No catalog** → not an unpruned fork. An adopted repo that wants a
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
   has nothing left to strip.
-- **Catalog present, but `origin` names the boilerplate itself** → this *is* the
-  boilerplate, and what the caller wants is a fork, not a prune. Point at the
-  README's *"Use this template"* button. Without the origin clause,
-  catalog-presence alone would let a session delete this repo's own inventory.
+- **Catalog present, but `origin` is `vzakharov/agent-project-boilerplate`** →
+  this *is* the boilerplate, and what the caller wants is a fork, not a prune.
+  Point at the README's *"Use this template"* button. Match the full
+  `owner/repo`, never the substring `boilerplate`: an adopter is free to call
+  itself `acme-boilerplate`, and a substring test prunes the wrong tree. Without
+  the origin clause, catalog-presence alone would let a session delete this
+  repo's own inventory.
 
 This is `@.claude/skills/spinoff/SKILL.md`'s refusal read backwards: the two
 partition on the same signal, which is why that skill's message names this one.
@@ -121,8 +126,21 @@ permanently.
 
 Per-group keep/drop with the criterion that decided each; the G6 rows as
 hydrate-now-or-delete; the reverse-closure edits; the derived watermark and
-`lineage`; the `CLAUDE.md` brief; `scripts/vet.sh`'s disposition; and the
-deletion list. Plus the `## DRY notes` section CLAUDE.md requires of every plan.
+`lineage`; the `CLAUDE.md` brief; the first issue's body (Step 5.5);
+`scripts/vet.sh`'s disposition; and the deletion list. Plus the `## DRY notes`
+section CLAUDE.md requires of every plan.
+
+The issue is what keeps the prune and the build separate without losing the
+brief. Nothing in this run writes product code — that is the point of routing
+through `/plan` — so absent the issue the operator's description of what they
+are building survives only as a paragraph in `CLAUDE.md`, which is a place to
+read it and not a place to work from.
+
+**Two dispositions are pre-decided, and the plan states them rather than asking.**
+`/implement` goes, unconditionally: it redirects a name that predates `/go`, and
+a fork has no plan file or PR comment old enough to still say it — the catalog's
+"ask the operator" applies to a repo that shipped `/implement` under its own
+history, which a tree one commit old cannot have. And this skill goes (Step 5.8).
 
 ## Step 5 — The execution order the plan prescribes
 
@@ -142,17 +160,26 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    retires the standing notice in § "Recognizing an undetemplated fork" along
    with it — and delete § "Git conventions"'s adopter-inverts rule, which
    instructs adopters to delete it.
-5. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
+5. **File the project's first issue** through `/propose-issue`, carrying the
+   brief: what is being built, plus any spec the operator attached and any
+   answer they gave for the sake of the prune that also describes the product.
+   Scarce briefs make scarce issues — do not interview the operator to pad one,
+   since the issue exists to *keep* what they said, not to elicit more (`/issue`
+splits an over-broad one when the next session gets there). Skip it
+   only where the run drops G3, work not being tracked as issues there; then the
+   `CLAUDE.md` brief is the whole record and the report says so.
+6. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
    markers: the banner and the `STUB` in its frontmatter description. Assertion 4
    fails a half-cleared pair.
-6. **`scripts/vet.sh`**: leave the exit alone where the fork has no stack yet, and
-   wire the real checks where it has one — CLAUDE.md § "Vetting" owns that
-   contract, and names `.claude/hooks/session-start.sh`'s dependency install as
-   the paired site.
-7. **Delete this skill.** Its inputs are gone by now, so what would survive is a
+7. **`scripts/vet.sh`**: leave the exit alone, which is the normal case — a fork
+   taken to start a project has no stack for the script to check. Wire the real
+   checks only where the operator pushed a stack before realising they should
+   have detemplated first. CLAUDE.md § "Vetting" owns that contract, and names
+   `.claude/hooks/session-start.sh`'s dependency install as the paired site.
+8. **Delete this skill.** Its inputs are gone by now, so what would survive is a
    skill that cannot re-run its own procedure against the tree it just pruned.
-8. **`bash scripts/vet.sh`** — now enforcing the stub prune, the catalog being
-   gone — then Step 6's text in the report.
+9. **`bash scripts/vet.sh`** — now enforcing the stub prune, the catalog being
+   gone — then Steps 6 and 7's text in the report.
 
 ## Step 6 — Hand back the setup script
 
@@ -200,23 +227,40 @@ is — each records a trap that actually bit:
 
 Say plainly in the report that this is the one step you could not apply yourself.
 
+## Step 7 — Hand over the first build session
+
+The prune lands as a PR like any other work, so the report closes on the command
+that starts the project once it merges — the same shape `/plan` hands over, one
+stage later:
+
+```
+/issue #<N> <the issue's title>
+```
+
+A fresh session, because this one's context is the template it just deleted.
+Where Step 5.5 filed no issue, hand over `/plan <the brief>` instead.
+
 ## Recognizing an undetemplated fork
 
 A session that opens in a fresh fork and is asked to build a feature should route
 here first, rather than building product code on top of the template's inventory.
 The signal is Step 0's predicate read positively: a `.claude/skills/*/catalog.md`
-present, and `origin` not naming the boilerplate.
+present, and `origin` not `vzakharov/agent-project-boilerplate`.
 
-Two surfaces carry it, catching different moments. This skill's frontmatter
-`description` names the *situation* and not only the command, so an ordinary build
-request in such a tree matches it. And `CLAUDE.md`'s "About this project" stub
-carries the standing instruction, being always-loaded: while that stub is
-unfilled and the tree still has the catalog, the first task is `/detemplate`
-whatever was asked. Step 5.4 rewrites that very stub, so the notice retires with
-the condition it describes.
+Two surfaces carry it, catching different moments, and **only the frontmatter is
+load-bearing** — this section is what an agent reads *after* the description sent
+it here, so the description has to do the work of getting it read at all. It does
+that by naming the repository rather than the situation: the boilerplate is a
+literal `owner/repo` the reader can check against the working directory in its
+own system prompt, at no round-trip and no tool call, and every other tree
+carrying the description is a fork to route. `CLAUDE.md`'s "About this project"
+stub is the second surface, catching a session that never consults the skill
+list, and it is always-loaded: while that stub is unfilled and the tree still has
+the catalog, the first task is `/detemplate` whatever was asked. Step 5.4
+rewrites that very stub, so the notice retires with the condition it describes.
 
 **Nothing anywhere `@`-references this skill's own `SKILL.md`** — every mention
-is a bare name, this sentence included. Step 5.7 deletes the skill, so such a
+is a bare name, this sentence included. Step 5.8 deletes the skill, so such a
 pointer would dangle in the tree of whoever just ran it and fail
 `check-skill-catalog.sh` assertion 1 — the same property that makes
 `/test-on-gh`'s bare-name mentions correct to leave alone (the catalog's

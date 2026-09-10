@@ -177,10 +177,11 @@ planning actually happens.
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
 **The hook does not install `gh`; it shims one that is already there.** Finding
-none, it warns and continues, so the shim silently never appears and the failure
-surfaces later at an unrelated `gh` call. On web/remote that install belongs in
-the environment setup script, which only the operator can set — `ADOPTING.md`
-§ "Hand the operator a setup script" owns what to tell them.
+none, it reports that into the session context and continues — the litmus test
+for an environment setup script that is unset or missing `apt-get install -y
+gh`, and the only self-detecting part of a step no agent can perform. On
+web/remote that install belongs in the setup script, which only the operator can
+set — `ADOPTING.md` § "Hand the operator a setup script" owns what to tell them.
 
 **Declinable, at a scoped cost** — `ADOPTING.md` § "If you decline G4" owns the
 rationale, the `HTTPS_PROXY` conflict and the fallback. What declining actually
@@ -339,7 +340,10 @@ Two G2 rows are adopter choices rather than defaults:
   redirect, and the stub would be a permanent extra row standing in for a name
   the repo never had. Already adopted it → ask the operator whether the backwards
   compatibility is worth that extra row, and record either answer in
-  `upstream.json` so the question does not come back.
+  `upstream.json` so the question does not come back. A **fork** is neither case
+  and asks nothing: it carries `/implement` because it carries everything, and a
+  tree one commit old has no plan file or PR comment old enough to say it, so
+  `/detemplate` deletes it outright.
 
 ## Reverse closure
 

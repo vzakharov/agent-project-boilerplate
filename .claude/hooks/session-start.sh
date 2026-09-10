@@ -43,7 +43,26 @@ install_gh_shim() {
   local real_gh
   real_gh="$(PATH="$(printf '%s' "$PATH" | tr ':' '\n' | grep -vFx "$shim_dir" | paste -sd: -)" command -v gh || true)"
   if [ -z "$real_gh" ]; then
-    echo "session-start: gh not found on PATH; skipping gh proxy shim." >&2
+    # No gh to shim. This is the litmus test for an environment setup script
+    # that is unset or missing `apt-get install -y gh`: the operator is the only
+    # one who can set it, and nothing else in a session says so. Report it on
+    # stdout, which Claude Code folds into the session context — a stderr note
+    # reaches nobody, and the failure then surfaces far from its cause, at the
+    # first gh-dependent skill.
+    cat <<'MSG'
+session-start: `gh` is not on PATH, so the proxy shim was not installed.
+
+Agent: relay this to the operator before running anything that needs `gh`
+(most of the PR loop does). The environment setup script for this Claude Code
+environment is either unset or does not install the GitHub CLI. They set it in
+the session composer: the environment picker -> Cloud -> the environment's gear
+icon. It needs at least:
+
+    apt-get install -y gh
+
+The script runs once when the environment snapshot is built, so the session has
+to be restarted for it to take effect.
+MSG
     return 0
   fi
 

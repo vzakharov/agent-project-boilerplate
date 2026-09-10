@@ -38,6 +38,8 @@ The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typec
 
 So wiring `scripts/vet.sh` is what you do **when a stack lands**, alongside `.claude/hooks/session-start.sh`'s dependency install — the paired site nothing else names.
 
+**A third site moves with the stack, and only the operator can move it: the environment setup script.** It installs the toolchain and pins its version for remote sessions, it is set by hand in Claude Code's environment settings, and no API, MCP tool or in-repo file reaches it. So a change to the toolchain — a new language runtime, a bumped pin, a new system dependency, a package manager swap — is not finished when the repo files agree: **say in your report what the operator must add to that script**, since nothing else will tell them, and a stale one fails later under a version nobody chose. `.claude/hooks/session-start.sh` reports the one case it can detect on its own, `gh` missing from `PATH`.
+
 **Keep it current** as tooling evolves. If a CI job catches something `vet.sh` should have caught, that's a signal to extend it.
 
 **Do not vet before every commit** on feature branches — it's wasteful, especially in remote/web sessions. The vet run happens at milestones: before pushing review-ready work, before flipping a PR to ready. `/finalize` is the canonical caller.
