@@ -23,6 +23,12 @@ step — exclude it by name, and the file opens with a banner saying it
 is never vendored and should be deleted wherever it turns up
 downstream.
 
+`/spinoff`'s refusal reads the sentinel as a glob over
+`.claude/skills/*/catalog.md` rather than at the canonical path. The
+old one was fixed; the new one sits in a directory that adopters are
+told to rename after their own source, so a fixed-path test would
+miss a stray catalog in exactly the trees most likely to carry one.
+
 A copy that leaks anyway announces itself. The catalog carries a row
 for `ADOPTING.md` and one per path an adopter declined, and the check
 requires every row's path to exist — so a tree that should not hold
