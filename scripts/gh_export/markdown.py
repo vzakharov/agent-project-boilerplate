@@ -13,8 +13,8 @@ from gh_export.authorship import attribution, split_agent_footer
 def header_section(
     item: dict[str, Any], pr: dict[str, Any] | None, body_by_agent: bool
 ) -> str:
-    """`body_by_agent` comes from the caller, which strips the item body's
-    footer where it renders it."""
+    """`body_by_agent` is the caller's to compute — it holds the item body and
+    strips the footer where it renders it."""
     labels = item.get("labels") or []
     labels_md = (
         ", ".join(f"`{(lab.get('name') or '')}`" for lab in labels)

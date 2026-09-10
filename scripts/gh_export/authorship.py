@@ -1,11 +1,10 @@
-"""Who wrote a post: the login, and whether the post is the agent's or a
-human's.
+"""Who wrote a post: the login, and whether the agent or a human wrote it.
 
-`$GH_TOKEN` is the operator's own identity, so an agent's reply and a human's
-guidance reach GitHub under one login and the Claude Code attribution footer is
-the only thing separating them. That is why the footer stays **mandatory** on
-every agent-authored post: it is read here as a signal, not carried as a
-courtesy, and a post that omits it exports as a human's.
+`$GH_TOKEN` is the operator's own identity, so agent replies and human guidance
+arrive under one login and the Claude Code attribution footer is all that
+separates them. The footer is therefore **mandatory** on every agent-authored
+post — read here as a signal, not carried as a courtesy — and a post without one
+exports as a human's.
 """
 
 from __future__ import annotations
@@ -13,8 +12,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-# Both link targets, both verbs, the optional rule above and session link below
-# — the footer's forms across this repo's comment rule and the harness's own
+# The footer's two forms: this repo's comment rule, and the harness's own
 # PR-description block.
 _ATTRIBUTION_FOOTER = re.compile(
     r"(?:\A|\n)\s*"  # the whole body, or a break from the prose above
@@ -35,8 +33,8 @@ def login_of(holder: Any, default: str = "?") -> str:
 def split_agent_footer(body: str) -> tuple[bool, str]:
     """Whether the body ends in an attribution footer, and the body without it.
 
-    Anchored at the end of the body, so a footer quoted or discussed mid-post
-    stays prose — the export must not read one as a signature.
+    Anchored at the end, so a footer quoted mid-post stays prose rather than
+    reading as a signature.
     """
     match = _ATTRIBUTION_FOOTER.search(body)
     if not match:
@@ -45,8 +43,7 @@ def split_agent_footer(body: str) -> tuple[bool, str]:
 
 
 def attribution(holder: Any, by_agent: bool) -> str:
-    """`@login (agent)` / `@login (human)`, annotating the login rather than
-    replacing it. `(human)` and not `(operator)`, because a third-party reviewer
-    is neither the agent nor the operator.
+    """`@login (agent)` / `@login (human)` — `(human)` rather than the
+    `(operator)` #55 asked for, a third-party reviewer being neither.
     """
     return f"@{login_of(holder)} ({'agent' if by_agent else 'human'})"
