@@ -54,8 +54,8 @@ use `git -C <clone>`, in every command meant to run in the target.
 ## Step 1 — Read the caller
 
 Read the caller at HEAD, starting with the refusal: **`docs/catalog.md` present
-→ stop**, per § "Not from the boilerplate" above, which carries why and what to
-point the operator at. Otherwise two things come out of the tree:
+→ stop**, per § "Not from the boilerplate" above. Otherwise two things come out
+of the tree:
 
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by its watermark

@@ -184,11 +184,10 @@ Re-read the draft as the future reader above, and rewrite it until it hits the
 target.
 
 The target is **three paragraphs of prose, four at the outside**, inside the
-measured caps above — 80 chars of title, 40 lines of body at 72 wide. The
-opening says why the change exists; the rest say what it does about it, named at
-the level of the behavior, contract or module affected. Not a bullet-per-change
-inventory: detail that doesn't survive at that size was below the high-level
-picture and lives in the diff.
+measured caps above. The opening says why the change exists; the rest say what it
+does about it, named at the level of the behavior, contract or module affected.
+Not a bullet-per-change inventory: detail that doesn't survive at that size was
+below the high-level picture and lives in the diff.
 
 Why the change exists is whatever is honest. Often that's a defect or a gap. Just
 as often it's planned work landing as planned, and then the opening says where the
@@ -240,8 +239,8 @@ product area); a hotfix body for a minimal fix is one or two paragraphs. The pas
 runs at either size — trimming words inside each of a release's areas rather than
 dropping areas, and never padding a hotfix out to look substantial. The paragraph
 target moves with scope that way; the measured caps do not. They bind every lane,
-and a project whose release bodies genuinely outgrow 40 lines edits its own copy
-of `scripts/check-squash-message.sh` — raising the constant, or teaching the
+and a project whose release bodies genuinely outgrow the line cap edits its own
+copy of `scripts/check-squash-message.sh` — raising the constant, or teaching the
 script to recognize a release first and widen only there — as a reviewable
 change.
 
