@@ -104,8 +104,8 @@ session in, and whether the brief describes a product for a non-English market.
 Any of the three pointing away from English makes the question mandatory —
 `CLAUDE.md` § "Language" holds the six surfaces an answer has to settle. All
 three English make it a confirmation the plan states rather than asks, and the
-answer is then to delete that section and record it in the watermark's `declined`
-map. The evidence says whether to ask; it never stands in for the answer.
+answer is then to delete that section (Step 5). The evidence says whether to ask;
+it never stands in for the answer.
 
 ## Step 2 — Read the catalog into the plan, before anything is deleted
 

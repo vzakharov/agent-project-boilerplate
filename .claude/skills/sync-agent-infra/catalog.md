@@ -120,9 +120,9 @@ there is no condition under which it fails to apply.
 make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 
 Its § "Language" is the one section you hydrate **or delete** rather than merge:
-it asks which language each of six surfaces is written in, and a project that is
-English throughout deletes it and records that in `upstream.json`'s `declined`
-map, which is what leaves the question re-openable later.
+it settles which language each of six surfaces is written in, and a project that
+is English throughout deletes it and records that in `upstream.json`'s `declined`
+map.
 
 ### G2 — The PR loop
 

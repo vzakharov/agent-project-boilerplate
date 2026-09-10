@@ -259,11 +259,10 @@ hydrate it with your answer, or, if the project is English throughout, **delete
 the section** and record that in `upstream.json`'s `declined` map — the same map
 that records a group you chose not to take.
 
-Deleting is the normal outcome, not a skipped step: a section left in saying
-"English, no split" plants the question in every session that loads the file for
-a project with nothing to decide. The `declined` entry is the record — and, the
-prompt being gone from your tree by then, the only route back to the question if
-the condition changes, which is why its reason is written as a condition
+Deleting is the normal outcome and not a step you skipped — that section says
+why. The `declined` entry is the record, and, the prompt being gone from your
+tree by then, the only route back to the question if the condition changes, which
+is why its reason goes in as a condition
 [in the present tense](#hydrate-the-sync-stub).
 
 One constraint is not yours to answer either way, which is why it sits outside
