@@ -47,8 +47,7 @@ if [[ "${1:-}" == "--reset" ]]; then
   wt_reset_state "$STATE_FILE"
 fi
 
-# Resolve repo flag and "owner/repo" for gh (see scripts/lib/gh-repo.sh).
-gh_resolve_repo
+gh_resolve_repo  # sets NWO, REPO_FLAG
 nwo="$NWO"
 repo_flag=()
 if ((${#REPO_FLAG[@]})); then repo_flag=("${REPO_FLAG[@]}"); fi
