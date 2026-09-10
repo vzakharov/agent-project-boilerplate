@@ -15,30 +15,31 @@ foundation, not the boilerplate's.
 
 /spinoff <owner/name> is that operation, hydrated, in G0. What
 travels is the caller's foundation — how code there is organized —
-decided by a criterion rather than a file list, which would go stale
-against every stack the skill has not seen: does this path encode
-how code here is organized, or what this particular product is. A
-second fork decides the form, since a spinoff can legitimately be
-"this repo, but in Python": under a matched stack organization
-travels as files, under a mismatched one as stated intent in the
-target's plan. No directory travels wholesale — .claude/ and
-scripts/ both mix the loop with the stack.
+decided by a criterion rather than a file list, which goes stale
+against every unseen stack: does this path encode how code here is
+organized, or what this particular product is. A second fork decides
+the form, since a spinoff can legitimately be "this repo, but in
+Python": under a matched stack organization travels as files, under
+a mismatched one as stated intent. No directory travels wholesale —
+.claude/ and scripts/ both mix the loop with the stack.
 
 The seed splits by reviewedness. main takes the copies, which
 arrived reviewed and are exactly the /handle closure that
 check-skill-catalog.sh enforces; the rewrites go through PR #1 as
-ordinary reviewed work, rather than landing the least-reviewed
-content through the one path nothing reviews. main therefore reduces
-to what the boilerplate itself would ship, and its vet.sh refuses to
-certify instead of being weakened until the seed passes.
+ordinary reviewed work. main therefore reduces to what the
+boilerplate itself would ship, and its vet.sh refuses to certify
+instead of being weakened until the seed passes.
 
 The watermark points at the root, because chains compose: a sibling
 of a sibling would make a sync walk the whole ancestry. Ancestry is
 recorded instead, in a root-first lineage array that is provenance
 and never a second sync source. The skill runs from adopters only,
-refusing when docs/catalog.md is present, and keeps the caller
-read-only, asserting the target clone's origin before /pr is
-delegated to, since /pr aims at whatever cwd resolves to.
+refusing on docs/catalog.md as Step 1's first action, and keeps the
+caller read-only, asserting the target clone's origin before
+delegating to /pr, which aims at whatever cwd resolves to.
+
+Riding along, unrelated: the squash body cap drops to 40 lines, its
+value now stated only in check-squash-message.sh and the format rule.
 
 Closes #43
 
