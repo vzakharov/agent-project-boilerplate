@@ -1,6 +1,6 @@
 > ⛔ **DRAFT — DO NOT IMPLEMENT.** This plan is not approved. Do not edit source while this file is named `*.draft.do-not-implement.md` — prep and spikes go in `tmp/`. On an explicit operator go-ahead, `git mv` it to `*.in-progress.md` and delete this banner (quoting the go-ahead in the commit) *before* touching code.
 
-# #49 — move `scripts/lib/watch-tick-common.sh` into G2
+# #49 — split the repo resolver out of `watch-tick-common.sh` into G2
 
 Issue export: `docs/issue/49/issue.md`
 
@@ -19,64 +19,96 @@ landing**, but two scripts source it, in two different groups:
 and declines G5 — the documented normal case for a repo with no CI — deletes the
 file and the PR loop stops working at its landing step.
 
-The file's own header already names both callers ("Shared helpers for the
-merge/CI check scripts (`scripts/ci-watch-tick.sh`, `scripts/check-merge.sh`)"),
-so the code is honest and only the catalog row is wrong.
+**The file is two things under one name.** Of its three functions, only one is
+shared:
 
-**What G2 actually needs from the file is one of its three functions.** The file
-defines `wt_resolve_repo` (sets `NWO` / `REPO_FLAG`, falling back to parsing the
-`origin` remote when `gh` cannot auto-detect it behind a sandboxed proxy),
-`wt_smart_sleep` and `wt_reset_state`. `scripts/check-merge.sh:54` calls
-`wt_resolve_repo` and nothing else; the other two are watch-loop machinery only
-`scripts/ci-watch-tick.sh` uses. This matters to question 1, not to the row: a
-partial dependency is still a dependency, and the row moves whole either way.
+| Function | What it does | `check-merge.sh` | `ci-watch-tick.sh` |
+| --- | --- | --- | --- |
+| `wt_resolve_repo` | Sets `NWO` and `REPO_FLAG`, falling back to parsing the `origin` remote when `gh` cannot auto-detect the repo behind a sandboxed proxy. Guarantees `REPO_FLAG` is non-empty, since expanding an empty array under `set -u` errors on macOS's bash 3.2. | ✅ `:54` | ✅ `:48` |
+| `wt_smart_sleep` | Sleeps `INTERVAL` minus the time already elapsed since the previous tick. | — | ✅ `:108` |
+| `wt_reset_state` | Removes the state file for `--reset` and exits. | — | ✅ `:44` |
 
-Nothing machine-checks
-this: `scripts/check-skill-catalog.sh` asserts that a catalog row's path exists
-(assertion 3) and that skills have exactly one row (assertion 2), but it greps
+The two unshared functions are the tick machinery, and `check-merge.sh` is
+architecturally the opposite of a tick loop — its own header declares it
+"Stateless: it computes everything from git on each run (no baseline file)",
+usage "run once". So the generic thing G2 needs is bundled into a file named,
+prefixed (`wt_`) and documented after G5's polling loop.
+
+The catalog row is wrong either way, and nothing machine-checks it:
+`scripts/check-skill-catalog.sh` asserts that a row's path exists (assertion 3)
+and that skills have exactly one row (assertion 2), but it greps
 `@.claude/skills/…` pointers only — no script-to-script dependency is checked in
 either language.
 
 ## Approach
 
-Move the row into G2 and cite it from both directions, using the form the
-catalog already uses for its one other cross-group script dependency —
-`scripts/export-github-item.py`'s row, which lists `scripts/lib/github.py (G2)`
-group-tagged in **Requires**. Groups partition the inventory (`docs/catalog.md`
-§ "How to read a row"), so the file can only live in one, and G2 is the group
-that cannot do without it.
+Split the file along the seam that already exists in it. `wt_resolve_repo`
+becomes `scripts/lib/gh-repo.sh` in **G2**, where its only unconditional caller
+lives; `wt_smart_sleep` and `wt_reset_state` stay in
+`scripts/lib/watch-tick-common.sh` under **G5**, which is what they are actually
+for. `scripts/check-merge.sh` then sources one G2 file and nothing from G5, so a
+G2-only adopter's PR loop is self-contained — which is what issue #49 is about.
 
-Docs-only. No script, skill or shell behavior changes.
+`scripts/ci-watch-tick.sh` sources both, and its G5 row cites the new file
+group-tagged as `scripts/lib/gh-repo.sh` (G2) — the form
+`scripts/export-github-item.py`'s row already uses for `scripts/lib/github.py
+(G2)`, and the catalog's established way to declare a cross-group script
+dependency.
+
+**Moving the row whole would leave that same G5→G2 arrow** (a G2-resident
+`watch-tick-common.sh` is still what `ci-watch-tick.sh` sources), so the split
+does not add a dependency direction — it removes the two functions a G2-only
+adopter would otherwise carry and never call, and lets each file's name match
+its group. See question 1 for the minimal alternative.
 
 ## Steps
 
-1. **Move the row from G5 to G2** in `docs/catalog.md`.
-   - Delete `docs/catalog.md:213` from the G5 table.
-   - Add it to the G2 table, placed next to `scripts/check-merge.sh` (its G2
-     caller) rather than at the end, so the pair reads together.
-   - Rewrite **What it does** so it stops implying a single caller family:
-     currently "Shared shell helpers for the watch-tick scripts", which reads as
-     G5-only. Replace with wording that names both jobs — the repo-resolution
-     fallback (`wt_resolve_repo`, needed wherever `gh` cannot auto-detect the
-     remote behind a proxy), the elapsed-aware sleep, and state-file reset —
-     phrased as the shared plumbing behind `scripts/check-merge.sh` and
-     `scripts/ci-watch-tick.sh`. Keep **Requires** `bash`, **Pulls in** `—`,
+1. **Create `scripts/lib/gh-repo.sh`** (G2) holding the repo resolver, moved
+   verbatim from `scripts/lib/watch-tick-common.sh` with its comment block:
+   - Rename `wt_resolve_repo` → `gh_resolve_repo`. The `wt_` prefix names the
+     watch-tick loop; a file that no longer belongs to it should not keep it.
+   - It reads `${WT_PROG:-watch-tick}` for its diagnostic prefix. Give the new
+     file its own `${GH_REPO_PROG:-gh-repo}` rather than having a G2 file read a
+     variable named for G5's loop, and set it in both callers alongside the
+     `WT_PROG` each already sets.
+   - Keep the header's two standing contracts, which are the reason the code
+     reads the way it does: the file is **sourced, not executed** (the caller
+     owns `set -euo pipefail`), and `REPO_FLAG` is **never left empty** because
+     of the bash 3.2 `set -u` behavior.
+2. **Trim `scripts/lib/watch-tick-common.sh`** to `wt_smart_sleep` and
+   `wt_reset_state`, and narrow its header: it is the watch loop's helpers, with
+   `scripts/ci-watch-tick.sh` its only caller. Drop `scripts/check-merge.sh`
+   from the callers line.
+3. **Repoint `scripts/check-merge.sh`**: source `scripts/lib/gh-repo.sh` instead
+   of `watch-tick-common.sh`, update the `# shellcheck source=` directive above
+   it, call `gh_resolve_repo`, and set `GH_REPO_PROG` (keeping `WT_PROG` only if
+   something still reads it — it should not, so drop it and set `PROG` directly).
+4. **Repoint `scripts/ci-watch-tick.sh`**: source both files, each with its own
+   `# shellcheck source=` directive, call `gh_resolve_repo`, and set both prog
+   variables. Its line-47 comment points at `watch-tick-common.sh` for the repo
+   flag — repoint it at `gh-repo.sh`.
+5. **Update `docs/catalog.md`**:
+   - Add a `scripts/lib/gh-repo.sh` row to the **G2** table next to
+     `scripts/check-merge.sh`, describing the proxy-aware repo resolution rather
+     than "shared helpers". **Requires** `bash`, **Pulls in** `—`,
      **Disposition** `adopt`.
-2. **Declare the dependency from `scripts/check-merge.sh`'s row**
-   (`docs/catalog.md:130`): add `scripts/lib/watch-tick-common.sh` to its
-   **Requires** cell, untagged (same group).
-3. **Declare it from `scripts/ci-watch-tick.sh`'s G5 row**
-   (`docs/catalog.md:212`): add `scripts/lib/watch-tick-common.sh` (G2) to its
-   **Requires** cell, group-tagged — exactly the `export-github-item.py` form.
-4. **Fix the G5 group blurb in `README.md:22`**, which reads "`/watch-ci`, and
-   its polling scripts" (plural). After the move G5 carries one polling script;
-   make it singular so the README and the catalog agree on what the group
-   contains.
-5. **Check nothing else asserts the old grouping.** `ADOPTING.md`'s three G5
-   mentions (lines 92, 128, 183) are about CI detection and the proxy, not about
-   this file, so they stand — re-grep to confirm rather than assuming.
-6. **Run `bash scripts/check-skill-catalog.sh`** to confirm the row's path still
-   resolves after the move (assertion 3) and no skill row was disturbed.
+   - Add it to `scripts/check-merge.sh`'s **Requires** cell, untagged (same
+     group).
+   - Keep `scripts/lib/watch-tick-common.sh` in **G5**, rewriting its
+     description to the two tick helpers it now holds.
+   - Add both `scripts/lib/watch-tick-common.sh` and `scripts/lib/gh-repo.sh`
+     (G2) to `scripts/ci-watch-tick.sh`'s **Requires** cell, the second
+     group-tagged.
+6. **Check `README.md:22`.** Its G5 blurb reads "`/watch-ci`, and its polling
+   scripts" — still true after the split (`ci-watch-tick.sh` plus
+   `watch-tick-common.sh`), so leave it. Re-read it rather than assuming.
+7. **Verify nothing else asserts the old shape.** `ADOPTING.md`'s three G5
+   mentions (lines 92, 128, 183) are about CI detection and the proxy, not this
+   file. Re-grep for `watch-tick` and `wt_resolve_repo` across the tree to catch
+   any prose citation the four file edits missed.
+8. **Run the checks**: `bash scripts/check-skill-catalog.sh` (both new paths
+   resolve, no skill row disturbed) and `./scripts/vet.sh`. Then exercise both
+   scripts for real — see Verification.
 
 ## What this plan deliberately does not do
 
@@ -84,70 +116,76 @@ Docs-only. No script, skill or shell behavior changes.
   this out and the code agrees: a missing `source` target fails immediately and
   by name, so the failure is loud, and the one other cross-group script
   dependency in the tree is already declared correctly. A checker here would be
-  scope creep against a mechanism that works.
-- **No file rename.** See question 1.
+  more code than the thing it checks.
+- **No behavior change.** Every function keeps its body; this is a move, two
+  renames and four re-pointings. Any diff hunk that changes what a function
+  *does* is out of scope.
 
 ## Open questions
 
-1. **Rename or split the file?** After the move, a G2 adopter who declines G5
-   holds `scripts/lib/watch-tick-common.sh` with no watch-tick script in the
-   tree — the name points at a caller they do not have, and at two functions
-   they never call.
-   - **(a) Move it whole, don't rename — recommended, and the plan is written
-     this way.** The mismatch is cosmetic and self-correcting on read: the
-     file's header names both callers in its first two lines. Either code-touching
-     option churns every adopter's tree at the next `/sync-agent-infra` for no
-     behavior change.
-   - (b) Rename it (e.g. `scripts/lib/gh-common.sh`), `wt_` prefix included, or
-     the rename buys only half the clarity — touches both sourcing scripts and
-     their `# shellcheck source=` directives.
-   - (c) Split it: `wt_resolve_repo` into a G2 lib, `wt_smart_sleep` and
-     `wt_reset_state` staying in G5's `watch-tick-common.sh`. Conceptually the
-     cleanest — each group holds what it needs — but it buys no adoptability.
-     G5's rows declare no G2 requirement today, so the split creates a G5→G2
-     dependency in exchange for the G2→G5 one it removes: the same arrow,
-     reversed, plus a code change to a docs-only fix.
+1. **Split, or just move the row?** The split is a code change on an issue that
+   asked for a catalog fix, so the minimal alternative stays on the table.
+   - **(a) Split — recommended, and the plan is written this way.** It fixes the
+     cause rather than the label: a G2-only adopter gets a self-contained PR
+     loop instead of a file named and prefixed after a loop they declined, with
+     two functions they never call. Both options leave `ci-watch-tick.sh`
+     depending on a G2 file, so the split costs no dependency the move avoids.
+   - (b) Move the row whole into G2 and cite it group-tagged from
+     `ci-watch-tick.sh`'s row, changing no code. Smaller diff, no churn in
+     adopters' trees at the next `/sync-agent-infra`, and it does close #49 —
+     the catalog would then be accurate. The cost is that the accurate statement
+     is "the PR loop requires `watch-tick-common.sh`", which reads as a catalog
+     error every time someone meets it.
 2. **Add a fifth bullet to `docs/catalog.md` § "Closure is not optional"?** That
    list states four closure facts "counter-intuitive enough to state outright" —
    `/plan` travelling with G2, `scripts/vet.sh` not being optional within it,
    `/finalize` reaching conditionally into G3 and G5, and `/override-gh` being
    pulled in by G0 and G3. Its bar is a **group-level** surprise a per-item row
-   cannot express, and "a file named `watch-tick-*` is a G2 requirement"
-   arguably clears it.
-   - **(a) No — recommended, and the plan is written this way.** After step 3
-     both rows carry the dependency in the **Requires** column, which is built
-     for it and is where a reader deciding on either script is already looking.
-     Once the row is right this is a row-level fact, not a group-level one.
-   - (b) Yes — one sentence. The case for it: an adopter skims groups before
-     rows, and a `watch-tick-*` file inside the PR loop reads as a mistake in
-     the catalog rather than a fact about it.
+   cannot express.
+   - **(a) No — recommended, and the plan is written this way.** Under the split
+     each file's name matches its group, so there is no surprise left to state:
+     `scripts/ci-watch-tick.sh`'s **Requires** cell carries the one cross-group
+     fact, in the column built for it.
+   - (b) Yes — one sentence. This only earns its place under option 1(b), where
+     the counter-intuitive thing (a `watch-tick-*` file inside the PR loop)
+     survives the fix.
 
 ## DRY notes
 
-- **Reused, not invented:** the cross-group citation form already exists in the
-  catalog (`scripts/export-github-item.py` → `scripts/lib/github.py (G2)`). This
-  change makes a second row use it rather than introducing a convention.
-- **The duplication this creates is wanted.** After step 3 the dependency is
-  stated in three places: the file's own header comment, and the **Requires**
-  cell of each sourcing script's row. These are not copies of one fact for one
-  audience — the header serves someone editing the shell, and each row serves an
-  adopter deciding whether to copy that one script. The catalog's row format is
-  per-item by construction, so a shared "see the other row" pointer would be
-  worse than the restatement.
-- **No shared abstraction is extracted, and none should be.** The tempting one is
-  a machine check that every `source`d path is declared in the sourcing script's
-  catalog row. Two script-to-script dependencies exist in the whole tree and one
-  is already correct, so the checker would be more code than the thing it
-  checks, in a repo where the loop is the product.
-- **One home per statement, per CLAUDE.md § "Writing things down".** The group
-  membership is stated in `docs/catalog.md` only; `README.md:22`'s group blurb is
-  a pointer, which is why step 4 repoints it instead of leaving it half-right.
+- **The split is the DRY call, and it goes the other way from the usual one.**
+  `wt_resolve_repo` is genuinely shared — two callers, one implementation, and
+  it stays that way. What is *not* shared is the file around it, and bundling
+  unshared code with shared code is what made the catalog row unanswerable. The
+  extraction reduces what the G2 caller must take to what it actually uses.
+- **Reused, not invented:** the cross-group citation form already exists
+  (`scripts/export-github-item.py` → `scripts/lib/github.py (G2)`), and
+  `scripts/lib/` is already where shared script plumbing lives, in both
+  languages. No new convention.
+- **Not extracted: a third lib for the prog-prefix pattern.** Both libs will
+  read a `${…_PROG:-default}` for diagnostics — two lines of the same shape. A
+  shared helper for that would be a file to hold a parameter default, and it
+  would re-create the cross-group coupling this plan removes.
+- **Not extracted: a checker** asserting every `source`d path is declared in the
+  sourcing script's catalog row. Three script-to-script dependencies exist in
+  the whole tree after this change, all declared; the checker would outweigh
+  them.
+- **One home per statement, per CLAUDE.md § "Writing things down".** Each
+  function's contract stays in its file's header, the group membership stays in
+  `docs/catalog.md`, and `README.md`'s blurb stays a pointer — step 6 checks it
+  still points true rather than restating it.
 
 ## Verification
 
-- `bash scripts/check-skill-catalog.sh` passes.
-- `grep -n "watch-tick-common" docs/catalog.md` shows the row under G2 and a
-  citation in each of the two sourcing scripts' rows.
-- The G5 table has three rows; the G2 table has one more than before.
-- No file outside `docs/catalog.md` and `README.md` is modified (plus this
-  plan and the issue export, both swept at finalize).
+- `bash scripts/check-skill-catalog.sh` and `./scripts/vet.sh` pass.
+- `bash -n` on all three shell files, and `shellcheck` if available — the
+  `# shellcheck source=` directives must name the files actually sourced.
+- **`scripts/check-merge.sh` runs on this branch** and reports against the PR's
+  base, proving the extracted resolver works through the session proxy — the
+  case `wt_resolve_repo`'s fallback exists for, and the one a unit test would
+  not cover.
+- **`scripts/ci-watch-tick.sh --reset` runs** without an unbound-variable or
+  missing-function error, proving both sources land and `wt_reset_state`
+  survived the trim.
+- `grep -rn "wt_resolve_repo\|watch-tick-common" .` returns only
+  `scripts/ci-watch-tick.sh`, `scripts/lib/watch-tick-common.sh` and their
+  catalog rows — no stale citation anywhere else.
