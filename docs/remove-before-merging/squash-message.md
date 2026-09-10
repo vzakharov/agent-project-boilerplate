@@ -9,22 +9,28 @@ An adopting project routinely has human readers in one language and an
 agent-facing instruction set in another, and nothing here told it to
 decide that — so the decision got made implicitly, one file at a time,
 by whichever session wrote that file. Language now sits in the set an
-adopter hydrates explicitly, beside the G6 stubs and scripts/vet.sh.
+adopter settles explicitly, beside the G6 stubs and scripts/vet.sh.
 
-CLAUDE.md § "Language" is the home: a stub prompt an adopter replaces
-with its answer, and a table of the six surfaces that answer has to
-cover: durable docs, transient working artifacts, commit and PR text,
+CLAUDE.md § "Language" is the prompt: a stub an adopter replaces with
+its answer, and a table of the six surfaces that answer has to cover:
+durable docs, transient working artifacts, commit and PR text,
 skill-emitted prose, conversation, and code. Each drifts for its own
 reason, so a reader who settles only "which language the docs are in"
-has decided a third of it. The boilerplate picks no default; "English
-throughout" is a complete answer, written down rather than assumed.
+has decided a third of it. The boilerplate picks no default, and the
+disposition is a G6 stub's: hydrate now, or delete. An English-only
+project deletes the section rather than answering it — one reading "no
+split needed" plants the question in every session that loads the file
+for a project with nothing to decide — and records that as a declined
+entry in upstream.json, phrased as a condition, which is what lets
+/sync-agent-infra re-open the question if the condition stops holding.
 
-One part of the surface is not the adopter's to choose, and § "Markers
-stay English" states it: a string another skill locates by matching its
-text stays English. Translating the `## QA Checklist` heading yields a
-second section beside the one /qa-checklist could not find, not a
-translated one. The rule carries a recognition test so a marker added
-later needs no edit here.
+§ "Working with skills" carries the part that is nobody's to answer:
+a string another skill locates by matching its text is fixed. Renaming
+the `## QA Checklist` heading and translating it are one defect, each
+yielding a second section beside the one /qa-checklist could not find,
+so the rule binds English-only projects too — which is why it sits
+outside the section most of them delete. It states a recognition test
+alongside the current markers, so one added later needs no edit there.
 
 The prompt reaches both acquisition routes: ADOPTING.md's shared tail
 for the subset path, where the byte-counting caveat of #53 also lives
