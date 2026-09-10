@@ -16,7 +16,7 @@ its answer, and a table of the six surfaces that answer has to cover:
 durable docs, transient working artifacts, commit and PR text,
 skill-emitted prose, conversation, and code. Each drifts for its own
 reason, so a reader who settles only "which language the docs are in"
-has decided a third of it. The boilerplate picks no default, and the
+has decided one row of six. The boilerplate picks no default, and the
 disposition is a G6 stub's: hydrate now, or delete. An English-only
 project deletes the section rather than answering it — one reading "no
 split needed" plants the question in every session that loads the file
