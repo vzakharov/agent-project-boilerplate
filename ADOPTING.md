@@ -267,9 +267,10 @@ file is a
 [`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
 [the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
 
-One line in `vet.sh` — the call to `scripts/check-squash-message.sh` — is not
-stack-specific, so decide it separately rather than sweeping it away with the
-rest; the comment above it says what dropping it costs.
+Two lines in `vet.sh` — the calls to `scripts/check-skill-catalog.sh` and
+`scripts/check-squash-message.sh` — are not stack-specific, so decide each
+separately rather than sweeping them away with the rest; the comment above them
+says what dropping either costs.
 
 ### Hydrate or delete the G6 stubs
 

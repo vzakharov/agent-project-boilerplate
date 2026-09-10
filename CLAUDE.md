@@ -186,11 +186,14 @@ Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`
 
 ### Adding or renaming a skill
 
-Run `bash scripts/check-skill-catalog.sh`. The skills are densely
-cross-referenced, and a `@.claude/skills/<name>/SKILL.md` pointer to a file that
-isn't there fails **silently** — the agent follows the surviving prose and skips
-the step it couldn't load. The script also asserts that every skill has exactly
-one row in `docs/catalog.md`, which is what keeps that inventory from drifting as
-skills are added.
+The vet run covers this: `scripts/vet.sh` calls
+`scripts/check-skill-catalog.sh`, so there is no separate step to remember —
+run the script directly only when you want the answer before the next vet. What
+it protects: the skills are densely cross-referenced, and a
+`@.claude/skills/<name>/SKILL.md` pointer to a file that isn't there fails
+**silently** — the agent follows the surviving prose and skips the step it
+couldn't load. The script also asserts that every skill has exactly one row in
+`docs/catalog.md`, which is what keeps that inventory from drifting as skills
+are added.
 
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
