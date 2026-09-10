@@ -23,13 +23,12 @@ Agent-facing files — CLAUDE.md, .claude/skills/**, .claude/rules/**,
 code — are English, the reader there being the model: it follows
 English most reliably, and other scripts spend several times the
 tokens saying the same thing. Conversation answers each message in
-the language that message was written in, a reply being no standing
-artifact. Either is a project's to override, but an override is a
-decision someone makes, not a blank left open.
-
-That makes the section fill-only rather than deletable: the two stated
-groups live in it, so an English-only project writes "English" on the
-first line and keeps the rest as the place a session reads them off.
+the language that message was written in, per message rather than per
+person. Both live in the section, which is what makes it fill-only
+rather than deletable: an English-only project writes "English" on
+the first line and keeps the rest as the place a session reads them
+off. Either is a project's to override, but an override is a decision
+someone makes, not a blank left open.
 
 The prompt reaches both acquisition routes: ADOPTING.md's shared tail
 for the subset path, where the byte-counting caveat of #53 also lives
