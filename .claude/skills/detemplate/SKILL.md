@@ -25,13 +25,12 @@ deliberately writes no source. With no brief, ask for it before anything else.
 `/override-gh` says about `gh` and `GH_TOKEN` holds here unchanged. The fork
 arrives before the operator has set an environment setup script, and `apt-get
 install -y gh` lives in that script (Step 6), so `.claude/hooks/session-start.sh`
-finds no `gh` to shim. It says so into the session context, which is the litmus
-test for a setup script that is unset or missing the install; take that notice at
-face value rather than re-deriving it. To probe by hand, use `gh api
-repos/{owner}/{repo} --jq .visibility` rather than `gh auth status`, which reports
-a bogus failure in a working session. Finding none, Step 3's derivation and
-`/plan`'s publish step both need it: hand the operator the setup script from
-Step 6 first.
+finds nothing to shim and says so on startup — `/override-gh` owns that signal
+and what it means. Take it at face value rather than re-deriving it; to probe by
+hand, use `gh api repos/{owner}/{repo} --jq .visibility` rather than `gh auth
+status`, which reports a bogus failure in a working session. Finding no `gh`,
+Step 3's derivation and `/plan`'s publish step both need it: hand the operator
+the setup script from Step 6 before either.
 
 ## Step 0 — Refuse where it does not apply
 

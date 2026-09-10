@@ -177,11 +177,10 @@ planning actually happens.
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
 **The hook does not install `gh`; it shims one that is already there.** Finding
-none, it reports that into the session context and continues — the litmus test
-for an environment setup script that is unset or missing `apt-get install -y
-gh`, and the only self-detecting part of a step no agent can perform. On
-web/remote that install belongs in the setup script, which only the operator can
-set — `ADOPTING.md` § "Hand the operator a setup script" owns what to tell them.
+none, it reports that into the session context and continues. On web/remote the
+install belongs in the environment setup script, which only the operator can
+set — `ADOPTING.md` § "Hand the operator a setup script" owns what to tell them,
+and why that report is the step's only self-detecting part.
 
 **Declinable, at a scoped cost** — `ADOPTING.md` § "If you decline G4" owns the
 rationale, the `HTTPS_PROXY` conflict and the fallback. What declining actually
