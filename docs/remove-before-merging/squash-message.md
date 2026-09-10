@@ -9,31 +9,35 @@ A fresh "Use this template" fork arrives carrying every skill except
 the one that turns it into a project, so the operator composes that
 prompt by hand while every other stage of the loop has a lever.
 
-`/detemplate <brief>` is that lever. It routes through `/plan` rather
-than acting directly, so the pruning is reviewed as a diff before
-anything is deleted, and it refuses where `docs/catalog.md` is absent
-— `/spinoff`'s guard read backwards, the two partitioning cleanly. Its
+`/detemplate <brief>` is that lever, and it routes through `/plan`, so
+the pruning is reviewed as a diff before anything is deleted. Its
 ordering is load-bearing at one point: the catalog goes first, which
 flips `check-skill-catalog.sh` assertion 4 from listing the stubs to
 enforcing their prune. The watermark's `lastSyncedSha` and `lineage`
 are derived from the fork's creation time, git having no ancestry to
 give in a tree whose single commit is unrelated to the source. The
-skill deletes itself last.
+skill deletes itself last, so nothing cites it as an `@`-reference —
+one would dangle afterwards, in the tree of whoever just ran it.
 
-`scripts/vet.sh` gains a third state. Two left a fork with no stack
-yet — the normal state of a fork taken to start a project — with no
-honest option: `exit 1` fails `/finalize` step 1 on every prose-only
-PR, training the loop to route around the vet run, and `exit 0` is a
-false green the day a stack lands. It now exits 0 and trips when a
-stack manifest appears with neither `scripts/vet.sh` nor the
-session-start hook's dependency install wired to it — nothing caught
-the second at all.
+A session asked to build a feature in such a fork routes here first,
+on the catalog's presence plus an origin that is not this repo. That
+is the predicate `/spinoff` already refuses on, and the clause that
+stops a session pruning this repo itself; the notice lives in
+`CLAUDE.md`'s "About this project" stub, which the run rewrites, so it
+retires with the condition it describes.
 
-`ADOPTING.md` § "Template fork" becomes a pointer at the skill,
-leaving the subset-adoption path whole for the session that reads that
-file over the network with none of these skills installed.
-`docs/catalog.md` gains the per-group reverse-closure counts the prune
-needs, and the row `docs/img/` never had.
+The vet rule gains its missing clause. Four places told an adopter to
+make `scripts/vet.sh` exit 1 until it runs real checks, with no
+exception for a repo that has no stack yet — so a fork following that
+literally fails `/finalize` step 1 on every prose-only PR, teaching
+the loop to route around the vet run. Exiting 0 is right while the
+built-in checks are the whole run.
+
+`ADOPTING.md` § "Template fork" becomes a pointer, leaving the
+subset-adoption path whole for the session that reads that file over
+the network with no skills installed. `docs/catalog.md` gains the
+per-group reverse-closure counts the prune needs, and the row
+`docs/img/` never had.
 
 Closes #50
 
