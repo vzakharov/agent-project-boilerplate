@@ -300,9 +300,11 @@ Three consequences, each stated by a check rather than by taste:
   for a reason the contract calls legitimate.
   **What must not happen is the source repo's own `vet.sh` reaching `main`** —
   the working one you are standing in, which runs its lint, types and tests.
-  Carried across, it certifies a stack the target does not have yet, and the
-  false green sits unchallenged until PR #1 lands. The target's stack and the
-  checks over it arrive together, in PR #1, or not at all.
+  It certifies nothing there — it fails, `pnpm lint` having no `package.json` to
+  read — so `main` reds from the moment it is seeded and every PR against it
+  opens red until something lands the stack. Same defect as a non-zero stub,
+  reached from the other side. The target's stack and the checks over it arrive
+  together, in PR #1, or not at all.
 
 **Why the `main` floor cannot be carved smaller.** Closure decides it:
 `check-skill-catalog.sh` fails on a dangling `@.claude/skills/…` reference, and

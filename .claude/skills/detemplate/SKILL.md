@@ -64,20 +64,28 @@ needs probing, and is decidable by inspection:
 git remote -v                                  # Step 0's origin clause, and the fork's name
 gh api "repos/$R" --jq .default_branch         # the trunk G2 assumes
 gh api "repos/$R" --jq .allow_squash_merge     # does the squash discipline apply?
-gh api "repos/$R/actions/workflows" --jq .total_count  # is there CI? (G5)
 ```
 
 **Use the REST form throughout** — `gh <noun> <verb> --json` is GraphQL and 403s
 in a proxied session before the shim is installed, which is the state a fresh
 fork starts in.
 
-**Nothing here probes whether the repo tracks work as issues, because the fork
-has no process to discover — it inherits the loop's.** `ADOPTING.md` asks that
-of a repo with a history of its own; a fork one commit old has none, and a
-count of its issues measures its age rather than its intent. So G3 travels by
-default and Step 5.5 files the first issue unconditionally. Convention over
-configuration: an operator who tracks work in Linear or Jira declines G3 during
-plan review, which is a decision they state, not one this step infers.
+**Every probe here reads a setting; none reads a count.** `default_branch` and
+`allow_squash_merge` have values on the fork's first day and gate what the loop
+may do. The two probes `ADOPTING.md` adds — open issues (G3), registered
+workflows (G5) — are counts, and both are zero in *every* fresh fork: the issues
+because the repo is one commit old, the workflows because this boilerplate ships
+no `.github/` for the template copy to carry. Run here, they measure the fork's
+age and hand the answer back as if it were the operator's intent.
+
+`ADOPTING.md` asks them of a repo with a history of its own, where they are real
+questions. **A fork has no process to discover — it inherits the loop's**, so
+both groups travel by default: Step 5.5 files the first issue unconditionally,
+and G5's CI skills wait for a workflow rather than requiring one, so a fork with
+no CI yet carries them at the cost of the files alone. Convention over
+configuration — an operator who plans in Linear, or runs CI off Actions,
+declines the group at plan review, a decision they state rather than one this
+step infers behind them.
 
 **The stack, including "no stack yet."** That is the normal state of a fork taken
 to start a project, and the state `CLAUDE.md` § "Vetting"'s no-stack-yet clause
@@ -191,9 +199,10 @@ the report** the operator pastes into the setting.
 Two reasons it matters:
 
 - **It is where `gh` comes from.** `apt-get install -y gh` belongs in it. Without
-  `gh` on `PATH`, `.claude/hooks/session-start.sh` prints `gh not found on PATH;
-  skipping gh proxy shim` and continues — so the shim silently never installs and
-  every `gh`-dependent skill fails later, far from the cause.
+  `gh` on `PATH` there is nothing for the proxy shim to wrap, and every
+  `gh`-dependent skill fails later, far from the cause — so
+  `.claude/hooks/session-start.sh` reports the missing install into the session
+  context. That notice is the one part of this step that detects itself.
 - **It is the only place a toolchain version can be pinned** for remote sessions,
   and `scripts/vet.sh` running under the wrong one is a confusing failure.
 
