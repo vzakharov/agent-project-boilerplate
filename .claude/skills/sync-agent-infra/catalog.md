@@ -1,3 +1,11 @@
+> ⛔ **This file describes the source repo, and is never vendored.** Its presence
+> is what marks a tree as the boilerplate rather than a repo that adopted it —
+> `scripts/check-skill-catalog.sh` and `/spinoff` both key on that. If you are
+> reading this in a repo that *adopted* this infrastructure, it rode along with
+> `.claude/skills/**` by mistake: **delete the file.** Do not prune its rows to
+> match your tree — that repairs the symptom (assertion 3 failing on rows you
+> can never satisfy) and leaves the sentinel permanently wrong.
+
 # Catalog: what's here, and how much of it you need
 
 The per-item inventory of this repo's agent infrastructure. One row per skill,
@@ -7,14 +15,14 @@ repo.
 Two audiences:
 
 - **Adopting a subset into an existing repo** — read this alongside
-  [`ADOPTING.md`](../ADOPTING.md), which owns the procedure. This file owns the
-  inventory; it does not restate the steps.
+  [`ADOPTING.md`](../../../ADOPTING.md), which owns the procedure. This file owns
+  the inventory; it does not restate the steps.
 - **`/sync-agent-infra`, on every run** — when a commit at the source adds a skill
   that is in neither your `adopted` nor your `declined` list, the sync reads that
   skill's row here to surface the decision with its criteria attached.
 
-**This file is never vendored downstream.** It is read from a fresh clone of the
-source repo each time, so it structurally cannot go stale in an adopter's tree.
+Both audiences read it from a fresh clone of the source repo, which is what lets
+the banner's rule hold: no adopter needs a copy, so no copy can go stale.
 
 ## How to read a row
 
@@ -276,7 +284,7 @@ means you are looking at working state, not the product.
 | `README.md` | What this repo is, and the two ways to acquire it. Yours already exists. | — | — | never |
 | `ADOPTING.md` | The acquisition procedure. Read once, over the network, from the clone. | — | — | never |
 | `docs/img/` | `ADOPTING.md`'s only asset — the screenshot locating the environment setup script. Goes when that file does, or it is left an orphan. | — | — | never |
-| `docs/catalog.md` | This file. Read from a fresh clone on every sync, so it cannot go stale downstream. | — | — | never |
+| `.claude/skills/sync-agent-infra/catalog.md` | This file. Read from a fresh clone on every sync, so it cannot go stale downstream. Sits inside a tree the copy steps take wholesale, so both of them name it as a carve-out. | — | — | never |
 | `/detemplate` | Turn a fresh template fork into a project: prune the `never` rows and unused groups, hydrate what stays, hand back the setup script. Routes through `/plan` and deletes itself last. | `gh`, `$GH_TOKEN`; a whole-tree fork, not a subset copy | `/plan` (G2); `/spinoff`, `/sync-agent-infra` (G0) | never |
 | `docs/plans/*` | Working artifacts: file-based plans mid-flight. `/finalize` sweeps them before they reach a trunk. | — | — | never |
 | `docs/remove-before-merging/*` | Working artifacts: the tracked squash-message draft. Swept at finalize. | — | — | never |

@@ -6,14 +6,14 @@
 #      without its closure leaves a pointer that fails *silently* — the agent
 #      follows the surviving prose and skips the step it could not load.
 #   2. Every `.claude/skills/*/` directory has exactly one row in
-#      `docs/catalog.md`.
+#      `.claude/skills/sync-agent-infra/catalog.md`.
 #   3. Every path named in a catalog row's first column exists — for a row
 #      naming a whole tree, its parent, since a swept working-artifact tree is
 #      absent by design.
 #   4. A skill's two stub markers agree, and no unhydrated stub is present
 #      downstream.
 #
-# Assertions 2-3 skip when `docs/catalog.md` is absent — the normal downstream
+# Assertions 2-3 skip when the catalog is absent — the normal downstream
 # case, since the catalog describes the source repo and is never vendored. So the
 # same script is useful at every link in the adoption chain. Assertion 4 runs
 # everywhere but changes verdict on the same signal: the catalog's presence is
@@ -26,7 +26,7 @@ set -uo pipefail
 
 cd "$(dirname "$0")/.." || exit 1
 
-CATALOG="docs/catalog.md"
+CATALOG=".claude/skills/sync-agent-infra/catalog.md"
 failures=0
 
 fail() {
@@ -44,7 +44,7 @@ mapfile -t sources < <(
   {
     [ -d .claude ] && find .claude -type f \
       \( -name '*.md' -o -name '*.sh' -o -name '*.json' \) -print
-    for f in CLAUDE.md README.md ADOPTING.md docs/catalog.md; do
+    for f in CLAUDE.md README.md ADOPTING.md; do
       [ -f "$f" ] && printf '%s\n' "$f"
     done
     [ -d scripts ] && find scripts -type f \( -name '*.sh' -o -name '*.py' \) -print

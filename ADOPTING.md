@@ -20,8 +20,10 @@ the acquisition procedure. It is read once, over the network, and is **never
 copied into the adopting repo** — nothing here describes how to work in your
 project, only how to get the infrastructure into it.
 
-The inventory lives in [`docs/catalog.md`](docs/catalog.md): one row per skill,
-script and file, with the criteria for deciding whether you need it. This file
+The inventory lives in
+[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md):
+one row per skill, script and file, with the criteria for deciding whether you
+need it. This file
 does not restate what any skill does; it cites catalog rows. Read them together.
 
 Two ways in. Pick the one that matches how you got here:
@@ -130,7 +132,7 @@ So on the web, G4 is a **prerequisite of G2, G3 and G5** — not a nicety.
 
 **To adopt it**, copy `.claude/hooks/session-start.sh` and merge
 `.claude/settings.json` (see the [G4 catalog
-rows](docs/catalog.md#g4--remote-session-plumbing)), then install the shim for
+rows](.claude/skills/sync-agent-infra/catalog.md#g4--remote-session-plumbing)), then install the shim for
 the *current* session so the remaining steps and the newly-adopted skills have a
 working `gh`.
 
@@ -199,23 +201,27 @@ you skipped** in your report.
 
 ### Step 4 — Pick groups from the catalog, resolve the closure, copy
 
-Read [`docs/catalog.md`](docs/catalog.md) and decide group by group, using the
-Step 2 profile. Then, before copying, resolve each chosen group's **Pulls in**
+Read [the catalog](.claude/skills/sync-agent-infra/catalog.md) and decide group
+by group, using the Step 2 profile. Then, before copying, resolve each chosen
+group's **Pulls in**
 column — [Closure is not
-optional](docs/catalog.md#closure-is-not-optional) explains what breaks if you
+optional](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional) explains what breaks if you
 don't, and lists the four counter-intuitive cases. Don't re-derive them.
 
-Copy the resolved set from the clone into your repo. Then continue to the shared
-tail.
+Copy the resolved set from the clone into your repo — but **not**
+[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md#never),
+which taking `/sync-agent-infra` otherwise brings along inside its directory.
+Then continue to the shared tail.
 
 ## Template fork
 
 *"Use this template"* already gave you every file, so there is nothing to select
 and nothing to clone — your work is removing what doesn't apply and hydrating
-what does. That means deleting the [`never` rows](docs/catalog.md#never) that
+what does. That means deleting the [`never`
+rows](.claude/skills/sync-agent-infra/catalog.md#never) that
 describe the template, pruning the groups this project won't use and stripping
 the `@`-references pointing into them, hydrating or deleting the [G6
-stubs](docs/catalog.md#g6--stack-stubs), and filling in the stubs the
+stubs](.claude/skills/sync-agent-infra/catalog.md#g6--stack-stubs), and filling in the stubs the
 [shared tail](#shared-tail-both-modes) names. It is a large, largely
 irreversible diff over a tree nobody has reviewed.
 
@@ -237,7 +243,7 @@ and run that command.
 
 Your repo already has conventions, or will. Take the boilerplate's sections,
 merge them into yours, and keep your stack-specific content — it is a
-[donor, not a replacement](docs/catalog.md#g1--prose--principles).
+[donor, not a replacement](.claude/skills/sync-agent-infra/catalog.md#g1--prose--principles).
 
 Replace the remaining stubs — repository layout, testing — as those conventions
 stabilize, and add `.claude/rules/` files as area-specific conventions emerge
@@ -267,8 +273,9 @@ condition the shipped stub cannot show you. What is at stake at this step: an
 exit-0 stub over a real stack makes `/finalize` pass step 1 and attest to a vet
 run that checked nothing, and a false green is harder to notice than a loud
 stop. That is why the file is a
-[`rewrite`](docs/catalog.md#three-dispositions-not-two) rather than a choice, for
-[the reason the catalog gives](docs/catalog.md#closure-is-not-optional).
+[`rewrite`](.claude/skills/sync-agent-infra/catalog.md#three-dispositions-not-two)
+rather than a choice, for [the reason the catalog
+gives](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional).
 
 Two lines in `vet.sh` — the calls to `scripts/check-skill-catalog.sh` and
 `scripts/check-squash-message.sh` — are not stack-specific, so decide each
@@ -277,7 +284,7 @@ says what dropping either costs.
 
 ### Hydrate or delete the G6 stubs
 
-Go through the [G6 rows](docs/catalog.md#g6--stack-stubs) and apply the criterion
+Go through the [G6 rows](.claude/skills/sync-agent-infra/catalog.md#g6--stack-stubs) and apply the criterion
 stated there: hydrate now, or delete. Hydrating means writing your project's real
 commands in and **deleting the banner** at the top — a stub that still carries its
 banner is still a stub.
@@ -286,7 +293,7 @@ banner is still a stub.
 
 `/sync-agent-infra` is a stub for want of a watermark, not a procedure, so
 hydrating it is `.claude/skills/sync-agent-infra/upstream.json` — a
-[`rewrite`](docs/catalog.md#three-dispositions-not-two). Write it for **your**
+[`rewrite`](.claude/skills/sync-agent-infra/catalog.md#three-dispositions-not-two). Write it for **your**
 repo, then clear both stub markers: delete the `⚠️ **STUB.**` banner and drop
 `STUB` from the frontmatter `description`. Half of either leaves the skill
 failing assertion 4.
@@ -480,7 +487,7 @@ silently:
 
 1. **No reference dangles, and no stub stowed away**: `bash
    scripts/check-skill-catalog.sh` exits `0`. Downstream it runs assertions 1 and
-   4 — the catalog ones skip, since there is no `docs/catalog.md` in your tree by
+   4 — the catalog ones skip, since there is no catalog in your tree by
    design — and those two are the whole point here. Assertion 4 is why the G6
    criterion is enforced rather than merely stated: an unhydrated stub in a tree
    with no catalog **fails the check**, so "copy it for later" is not a silent

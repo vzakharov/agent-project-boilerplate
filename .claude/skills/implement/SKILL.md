@@ -10,4 +10,5 @@ name still resolves.
 carries no procedure of its own, and `/handle`'s Do-NOT names acting on a
 one-line summary of a skill as the failure mode.
 
-Adopting repos: `docs/catalog.md` states when this row is worth taking.
+Adopting repos: the source's `.claude/skills/sync-agent-infra/catalog.md` states
+when this row is worth taking.

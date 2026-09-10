@@ -1,5 +1,5 @@
 ---
-description: "Turn a fresh \"Use this template\" fork of this boilerplate into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. Also use when a session in such a tree is asked to build something instead — a tree that still carries `docs/catalog.md` under an `origin` that is not the boilerplate has never been detemplated, and this is its first task whatever was asked."
+description: "Turn a fresh \"Use this template\" fork of this boilerplate into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. Also use when a session in such a tree is asked to build something instead — a tree that still carries a `.claude/skills/*/catalog.md` under an `origin` that is not the boilerplate has never been detemplated, and this is its first task whatever was asked."
 ---
 
 `/detemplate <what we're building>` converts a whole-tree template fork into a
@@ -33,10 +33,13 @@ need it: say so and hand the operator the setup script from Step 6 first.
 
 ## Step 0 — Refuse where it does not apply
 
-The guard refuses in **both** directions, on `docs/catalog.md`'s presence plus
-`origin`:
+The guard refuses in **both** directions, on a catalog's presence plus `origin`.
+Glob `.claude/skills/*/catalog.md` rather than testing the canonical
+`.claude/skills/sync-agent-infra/catalog.md`: an adopter renames that directory
+after *its* own source, so a fixed-path test misses a stray catalog in exactly
+the trees most likely to carry one.
 
-- **No `docs/catalog.md`** → not an unpruned fork. An adopted repo that wants a
+- **No catalog** → not an unpruned fork. An adopted repo that wants a
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
   has nothing left to strip.
 - **Catalog present, but `origin` names the boilerplate itself** → this *is* the
@@ -78,7 +81,7 @@ surface, deployed logs, a production datastore, or sequential numbered migration
 
 ## Step 2 — Read the catalog into the plan, before anything is deleted
 
-`docs/catalog.md` is the input to every group decision **and** is deleted by the
+The catalog is the input to every group decision **and** is deleted by the
 run (Step 5). So the plan records each decision with the criterion that made it,
 rather than citing a file that will not exist when `/go` executes. Read the
 catalog's § "Reverse closure" in the same pass and record the edits each dropped
@@ -125,7 +128,7 @@ deletion list. Plus the `## DRY notes` section CLAUDE.md requires of every plan.
 
 Ordering is load-bearing at exactly one point, and it is the first step:
 
-1. **Delete `docs/catalog.md` first.** It flips `scripts/check-skill-catalog.sh`
+1. **Delete `.claude/skills/sync-agent-infra/catalog.md` first.** It flips `scripts/check-skill-catalog.sh`
    assertion 4 from "the stubs are the shipped product, merely listed" to "a stub
    is a stowaway", and it un-refuses `/spinoff`, whose guard is literally the
    catalog's presence. Sweep it first and the G6 prune is enforced by the vet run
@@ -201,8 +204,8 @@ Say plainly in the report that this is the one step you could not apply yourself
 
 A session that opens in a fresh fork and is asked to build a feature should route
 here first, rather than building product code on top of the template's inventory.
-The signal is Step 0's predicate read positively: `docs/catalog.md` present, and
-`origin` not naming the boilerplate.
+The signal is Step 0's predicate read positively: a `.claude/skills/*/catalog.md`
+present, and `origin` not naming the boilerplate.
 
 Two surfaces carry it, catching different moments. This skill's frontmatter
 `description` names the *situation* and not only the command, so an ordinary build
@@ -216,5 +219,5 @@ the condition it describes.
 is a bare name, this sentence included. Step 5.7 deletes the skill, so such a
 pointer would dangle in the tree of whoever just ran it and fail
 `check-skill-catalog.sh` assertion 1 — the same property that makes
-`/test-on-gh`'s bare-name mentions correct to leave alone (`docs/catalog.md`
+`/test-on-gh`'s bare-name mentions correct to leave alone (the catalog's
 § "Reverse closure").

@@ -231,8 +231,9 @@ first, and say so.
 A commit that adds a skill in neither `adopted` nor `declined` is an open
 question, and the answer belongs in the watermark so it is asked exactly once.
 
-Read the new skill's row in the source's `docs/catalog.md` — that file is the
-source's inventory, read from the clone and never vendored, so it is current by
+Read the new skill's row in the source's
+`.claude/skills/sync-agent-infra/catalog.md` — that file is the source's
+inventory, read from the clone and never vendored, so it is current by
 construction — and surface the decision **with its criteria attached** rather than
 as a bare "upstream added `/foo`, want it?".
 
