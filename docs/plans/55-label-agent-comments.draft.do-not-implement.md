@@ -47,9 +47,21 @@ A short module docstring states the one durable contract: **the footer is the ma
 
 ### A3 — Tests, and a vet hook that runs them
 
-The repo has **no Python test hook today** — `scripts/vet.sh` runs two shell checks and nothing else — so acceptance criteria 1–3 have nothing to assert them. Add `scripts/gh_export/tests/test_authorship.py` using stdlib `unittest` (the exporter's stdlib-only constraint holds for its tests), covering exactly the stated criteria: footer present → agent; same body without it → human; footer-shaped text mid-body → human, body untouched; both link variants; both verb forms; the session-URL tail.
+The repo has **no Python test hook today** — `scripts/vet.sh` runs two shell checks and nothing else — so acceptance criteria 1–3 have nothing to assert them. This adds **no dependency**: `unittest` is stdlib, so the exporter's stdlib-only constraint holds for its tests as well.
 
-Wire `python3 -m unittest discover -s scripts -t scripts -p 'test_*.py'` into `scripts/vet.sh`, added to the two existing lines rather than replacing the ADOPTERS framing — the boilerplate now has one checkable thing, so the "no stack-specific checks" message narrows to say so and the `exit 0` rationale is unchanged.
+Add `scripts/test_authorship.py`, covering exactly the stated criteria: footer present → agent; same body without it → human; footer-shaped text mid-body → human, body untouched; both link variants; both verb forms; the session-URL tail.
+
+**Placement is load-bearing, and `unittest discover` must not be used.** Verified on this environment's Python 3.11: discovery over a directory with no `__init__.py` reports `Ran 0 tests … OK` and exits 0 — 3.11 dropped namespace-package discovery, and this repo has no `__init__.py` by design (`export-github-item.py`'s docstring states the PEP 420 arrangement). A `vet.sh` line built on `discover` would therefore certify a run that executed nothing, which is the exact false green the ADOPTERS note at the top of `vet.sh` exists to warn about.
+
+So the test file sits **directly in `scripts/`**, beside `export-github-item.py`, and `vet.sh` runs it by path:
+
+```bash
+"$(dirname "$0")/test_authorship.py"
+```
+
+Run that way, `sys.path[0]` is `scripts/`, so `from gh_export.authorship import …` resolves exactly as it does for the exporter — confirmed working from an unrelated cwd. Add the line to the two existing ones rather than replacing the ADOPTERS framing: the boilerplate now has one checkable thing, so the "no stack-specific checks" message narrows to say so, and the `exit 0` rationale is unchanged.
+
+**Whatever runs the tests must fail loudly when it runs none.** That is the property the `discover` route silently lacked; a direct invocation of a file with a `unittest.main()` entrypoint has it by construction.
 
 ### A4 — Cut the prose
 
@@ -80,5 +92,5 @@ B is three lines of prose in two files and shares A's subject — how a session 
 Each carries a recommendation, and this plan is written with the recommendation in force — so silence resolves them and implementation can proceed unanswered.
 
 1. **Label vocabulary** — (a) `(agent)` / `(human)` **[recommended, in force]**; (b) `(agent)` / `(operator)` as the issue's acceptance criterion literally says, accepting that a third-party reviewer is mislabelled; (c) `(agent)` only, absence meaning human.
-2. **Test hook** — (a) stdlib `unittest` under `scripts/gh_export/tests/`, discovered from `vet.sh` **[recommended, in force]**; (b) verify by hand this session, commit no test — cheapest, but leaves the issue's "nothing asserts the footer survives the export" complaint standing; (c) a `--self-test` flag on the exporter.
+2. **How the footer test is asserted.** No option here adds a dependency — `unittest` and `doctest` are both stdlib. (a) One stdlib `unittest` file, `scripts/test_authorship.py`, run by path from `vet.sh` **[recommended, in force]**; (b) `doctest` examples inside `authorship.py` — zero new files, but it puts a table of ~8 footer variants in a docstring, which CLAUDE.md § "Docstrings" and `/tighten-docs` Lens C both push against; (c) a shell `scripts/check-comment-labels.sh` matching the existing `check-*.sh` idiom — but it would shell out to Python per case, so it is the same test with a worse harness; (d) verify by hand this session and commit no test — cheapest, and leaves the issue's "nothing asserts the footer survives the export" complaint standing.
 3. **Rider B** — (a) fold into this PR **[recommended, in force]**; (b) drop it and file it separately.
