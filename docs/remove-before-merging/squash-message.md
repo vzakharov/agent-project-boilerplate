@@ -18,7 +18,7 @@ creation time, git having no ancestry to read where the single commit
 is unrelated to the source. The skill deletes itself last, so nothing
 cites it as an `@`-reference — one would dangle afterwards, in the
 tree of whoever just ran it. `ADOPTING.md` § "Template fork" becomes
-a pointer at it, and `docs/catalog.md` gains per-group reverse-closure
+a pointer at it, and the catalog gains per-group reverse-closure
 counts plus the `docs/img/` row it never had.
 
 A session asked to build a feature in such a fork routes there first,
