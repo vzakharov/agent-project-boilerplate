@@ -43,12 +43,9 @@ install_gh_shim() {
   local real_gh
   real_gh="$(PATH="$(printf '%s' "$PATH" | tr ':' '\n' | grep -vFx "$shim_dir" | paste -sd: -)" command -v gh || true)"
   if [ -z "$real_gh" ]; then
-    # No gh to shim. This is the litmus test for an environment setup script
-    # that is unset or missing `apt-get install -y gh`: the operator is the only
-    # one who can set it, and nothing else in a session says so. Report it on
-    # stdout, which Claude Code folds into the session context — a stderr note
-    # reaches nobody, and the failure then surfaces far from its cause, at the
-    # first gh-dependent skill.
+    # stdout, not stderr: Claude Code folds a SessionStart hook's stdout into
+    # the session context, and this notice is the only signal that the
+    # environment setup script is unset or missing the gh install.
     cat <<'MSG'
 session-start: `gh` is not on PATH, so the proxy shim was not installed.
 

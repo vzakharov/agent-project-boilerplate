@@ -129,12 +129,6 @@ hydrate-now-or-delete; the reverse-closure edits; the derived watermark and
 `scripts/vet.sh`'s disposition; and the deletion list. Plus the `## DRY notes`
 section CLAUDE.md requires of every plan.
 
-The issue is what keeps the prune and the build separate without losing the
-brief. Nothing in this run writes product code — that is the point of routing
-through `/plan` — so absent the issue the operator's description of what they
-are building survives only as a paragraph in `CLAUDE.md`, which is a place to
-read it and not a place to work from.
-
 **Two dispositions are pre-decided, and the plan states them rather than asking.**
 `/implement` goes, unconditionally: it redirects a name that predates `/go`, and
 a fork has no plan file or PR comment old enough to still say it — the catalog's
@@ -160,12 +154,11 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    with it — and delete § "Git conventions"'s adopter-inverts rule, which
    instructs adopters to delete it.
 5. **File the project's first issue** through `/propose-issue`, carrying the
-   brief: what is being built, plus any spec the operator attached and any
-   answer they gave for the sake of the prune that also describes the product.
-   Scarce briefs make scarce issues — do not interview the operator to pad one,
-   since the issue exists to *keep* what they said, not to elicit more (`/issue`
-splits an over-broad one when the next session gets there). Skip it
-   only where the run drops G3, work not being tracked as issues there; then the
+   brief, any spec the operator attached, and any answer they gave for the
+   prune's sake that also describes the product. A scarce brief makes a scarce
+   issue: the issue exists to *keep* what they said, not to elicit more, and
+   `/issue` splits an over-broad one when the next session gets there. Skip it
+   only where the run drops G3 — work is not tracked as issues there, so the
    `CLAUDE.md` brief is the whole record and the report says so.
 6. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
    markers: the banner and the `STUB` in its frontmatter description. Assertion 4
@@ -246,17 +239,18 @@ here first, rather than building product code on top of the template's inventory
 The signal is Step 0's predicate read positively: a `.claude/skills/*/catalog.md`
 present, and `origin` not `vzakharov/agent-project-boilerplate`.
 
-Two surfaces carry it, catching different moments, and **only the frontmatter is
-load-bearing** — this section is what an agent reads *after* the description sent
-it here, so the description has to do the work of getting it read at all. It does
-that by naming the repository rather than the situation: the boilerplate is a
-literal `owner/repo` the reader can check against the working directory in its
-own system prompt, at no round-trip and no tool call, and every other tree
-carrying the description is a fork to route. `CLAUDE.md`'s "About this project"
-stub is the second surface, catching a session that never consults the skill
-list, and it is always-loaded: while that stub is unfilled and the tree still has
-the catalog, the first task is `/detemplate` whatever was asked. Step 5.4
-rewrites that very stub, so the notice retires with the condition it describes.
+**Nothing here is what routes a session — the frontmatter is**, this section
+being what gets read only once the description has sent someone to it. So the
+description names the *repository* rather than the situation: the boilerplate is
+a literal `owner/repo`, checkable against the working directory in the reader's
+own system prompt at no round-trip, and every other tree carrying the
+description is a fork to route.
+
+`CLAUDE.md`'s "About this project" stub is the second surface, catching a
+session that never consults the skill list: while that stub is unfilled and the
+tree still has the catalog, the first task is `/detemplate` whatever was asked.
+Step 5.4 rewrites that stub, so the notice retires with the condition it
+describes.
 
 **Nothing anywhere `@`-references this skill's own `SKILL.md`** — every mention
 is a bare name, this sentence included. Step 5.8 deletes the skill, so such a
