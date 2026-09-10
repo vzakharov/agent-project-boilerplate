@@ -141,12 +141,11 @@ is_blank() {
   esac
 }
 
-# The caps are terminal columns, so they count characters — but `${#line}`
-# counts bytes under `dash`, and under `bash` outside a UTF-8 locale, which
-# agrees only while the message is ASCII. Deleting UTF-8 continuation bytes
-# (`10xxxxxx`) leaves one byte per character. `wc -m` is the other route and is
-# worse: it reports bytes under `LC_ALL=C` and otherwise needs a UTF-8 locale
-# present under a name that differs between glibc and macOS.
+# The caps are terminal columns, so they count characters — but `${#…}` counts
+# bytes under `dash` and under `bash` outside a UTF-8 locale, agreeing only while
+# the message is ASCII. Deleting UTF-8 continuation bytes leaves one byte per
+# character. `wc -m` is the other route and is worse: bytes under `LC_ALL=C`,
+# and otherwise a UTF-8 locale whose name differs between glibc and macOS.
 char_len() {
   s=$(printf '%s' "$1" | LC_ALL=C tr -d '\200-\277')
   printf '%s' "${#s}"
