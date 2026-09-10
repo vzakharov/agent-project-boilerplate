@@ -364,9 +364,6 @@ silently, in prose, forever.
   `/bootstrap-workflow-dispatch` references `/watch-ci` as well and needs no
   edit: it is inside G5, so it goes with the group.
 
-Naming which is which saves the next fork six unnecessary edits and stops it
-missing four necessary ones.
-
 ## Keeping this file honest
 
 The one-row-per-skill invariant is machine-checked by

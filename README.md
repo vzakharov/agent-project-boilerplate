@@ -65,11 +65,10 @@ gh repo create <owner>/<your-new-repo> \
 /detemplate <what you're building>
 ```
 
-That is the skill the fork ships for exactly this: it profiles the tree, decides
-group by group what stays, and publishes the prune as a reviewable plan before
-anything is deleted — then deletes itself once the tree is a project. A session
-that opens in an undetemplated fork and is asked to build something routes there
-first on its own. [`ADOPTING.md` § Template
+The fork ships that skill for exactly this: it publishes the prune as a
+reviewable plan before anything is deleted, then deletes itself once the tree is
+a project. A session that opens in an undetemplated fork and is asked to build
+something routes there first on its own. [`ADOPTING.md` § Template
 fork](ADOPTING.md#template-fork) says what the run is in for, if you want to know
 before forking.
 

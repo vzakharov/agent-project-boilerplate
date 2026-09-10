@@ -9,11 +9,9 @@ hydrating what the new project actually needs.
 
 **It writes no source itself — it routes through `@.claude/skills/plan/SKILL.md`.**
 The pruning is a large, mostly irreversible diff over a tree nobody has reviewed,
-and reviewing it as a diff is what catches a bad call before the deletion rather
-than after. So this skill's end state is `/issue`'s: a plan file published as a
-draft PR, and a copyable `/go <branch>` for the session that executes it. Steps
-1–3 decide; Steps 4–6 specify what the plan must say so `/go` runs it in the
-right order.
+and reviewing it as a diff is what catches a bad call before anything is deleted.
+So this skill's end state is `/issue`'s: a plan file published as a draft PR, and
+a copyable `/go <branch>` for the session that executes it.
 
 The brief is the argument. It fills `CLAUDE.md`'s "About this project" stub and
 drives the group decisions — a CLI tool keeps different groups than a deployed
@@ -43,9 +41,8 @@ The guard refuses in **both** directions, on `docs/catalog.md`'s presence plus
   has nothing left to strip.
 - **Catalog present, but `origin` names the boilerplate itself** → this *is* the
   boilerplate, and what the caller wants is a fork, not a prune. Point at the
-  README's *"Use this template"* button. Catalog-presence alone would let a
-  session delete this repo's own inventory, so the origin clause is load-bearing
-  rather than a nicety.
+  README's *"Use this template"* button. Without the origin clause,
+  catalog-presence alone would let a session delete this repo's own inventory.
 
 This is `@.claude/skills/spinoff/SKILL.md`'s refusal read backwards: the two
 partition on the same signal, which is why that skill's message names this one.
@@ -69,9 +66,9 @@ in a proxied session before the shim is installed, which is the state a fresh
 fork starts in.
 
 **The stack, including "no stack yet."** That is the normal state of a fork taken
-to start a project, and it is the state § 2's `vet.sh` clause exists for. Read it
-off the tree rather than asking: a fork whose only commit is the template's has
-no manifest, no lockfile and no source.
+to start a project, and the state `CLAUDE.md` § "Vetting"'s no-stack-yet clause
+exists for. Read it off the tree rather than asking: a fork whose only commit is
+the template's has no manifest, no lockfile and no source.
 
 What the tree cannot answer, asked as numbered prose in the plan turn per
 `@.claude/skills/plan/SKILL.md` Part 2: whether sessions run on Claude Code
@@ -83,12 +80,11 @@ surface, deployed logs, a production datastore, or sequential numbered migration
 
 `docs/catalog.md` is the input to every group decision **and** is deleted by the
 run (Step 5). So the plan records each decision with the criterion that made it,
-rather than citing a file that will not exist when `/go` executes. Read
-§ "Reverse closure" in the same pass and record the edits each dropped group
-costs.
+rather than citing a file that will not exist when `/go` executes. Read the
+catalog's § "Reverse closure" in the same pass and record the edits each dropped
+group costs.
 
-This read-then-delete ordering is what routing through `/plan` buys, and it is
-the reason to say so here.
+This read-then-delete ordering is what routing through `/plan` buys.
 
 ## Step 3 — Derive the watermark, which git cannot give you
 
@@ -163,7 +159,7 @@ is set by a human in the web UI, and has no API, MCP tool or in-repo file behind
 it. Step 5 deletes that file, so the deliverable travels here instead — **text in
 the report** the operator pastes into the setting.
 
-Two things make it worth the paragraph:
+Two reasons it matters:
 
 - **It is where `gh` comes from.** `apt-get install -y gh` belongs in it. Without
   `gh` on `PATH`, `.claude/hooks/session-start.sh` prints `gh not found on PATH;
@@ -216,10 +212,9 @@ unfilled and the tree still has the catalog, the first task is `/detemplate`
 whatever was asked. Step 5.4 rewrites that very stub, so the notice retires with
 the condition it describes.
 
-**Every mention of this skill anywhere is a bare name, never an `@`-reference to
-its own `SKILL.md`** — including the ones above, and including this sentence,
-which is why it does not spell the path. Step 5.7 deletes the skill, so such a
+**Nothing anywhere `@`-references this skill's own `SKILL.md`** — every mention
+is a bare name, this sentence included. Step 5.7 deletes the skill, so such a
 pointer would dangle in the tree of whoever just ran it and fail
-`check-skill-catalog.sh` assertion 1. This is the same property that makes
+`check-skill-catalog.sh` assertion 1 — the same property that makes
 `/test-on-gh`'s bare-name mentions correct to leave alone (`docs/catalog.md`
 § "Reverse closure").
