@@ -14,8 +14,9 @@ a sentence about what the code does not contain passes cleanly, and
 Lens B's tells are change verbs that a clean present-tense negation
 never trips.
 
-/tighten-docs gains a fourth lens, `absence` (alias `polar-bear`),
-carrying its own tell, test, fix and report group. It is the only lens
+/tighten-docs gains a fourth lens, `negation` (alias `polar-bear`),
+carrying its own tell, test, fix and report group; the four now spell
+TEND, which is a memory aid and not the run order. It is the only lens
 that reads the removed side of the diff: Step 1 collects the nouns the
 change deleted and greps them against the post-change tree, and a name
 surviving only inside prose is the candidate. The fix is deletion
