@@ -249,6 +249,38 @@ Replace the remaining stubs — repository layout, testing — as those conventi
 stabilize, and add `.claude/rules/` files as area-specific conventions emerge
 (the mechanism ships with a README and no rules).
 
+### Settle the language decision
+
+Your people may read one language while the agent-facing instruction set is
+written in another. Settle that explicitly here rather than one file at a time:
+[`CLAUDE.md` § "Language"](CLAUDE.md#language) holds the six surfaces an answer
+has to cover and is where the answer goes. Its disposition is a G6 stub's —
+hydrate it with your answer, or, if the project is English throughout, **delete
+the section** and record that in `upstream.json`'s `declined` map — the same map
+that records a group you chose not to take.
+
+Deleting is the normal outcome, not a skipped step: a section left in saying
+"English, no split" plants the question in every session that loads the file for
+a project with nothing to decide. The `declined` entry is the record — and, the
+prompt being gone from your tree by then, the only route back to the question if
+the condition changes, which is why its reason is written as a condition
+[in the present tense](#hydrate-the-sync-stub).
+
+One constraint is not yours to answer either way, which is why it sits outside
+that section and survives its deletion: § "Markers are not yours to reword", in
+the same file, fixes the strings the skills match literally, so those stay as
+shipped even in a fully translated tree.
+
+**If your answer puts a non-Latin script into commit or PR text**, know the gap
+you will hit first: `scripts/check-squash-message.sh` measures line length with
+`${#line}`, which counts bytes, so the 80-column title and 72-column body caps
+roughly halve for Cyrillic or CJK and the vet run rejects a correctly wrapped
+message. Tracked at
+[#53](https://github.com/vzakharov/agent-project-boilerplate/issues/53) — a link
+out of your repo into this one on the same terms as [Known gaps](#known-gaps):
+it is the thread that will say whether the gap is still open, and it does not
+belong in your own tree, where it would read as an issue of yours.
+
 ### Implement `scripts/vet.sh`
 
 Point it at lint/type-check/test commands your repo already has:
