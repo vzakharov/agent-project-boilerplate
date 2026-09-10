@@ -161,15 +161,15 @@ The default is not to write it. Prose costs context on every session that loads 
 
 A project whose people read one language and whose agent-facing instruction set
 is written in another has to settle which is used where. That is six decisions,
-not one, and an answer covering only the first row leaves the other five to be
-made implicitly, one file at a time, by whoever writes that file:
+not one; an answer covering only the first row leaves the other five to be made
+one file at a time, by whoever happens to write that file:
 
 | Surface | What it covers, and what pulls it |
 | --- | --- |
 | Durable docs | `README.md` and anything else a human reads to decide something, versus `CLAUDE.md`, `.claude/skills/**` and `.claude/rules/**`, which nothing but an agent loads |
 | Transient working artifacts | `docs/plans/`, `docs/issue/`, `docs/pr/` — swept before merge and read, while they live, by the session working against them, so they can take the agent's side even where the durable docs do not |
 | Commit and PR text | commit subjects and bodies, PR titles and bodies — the `git log` and the review surface, so this row follows whoever reviews |
-| Skill-emitted prose | the bodies `/pr`, `/squash-message` and `/qa-checklist` compose, which land on GitHub under whatever the row above settled |
+| Skill-emitted prose | the bodies `/pr`, `/squash-message` and `/qa-checklist` compose — they land on GitHub, so the row above pulls them |
 | Conversation | issue and PR comments, review replies, session replies — reasonably the language each exchange opened in rather than one fixed answer, an exchange being no standing artifact |
 | Code | comments, docstrings, identifiers |
 
@@ -185,11 +185,10 @@ or delete — and a deletion is recorded where every other decline is:
 }
 ```
 
-Phrase the reason as a condition in the present tense, per `ADOPTING.md`'s rule
-for that map, because that is what leaves the decision re-openable: once the
-section is gone the tree carries no prompt at all, so `/sync-agent-infra`
-re-offering an entry whose stated condition stopped holding is the way back to
-the question. A bare `"n/a"` loses that.
+Write the reason as a condition in the present tense, which is what leaves the
+decision re-openable: once the section is gone the tree carries no prompt at all,
+so `/sync-agent-infra` re-offering an entry whose stated condition stopped
+holding is the way back to the question. A bare `"n/a"` loses that.
 
 ## Working with skills
 
@@ -258,6 +257,5 @@ it could not read.
 heading rather than by its position, that heading is a marker; if it finds a
 comment by its opening line, that line is one. Today that means the `## Summary`
 and `## QA Checklist` headings in a PR body, the `Proposed squash title/body:`
-lead on the squash comment, and the semantic commit prefixes above. The test is
-the durable half of this, so a marker introduced later is covered without an edit
-here.
+lead on the squash comment, and the semantic commit prefixes above — a list the
+test outlives, so a marker added later needs no edit here.
