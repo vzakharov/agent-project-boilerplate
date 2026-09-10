@@ -14,24 +14,28 @@ instructing the agent to notice a string. That fails in the expensive
 direction either way: a missed footer re-works an answered thread, an
 imagined one skips guidance addressed to the agent.
 
-The export now decides it. A body-level footer test labels every
-rendered comment `(agent)` or `(human)` beside its raw login, strips
-the matched footer, and matches only a trailing one, so a quoted
-footer mid-body reads as human. The label sits on a new
-`gh_export/authorship.py` rather than on `login_of()`, which receives
-a nested user object and so cannot see the body the footer lives in;
-the timeline needs no label, its events carrying no bodies. `(human)`
-rather than `(operator)` because a third-party reviewer is neither the
-agent nor the operator. The footer stays mandatory on every
-agent-authored post, now as the machine-read signal rather than a
-courtesy, and `authorship.py` is where that is written down.
+The export decides it now. `gh_export/authorship.py` matches a footer
+only at the end of a body and labels every rendered author `@login
+(agent)` or `@login (human)`, stripping what it matched — so a footer
+quoted mid-body stays prose. It could not hang off `login_of()` as #55
+proposed, that receiving a nested user object and never the body;
+`login_of` moves into the new module instead, since importing it back
+from `markdown.py` would be a cycle, leaving one module answering who
+wrote a post and `markdown.py` only rendering sections. The timeline
+gets no label, its events carrying no bodies, and `(human)` rather
+than `(operator)` because a third-party reviewer is neither. The
+footer stays mandatory on every agent-authored post, now as the
+machine-read signal rather than a courtesy, and `authorship.py` is
+where that is written down.
 
 `/handle` § "Step 2" cites the label instead of explaining the test.
 Asserting any of this needed a Python test hook the repo did not have,
-so the exporter gets a stdlib `unittest` file and `scripts/vet.sh`
-gains the line that runs it. A session prompt that is a bare
-issue title ending in `#<N>` now invokes `/issue`, which is what the
-operator means by it.
+so the exporter gets a stdlib `unittest` file, run by path from
+`scripts/vet.sh` — not through `unittest discover`, which reports
+`Ran 0 tests ... OK` over a namespace package on Python 3.11 and would
+have certified a run that executed nothing. A session prompt that is a
+bare issue title ending in `#<N>` now invokes `/issue`, which is what
+the operator means by it.
 
 Closes #55
 
