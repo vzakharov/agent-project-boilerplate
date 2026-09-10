@@ -28,8 +28,8 @@ courtesy, and `authorship.py` is where that is written down.
 
 `/handle` § "Step 2" cites the label instead of explaining the test.
 Asserting any of this needed a Python test hook the repo did not have,
-so the exporter gets a stdlib `unittest` suite and `scripts/vet.sh`
-gains the line that discovers it. A session prompt that is a bare
+so the exporter gets a stdlib `unittest` file and `scripts/vet.sh`
+gains the line that runs it. A session prompt that is a bare
 issue title ending in `#<N>` now invokes `/issue`, which is what the
 operator means by it.
 
