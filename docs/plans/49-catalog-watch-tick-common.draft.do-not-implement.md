@@ -21,7 +21,17 @@ file and the PR loop stops working at its landing step.
 
 The file's own header already names both callers ("Shared helpers for the
 merge/CI check scripts (`scripts/ci-watch-tick.sh`, `scripts/check-merge.sh`)"),
-so the code is honest and only the catalog row is wrong. Nothing machine-checks
+so the code is honest and only the catalog row is wrong.
+
+**What G2 actually needs from the file is one of its three functions.** The file
+defines `wt_resolve_repo` (sets `NWO` / `REPO_FLAG`, falling back to parsing the
+`origin` remote when `gh` cannot auto-detect it behind a sandboxed proxy),
+`wt_smart_sleep` and `wt_reset_state`. `scripts/check-merge.sh:54` calls
+`wt_resolve_repo` and nothing else; the other two are watch-loop machinery only
+`scripts/ci-watch-tick.sh` uses. This matters to question 1, not to the row: a
+partial dependency is still a dependency, and the row moves whole either way.
+
+Nothing machine-checks
 this: `scripts/check-skill-catalog.sh` asserts that a catalog row's path exists
 (assertion 3) and that skills have exactly one row (assertion 2), but it greps
 `@.claude/skills/…` pointers only — no script-to-script dependency is checked in
@@ -79,27 +89,38 @@ Docs-only. No script, skill or shell behavior changes.
 
 ## Open questions
 
-1. **Rename the file to drop the `watch-tick` prefix?** After the move, a G2
-   adopter who declines G5 holds `scripts/lib/watch-tick-common.sh` with no
-   watch-tick script in the tree — the name points at a caller they do not have.
-   A rename (e.g. `scripts/lib/gh-common.sh`) would touch both sourcing scripts
-   and their `# shellcheck source=` directives.
-   - **(a) Don't rename — recommended, and the plan is written this way.** The
-     mismatch is cosmetic and self-correcting on read: the file's header names
-     both callers in its first two lines, and the function prefix (`wt_`) would
-     have to move too or the rename buys only half the clarity. It also churns
-     every adopter's tree at the next `/sync-agent-infra` for no behavior
-     change.
-   - (b) Rename in the same PR, `wt_` prefix included — a bigger, code-touching
-     diff for a naming improvement the issue did not ask for.
+1. **Rename or split the file?** After the move, a G2 adopter who declines G5
+   holds `scripts/lib/watch-tick-common.sh` with no watch-tick script in the
+   tree — the name points at a caller they do not have, and at two functions
+   they never call.
+   - **(a) Move it whole, don't rename — recommended, and the plan is written
+     this way.** The mismatch is cosmetic and self-correcting on read: the
+     file's header names both callers in its first two lines. Either code-touching
+     option churns every adopter's tree at the next `/sync-agent-infra` for no
+     behavior change.
+   - (b) Rename it (e.g. `scripts/lib/gh-common.sh`), `wt_` prefix included, or
+     the rename buys only half the clarity — touches both sourcing scripts and
+     their `# shellcheck source=` directives.
+   - (c) Split it: `wt_resolve_repo` into a G2 lib, `wt_smart_sleep` and
+     `wt_reset_state` staying in G5's `watch-tick-common.sh`. Conceptually the
+     cleanest — each group holds what it needs — but it buys no adoptability.
+     G5's rows declare no G2 requirement today, so the split creates a G5→G2
+     dependency in exchange for the G2→G5 one it removes: the same arrow,
+     reversed, plus a code change to a docs-only fix.
 2. **Add a fifth bullet to `docs/catalog.md` § "Closure is not optional"?** That
-   list states four closure facts "counter-intuitive enough to state outright",
-   and "a file named `watch-tick-*` is a G2 requirement" arguably qualifies.
+   list states four closure facts "counter-intuitive enough to state outright" —
+   `/plan` travelling with G2, `scripts/vet.sh` not being optional within it,
+   `/finalize` reaching conditionally into G3 and G5, and `/override-gh` being
+   pulled in by G0 and G3. Its bar is a **group-level** surprise a per-item row
+   cannot express, and "a file named `watch-tick-*` is a G2 requirement"
+   arguably clears it.
    - **(a) No — recommended, and the plan is written this way.** After step 3
-     both rows carry the dependency in the column built for it, which is where a
-     reader looking at either script finds it. The closure list earns its
-     entries by covering things a row cannot say; this is not one.
-   - (b) Yes — one sentence, for an adopter skimming groups rather than rows.
+     both rows carry the dependency in the **Requires** column, which is built
+     for it and is where a reader deciding on either script is already looking.
+     Once the row is right this is a row-level fact, not a group-level one.
+   - (b) Yes — one sentence. The case for it: an adopter skims groups before
+     rows, and a `watch-tick-*` file inside the PR loop reads as a mistake in
+     the catalog rather than a fact about it.
 
 ## DRY notes
 
