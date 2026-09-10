@@ -101,11 +101,11 @@ five that decide the individual G6 rows; and the language decision.
 **Language is the one question with evidence in hand**, so read it before asking:
 the language the brief is written in, the language the operator writes to the
 session in, and whether the brief describes a product for a non-English market.
-Any of the three pointing away from English makes the question mandatory —
-`CLAUDE.md` § "Language" holds the six surfaces an answer has to settle. All
-three English make it a confirmation the plan states rather than asks, and the
-answer is then to delete that section (Step 5). The evidence says whether to ask;
-it never stands in for the answer.
+Only the human-facing answer is ever in play — `CLAUDE.md` § "Language" fixes the
+other two groups — so any of the three pointing away from English makes it a
+question, and all three English make it a confirmation. **The plan states that
+confirmation either way**, never leaves it inferred: an operator whose team reads
+something other than what they wrote the brief in has one place to say so.
 
 ## Step 2 — Read the catalog into the plan, before anything is deleted
 
@@ -150,9 +150,8 @@ permanently.
 Per-group keep/drop with the criterion that decided each; the G6 rows as
 hydrate-now-or-delete; the reverse-closure edits; the derived watermark and
 `lineage`; the `CLAUDE.md` brief; the first issue's body (Step 5.5);
-`scripts/vet.sh`'s disposition; the language answer and what it does to
-`CLAUDE.md` § "Language"; and the deletion list. Plus the `## DRY notes`
-section CLAUDE.md requires of every plan.
+`scripts/vet.sh`'s disposition; the language answer; and the deletion list. Plus
+the `## DRY notes` section CLAUDE.md requires of every plan.
 
 **Two dispositions are pre-decided, and the plan states them rather than asking.**
 `/implement` goes, unconditionally: it redirects a name that predates `/go`, and
@@ -177,10 +176,9 @@ Ordering is load-bearing at exactly one point, and it is the first step:
 4. **Fill `CLAUDE.md`'s "About this project" stub** from the brief — which
    retires the standing notice in § "Recognizing an undetemplated fork" along
    with it — and delete § "Git conventions"'s adopter-inverts rule, which
-   instructs adopters to delete it. **§ "Language" is settled in the same pass**:
-   fill it with the Step 1 answer, or delete the section outright, which is what
-   an English-throughout project does. Leave § "Working with skills"'s marker
-   rule alone either way — it is no part of the answer.
+   instructs adopters to delete it. **§ "Language"'s stub is replaced in the same
+   pass** with the Step 1 answer, one line; the rest of that section holds as
+   shipped.
 5. **File the project's first issue** through `/propose-issue`, carrying the
    brief, any spec the operator attached, and any answer they gave for the
    prune's sake that also describes the product. A scarce brief makes a scarce
@@ -190,9 +188,7 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    and then the `CLAUDE.md` brief is the whole record and the report says so.
 6. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
    markers: the banner and the `STUB` in its frontmatter description. Assertion 4
-   fails a half-cleared pair. A § "Language" deleted at item 4 gets its
-   `declined` entry here, in the file this step already has open, with the reason
-   written as a present-tense condition so a later sync can re-offer it.
+   fails a half-cleared pair.
 7. **`scripts/vet.sh`**: leave the exit alone, which is the normal case — a fork
    taken to start a project has no stack for the script to check. Wire the real
    checks only where the operator pushed a stack before realising they should

@@ -5,106 +5,59 @@ Source: `docs/issue/54/issue.md`.
 An adopting project routinely has human readers in one language and an
 agent-facing instruction set in another, and nothing upstream tells it to decide
 that. So the decision gets made implicitly, one file at a time, by whichever
-session wrote that file. This change makes it an explicit hydration item —
-hydrate-or-delete, exactly as the G6 stubs are — and separately generalizes the
-one constraint that is upstream's regardless of anyone's answer: **a marker
-another skill matches on literally is not yours to reword.**
+session wrote that file. This change makes it an explicit hydration item, exactly
+as the G6 stubs are — but a narrow one: **the adopter answers one line, and the
+two groups nobody should be asked about are stated for them.**
 
 ## What ships
 
 Six files, all prose. In this repo prose about the loop *is* the product, so per
 `CLAUDE.md` § "Git conventions" every commit here is `feat:`, not `docs:`.
 
-### 1. `CLAUDE.md` — two independent edits
-
-They are separate because they have different lifetimes: one is the adopter's to
-answer and delete, the other is nobody's to touch.
-
-#### 1a. `## Language` — the hydration prompt, deletable
+### 1. `CLAUDE.md` — a new `## Language` section
 
 Placed after § "Writing things down" and before § "Working with skills": the
 decision is about what prose gets written in, so it sits beside the section
 governing whether prose gets written at all.
 
-A stub blockquote in the voice of § "About this project" and § "Testing":
+A stub blockquote in the voice of § "About this project" and § "Testing", asking
+for the one thing that varies:
 
-> _Replace this stub with this project's language decision — or, if the project
-> is English throughout, **delete this section** and record that in
-> `.claude/skills/sync-agent-infra/upstream.json`'s `declined` map._
+> _Replace this stub with the language your team reads — one line. "English" is
+> an answer, not a step you skipped._
 
-Then the surface the answer has to cover, as a table — every adopter that has
-drifted drifted by missing one row, and a prose list of six invites skimming:
+Then three groups, of which only the first is a question:
 
-| Surface | What it covers |
-| --- | --- |
-| Durable docs | `README.md` and whatever else a human reads to decide something, versus `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**` |
-| Transient working artifacts | `docs/plans/`, `docs/issue/`, `docs/pr/` — these split from durable docs rather than following them |
-| Commit and PR text | commit messages, PR titles and bodies |
-| Skill-emitted prose | the bodies `/pr`, `/squash-message` and `/qa-checklist` write |
-| Conversation | issue and PR comments, review replies, session replies |
-| Code | comments, docstrings, identifiers |
+- **Human-facing — the decision.** `README.md` and anything else a person reads
+  to decide something, commit subjects and bodies, PR titles and bodies, and the
+  plans and issue exports published for review. It takes the language **the
+  team** reads, which is not automatically the one a given session runs in.
+- **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`,
+  `.claude/rules/**`, and code. The skills cite each other's headings and match
+  some strings literally, so translating them breaks the loop rather than
+  localizing it.
+- **Conversation — the language the exchange opened in.** Session replies, issue
+  and PR comments, review replies. No standing artifact, so each follows the
+  person asking.
 
-Each row carries the one-line reasoning where the reasoning is not obvious from
-the row: transient artifacts are swept before merge and read while they live by
-the session working against them, which argues for the agent's language even
-where the durable docs are not in it; commit and PR text is `git log` and review
-surface, so it follows the human side; conversation follows the language it was
-asked in rather than being fixed to one, since an exchange is not a standing
-artifact.
+The last two are stated rather than asked, and a session settles them by reading
+the section. They remain overridable — a team that wants its skills in its own
+language writes that here — but an override is a decision someone makes, not a
+blank left open.
 
-**Deleting the section is a real answer, and the normal one.** A monolingual
-project keeps nothing: a section reading "English throughout, no split" is worse
-than no section, because it plants a question in every session that loads
-`CLAUDE.md` for a project that has nothing to decide. So the disposition matches
-the G6 stubs exactly — hydrate now, or delete — and the record of a deletion
-goes where every other decline is recorded:
-
-```json
-"declined": {
-  "CLAUDE.md § Language": "English throughout — revisit if we ship to a non-English market"
-}
-```
-
-Phrased as a **condition in the present tense**, per `ADOPTING.md`'s existing
-rule for that map, which is what makes the decision re-openable: the prompt
-itself is gone from the tree (in a fork, `ADOPTING.md` goes with it), so
-`/sync-agent-infra` re-offering an entry whose stated condition no longer holds
-is the only path back to the question. A bare `"n/a"` there loses that.
-
-#### 1b. `### Markers are not yours to reword` — inside § "Working with skills"
-
-Not part of § "Language", and it survives that section's deletion, because it is
-a property of how the skills are written rather than of anyone's language. Its
-home is § "Working with skills", next to § "Adding or renaming a skill", which
-already owns what happens when a skill's own strings move.
-
-**Generalized past translation, which is what the new home buys.** Translating
-`## QA Checklist` and renaming it to `## What to check` are the same defect: the
-skill locates the section by matching its text, so either produces a *second*
-section beside the one it could not find. The rule therefore reads as
-reword-or-translate, and covers the English-only project that never reads
-§ "Language" at all.
-
-Three parts:
-
-- The rule: a string another skill locates by matching its text is fixed — not
-  reworded, not translated.
-- The recognition test: if a skill finds a section by its heading rather than by
-  position, that heading is a marker. This is what keeps the enumeration from
-  being load-bearing, so a marker added later is covered without an edit here.
-- The current instances, in one line: the `## Summary` and `## QA Checklist`
-  headings `/qa-checklist` locates by text, the `Proposed squash title/body:`
-  lead `/squash-message` Step 4 locates the same way, and the semantic commit
-  prefixes.
+**The section is fill-only, not deletable.** Groups 2 and 3 live in it, so an
+English-only project writes "English" on the first line and keeps the rest: it is
+where a session reads the two defaults off. That is what makes it unlike a G6
+stub, which has nothing left once its answer is "no".
 
 ### 2. `ADOPTING.md` — a shared-tail step
 
 A new § "Settle the language decision" between § "Reconcile `CLAUDE.md` rather
 than overwrite it" and § "Implement `scripts/vet.sh`" — the tail runs prose,
 then vet, then stubs, and this is a prose decision. It cites `CLAUDE.md`
-§ "Language" as the home rather than restating the surface table, and states the
-hydrate-or-delete disposition with the `declined` entry as the deletion's
-receipt.
+§ "Language" as the home rather than restating the groups, says the answer is one
+line, and notes that the section stays in the tree even when that answer is
+"English".
 
 It also carries the one thing that cannot go in `CLAUDE.md`: **the byte-counting
 caveat.** `scripts/check-squash-message.sh` measures with `${#line}`, so the
@@ -128,24 +81,22 @@ is any indication non-English applies anywhere.
   evidence available: the language of the brief passed to `/detemplate`, the
   language the operator writes to the session in, and whether the brief
   describes a product for a non-English market. Any of those non-English makes
-  the question mandatory; all-English makes it a confirmation the plan states
-  rather than asks.
+  it a question; all-English makes it a confirmation — which the plan **states
+  either way**, never leaves inferred, since an operator whose team reads
+  something other than the brief's language has one place to say so.
 - **Step 4 (what the plan must contain)** gains the language answer, next to
   `scripts/vet.sh`'s disposition.
 - **Step 5 (execution order)** — item 4 already fills `CLAUDE.md`'s "About this
-  project" stub from the brief, and gains § "Language" in the same breath: fill
-  it, or delete it. Item 6 already writes the watermark, so the `declined` entry
-  a deletion needs lands there, in the file that step is already opening.
+  project" stub from the brief, and replaces § "Language"'s stub in the same
+  breath with the one-line answer.
 
 ### 4. `.claude/skills/spinoff/SKILL.md` — the sibling re-decides
 
 `CLAUDE.md` is already a rewrite in the travel triage. One clause where that
 list appears: the caller's language decision is a candidate default for the
 sibling, not an inheritance — a sibling can serve a different audience than the
-repo it was pushed out of — and **the caller's `CLAUDE.md` may carry no
-§ "Language" at all**, which is itself an answer (English throughout) rather
-than an omission to copy. § "Working with skills"'s marker rule travels
-unchanged either way, being no part of the decision.
+repo it was pushed out of — so the target re-decides that one line rather than
+copying it across.
 
 ### 5. `.claude/skills/sync-agent-infra/catalog.md` — keep G1 accurate
 
@@ -154,9 +105,9 @@ Two edits, no new rows:
 - The `CLAUDE.md` row's "What it does" lists the file's sections; add the
   language decision.
 - The G1 prose paragraph after the table, which owns the donor-not-replacement
-  note, gains a sentence: § "Language" is the one section in that file an
-  adopter hydrates **or deletes** rather than merges, recording a deletion in
-  `upstream.json`'s `declined` map.
+  note, gains a sentence: § "Language" is hydrated rather than merged — one line
+  naming the language the team reads, the rest of the section holding whatever
+  the project.
 
 No catalog row is added, so `scripts/check-skill-catalog.sh` assertion 3 (one
 row per skill) is unaffected — this change adds no skill.
@@ -176,65 +127,52 @@ material.
   adopter will hit it and leaves the fix to its own PR. An adopter answering with
   a non-Latin script is blocked on their first `/finalize` until #53 lands, which
   is worth saying in the report.
-- **A worked example naming a repo.** The surface table and its per-row
-  reasoning carry the content; a citation would date the section to whoever
-  reported it, and the improvement is general.
-- **A machine check that the prompt was settled.** `check-skill-catalog.sh`
-  asserting the stub blockquote is gone would mirror assertion 4's stub-marker
-  check, but it would have to be keyed on the catalog's absence to avoid failing
-  in this repo — where the stub is the shipped state — putting a second copy of
-  `/detemplate` Step 0's predicate in a script with no other reason to know
-  about forks. The `declined` entry is the receipt instead, and the sibling
-  stubs (§ "About this project", § "Repository layout", § "Testing") are
-  enforced by prose alone.
+- **A worked example naming a repo.** The three groups carry the content; a
+  citation would date the section to whoever reported it, and the improvement is
+  general.
+- **A machine check that the stub was replaced.** `check-skill-catalog.sh`
+  asserting the blockquote is gone would mirror assertion 4's stub-marker check,
+  but it would have to be keyed on the catalog's absence to avoid failing in this
+  repo — where the stub is the shipped state — putting a second copy of
+  `/detemplate` Step 0's predicate in a script with no other reason to know about
+  forks. The sibling stubs (§ "About this project", § "Repository layout",
+  § "Testing") are enforced by prose alone, and this one is too.
 - **Any language split in this repo's own tree.** The boilerplate is
   English-only, and its § "Language" ships stubbed exactly as § "About this
   project" does. Carrying a split here would stop it being a decision.
 
 ## Resolved forks
 
-All three are collapsed above; what each rejected, in a line:
-
-- **§ "Language" is deletable, not fill-only.** A filled section reading "English
-  throughout, no split" plants the question in every session that loads
-  `CLAUDE.md` for a project with nothing to decide.
 - **No repo is named as the reporting example.** A citation would date the
   section to whoever reported it; the improvement is general.
-- **§ "Markers are not yours to reword" names today's four markers**, beneath the
-  rule and the recognition test. The alternative — teaching only the recognition
-  test — leaves every reader to re-derive the list, and the one who gets it wrong
-  translates a marker. Also rejected in that fork: a pointer at each marker site
-  in `/qa-checklist` and `/squash-message` instead of one enumeration. Three
-  copies of one constraint is the drift this repo's own doc rules name, and
-  `CLAUDE.md` is always loaded, so a session writing either body already has it.
+
+**Reversed at PR review, and what shipped instead.** Two of the three forks above
+were decided the other way once the section was on the page:
+
+- **The six-surface table is gone; three groups replace it**, and only one of
+  them is a question. Human-facing prose takes the team's language; agent-facing
+  files are English; conversation follows the exchange it opened in. The last two
+  are stated rather than asked — overridable by a project, but never a blank left
+  open — so what the operator answers is one line.
+- **§ "Language" is fill-only, not deletable.** With groups 2 and 3 living in it,
+  the section has to be there for a session to read them off; an English-only
+  project writes "English" and keeps it. That retires the `declined`-map route,
+  which existed only to record the deletion.
+- **§ "Markers are not yours to reword" is not added at all.** An agent minded to
+  reword a marker greps for it, and the translation case it guarded is now
+  covered structurally: agent-facing files are English, so the strings the skills
+  match are never translated in the first place.
 
 ## DRY notes
 
-- **The surface table is stated once**, in `CLAUDE.md` § "Language".
+- **The three groups are stated once**, in `CLAUDE.md` § "Language".
   `ADOPTING.md`, `/detemplate` and the catalog cite that section rather than
-  restating a row of it — the discipline § "Vetting" already holds, where
+  restating a group of it — the discipline § "Vetting" already holds, where
   `scripts/vet.sh`, `ADOPTING.md` and the catalog all point at one home for the
   exit rule instead of each carrying a copy.
-- **The marker rule is stated once**, in § "Working with skills", and no pointer
-  is added at the marker sites. Its recognition test exists precisely so the
-  enumeration is not the load-bearing half; the alternative — registering each
-  new marker centrally — is a second thing to keep in sync.
-- **Splitting 1a from 1b is the opposite of duplication.** They read as one
-  topic and have to live apart: 1a is deleted by most adopters, 1b by none. Kept
-  in one section, the deletion takes the invariant with it, and the projects most
-  likely to delete (English-only) are exactly the ones the reword half still
-  binds.
 - **The byte-counting caveat is stated once**, in `ADOPTING.md`, the one file
   where the issue link can legitimately live. Not duplicated into `CLAUDE.md`,
   where it would travel into adopters' trees and outlive #53.
-- **The deletion receipt reuses `upstream.json`'s `declined` map** rather than
-  introducing a record of its own. `ADOPTING.md` already requires a decision
-  recorded there either way (G4), already requires the reason phrased as a
-  present-tense condition, and `/sync-agent-infra` already re-offers an entry
-  whose condition stopped holding — which is the whole mechanism a re-openable
-  language decision needs. A new field, or a comment in `CLAUDE.md` saying the
-  section was considered and dropped, would be a second record with none of that
-  behavior.
 - **No shared abstraction is extracted for "hydration item."** The three — G6
   stubs, `scripts/vet.sh`, and now this — are linked by citation rather than by a
   mechanism, and each has its own enforcement story: assertion 4, the exit
@@ -258,11 +196,11 @@ No stack, so the vet run is the two built-in checks:
 
 - `bash scripts/vet.sh` exits 0 (no reference added or removed, so assertion 1
   is unchanged; no skill added, so assertion 3 is unchanged).
-- `grep -n '^## Language' CLAUDE.md` returns one line, and the marker subsection
-  sits under § "Working with skills", not under it.
-- Read § "Language" cold and check the six surfaces are each decidable from it —
-  the failure the issue names is an adopter answering "the docs are in X" and
-  then drifting on transient artifacts or conversation.
-- Read § "Markers are not yours to reword" as an English-only adopter and check
-  it still binds. If it only makes sense to someone translating, it is in the
-  wrong voice for its new home.
+- `grep -n '^## Language' CLAUDE.md` returns one line.
+- Read § "Language" cold as an operator and check that exactly one thing is being
+  asked. The failure the issue names is drift on the surfaces nobody answered
+  for; the failure this section's own review named is asking about surfaces that
+  should never have been a question.
+- Read it again as a session, and check groups 2 and 3 are usable without asking
+  anyone anything — they are the two-thirds of this that must never reach the
+  operator.

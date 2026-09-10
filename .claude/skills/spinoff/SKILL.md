@@ -177,10 +177,7 @@ are written for the target.
 
 **The caller's language decision is a candidate default, not an inheritance.** A
 sibling can serve a different audience than the repo that pushed it out, so the
-target re-decides § "Language" instead of copying the answer across — and a
-caller whose `CLAUDE.md` carries no such section has answered it (English
-throughout) rather than left it out. § "Working with skills"'s marker rule
-travels unchanged either way, being no part of any answer.
+target re-decides § "Language"'s one line instead of copying it across.
 
 **The product hatch.** A product piece travels when the operator asks for it,
 under two constraints: it lands on the **session branch, never on `main`**, and

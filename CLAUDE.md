@@ -155,40 +155,28 @@ The default is not to write it. Prose costs context on every session that loads 
 
 ## Language
 
-> _Replace this stub with this project's language decision — or, if the project
-> is English throughout, **delete this section** and record that in
-> `.claude/skills/sync-agent-infra/upstream.json`'s `declined` map._
+> _Replace this stub with the language your team reads — one line. "English" is
+> an answer, not a step you skipped._
 
-A project whose people read one language and whose agent-facing instruction set
-is written in another has to settle which is used where. That is six decisions,
-not one; an answer covering only the first row leaves the other five to be made
-one file at a time, by whoever happens to write that file:
+Human-facing prose is the one language decision a project makes. The other two
+groups have answers that do not vary by project, so a session settles them by
+reading this rather than by asking:
 
-| Surface | What it covers, and what pulls it |
-| --- | --- |
-| Durable docs | `README.md` and anything else a human reads to decide something, versus `CLAUDE.md`, `.claude/skills/**` and `.claude/rules/**`, which nothing but an agent loads |
-| Transient working artifacts | `docs/plans/`, `docs/issue/`, `docs/pr/` — swept before merge and read, while they live, by the session working against them, so they can take the agent's side even where the durable docs do not |
-| Commit and PR text | commit subjects and bodies, PR titles and bodies — the `git log` and the review surface, so this row follows whoever reviews |
-| Skill-emitted prose | the bodies `/pr`, `/squash-message` and `/qa-checklist` compose — they land on GitHub, so the row above pulls them |
-| Conversation | issue and PR comments, review replies, session replies — reasonably the language each exchange opened in rather than one fixed answer, an exchange being no standing artifact |
-| Code | comments, docstrings, identifiers |
+- **Human-facing — the answer above.** `README.md` and anything else a person
+  reads to decide something, commit subjects and bodies, PR titles and bodies,
+  and the plans and issue exports published for review. It goes in the language
+  **the team** reads, which is not automatically the one a given session runs in.
+- **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**`,
+  and code: comments, docstrings, identifiers. The skills cite each other's
+  headings and match some strings literally, so translating them breaks the loop
+  rather than localizing it.
+- **Conversation — the language the exchange opened in.** Session replies, issue
+  and PR comments, review replies. No standing artifact, so each follows the
+  person asking rather than a project-wide answer.
 
-**Deleting this section is a real answer, and the normal one.** A project that is
-English throughout keeps nothing here: a section saying "English, no split"
-plants the question in every session that loads this file for a project with
-nothing to decide. So this section's disposition is a stub skill's — hydrate now,
-or delete — and a deletion is recorded where every other decline is:
-
-```json
-"declined": {
-  "CLAUDE.md § Language": "English throughout — revisit if we ship to a non-English market"
-}
-```
-
-Write the reason as a condition in the present tense, which is what leaves the
-decision re-openable: once the section is gone the tree carries no prompt at all,
-so `/sync-agent-infra` re-offering an entry whose stated condition stopped
-holding is the way back to the question. A bare `"n/a"` loses that.
+The last two are still this project's to override — a team that wants its skills
+in its own language writes that here — but an override is a decision someone
+makes, not a blank left open.
 
 ## Working with skills
 
@@ -244,18 +232,3 @@ couldn't load. The script also asserts that every skill has exactly one row in
 from drifting as skills are added.
 
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
-
-### Markers are not yours to reword
-
-Some strings in this loop are **matched literally by another skill**, which makes
-them fixed points rather than wording: not reworded, not translated. Renaming the
-`## QA Checklist` heading and translating it are one defect, not two — the skill
-looks for that text, fails to find it, and writes a second section beside the one
-it could not read.
-
-**The test is how a skill finds the thing.** If it locates a section by its
-heading rather than by its position, that heading is a marker; if it finds a
-comment by its opening line, that line is one. Today that means the `## Summary`
-and `## QA Checklist` headings in a PR body, the `Proposed squash title/body:`
-lead on the squash comment, and the semantic commit prefixes above — a list the
-test outlives, so a marker added later needs no edit here.

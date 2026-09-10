@@ -119,10 +119,8 @@ there is no condition under which it fails to apply.
 `CLAUDE.md` is a **donor, not a replacement** — overwriting it is the one way to
 make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 
-Its § "Language" is the one section you hydrate **or delete** rather than merge:
-it settles which language each of six surfaces is written in, and a project that
-is English throughout deletes it and records that in `upstream.json`'s `declined`
-map.
+Its § "Language" is hydrated rather than merged: one line naming the language
+your team reads, the rest of the section holding whatever the project.
 
 ### G2 — The PR loop
 
