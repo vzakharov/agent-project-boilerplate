@@ -4,6 +4,8 @@
 
 > _Replace this stub with a short description of what this codebase is and why it exists._
 
+> **While this stub is unfilled and `docs/catalog.md` is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's own inventory, so building product code beside it means building on someone else's description of someone else's repo. The one exception is a tree whose `origin` *is* `vzakharov/agent-project-boilerplate`: that is the boilerplate itself, where the stub is the shipped state and this notice does not apply. Filling the stub is part of the detemplate run, so this paragraph retires with the condition it describes.
+
 ## About this file
 
 This file is intentionally bare. It carries only the conventions that hold true regardless of stack. As the project's actual conventions emerge — directory layout, testing approach, naming patterns, deployment quirks, recurring pitfalls — flesh out the relevant sections below.
@@ -29,7 +31,12 @@ go vet ./... && go test -short ./...                # Go
 
 The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typecheck='…' test='…'`, which prints output only for the ones that failed.
 
-The stub exits `0`, which is correct only where there is no stack to check — true of this repo, and of nothing that adopts it. **In an adopting project this file exits `1` until it runs that project's real checks.** An exit-0 stub over an unchecked stack is worse than no script at all, because `/finalize` passes step 1 and attests to a run that verified nothing.
+**This section is the exit rule's home.** `scripts/vet.sh`, `ADOPTING.md` and `docs/catalog.md` each point here rather than restating it, because the rule has a clause that is easy to drop and expensive to get wrong:
+
+- **No stack yet → `exit 0` is correct**, and stays correct. The two built-in checks are the whole run and they genuinely pass, so there is nothing to refuse to certify. This is the normal state of a repo taken to *start* a project, not a boilerplate-only special case — and a repo that sets `exit 1` here fails step 1 of `/finalize` on every prose-only PR, which teaches the loop to route around the vet run.
+- **A stack present and unchecked → `exit 1`**, until this file runs that project's real commands. An exit-0 stub over an unchecked stack is worse than no script at all, because `/finalize` passes step 1 and attests to a run that verified nothing.
+
+So wiring `scripts/vet.sh` is what you do **when a stack lands**, alongside `.claude/hooks/session-start.sh`'s dependency install — the paired site nothing else names.
 
 **Keep it current** as tooling evolves. If a CI job catches something `vet.sh` should have caught, that's a signal to extend it.
 
@@ -158,7 +165,8 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/plan`.
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
-- **`/spinoff`** — seed a new sibling repo out of the project you are standing in, and hand over a session rooted in it. **Adopters only**: it refuses from this repo, where the route to a new project is the README's template button.
+- **`/detemplate`** — turn a fresh "Use this template" fork into a project: prune what doesn't apply, hydrate what does. Routes through `/plan`, so the pruning is reviewed as a diff, and deletes itself last. **Forks only**: it refuses from this repo, where the route to a new project is the README's template button.
+- **`/spinoff`** — seed a new sibling repo out of the project you are standing in, and hand over a session rooted in it. **Adopters only**: same refusal, same signal — the two are complements, one converting a fork into a project and the other pushing a sibling out of one.
 - **`/handle`** — attach to a branch and do whatever it needs: read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, and land-prep only if asked.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
@@ -182,7 +190,7 @@ Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`
 
 `/sync-agent-infra` is the exception to the *why*: what it lacks is the per-repo watermark, not a procedure — every step of it is usable as written. Everything below still applies regardless: a stub is a stub.
 
-**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form: it exits `0` only because this repo has no stack to check, and in an adopting project it exits `1` until it runs that project's checks.
+**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form — a stub over a real stack certifies without checking — and what it must exit is § "Vetting" above, which turns on whether the project has a stack yet.
 
 ### Adding or renaming a skill
 

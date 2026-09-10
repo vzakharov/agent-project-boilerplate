@@ -34,9 +34,9 @@ inventory, so every item appears under exactly one, and
 
 - **adopt** — copy as-is.
 - **rewrite** — copy the shape, replace the contents for your repo. Exactly two
-  files qualify, and both are load-bearing: `scripts/vet.sh` (its stub exits `0`
-  for want of a stack to check; yours exits `1` until it runs your commands —
-  which you already know) and
+  files qualify, and both are load-bearing: `scripts/vet.sh` (what it must exit
+  turns on whether your repo has a stack yet, and
+  [`CLAUDE.md` § "Vetting"](../CLAUDE.md#vetting) is that contract's home) and
   `.claude/skills/sync-agent-infra/upstream.json` (the SHA and adopted set are
   per-repo by definition; only `repo` ships correct). Naming this disposition is
   what stops an adopter inheriting a placeholder SHA and a foreign `adopted` set
@@ -256,8 +256,12 @@ instead (no visual surface, no CI-only tests, no numbered migrations).
 
 ### Never
 
-These describe or maintain *this* repo. Copying one means shipping a document
-about someone else's template, or a working artifact from someone else's branch.
+These are meaningless in a repo that selects a subset. Most of them describe or
+maintain *this* repo, so copying one means shipping a document about someone
+else's template, or a working artifact from someone else's branch. `/detemplate`
+is the row that is `never` for the other reason: it describes no repo at all, it
+*converts* a whole-tree fork — an operation a subset adopter is not performing
+and a fork performs exactly once, deleting the skill as it finishes.
 
 **The last two rows should not exist in a clone at all.** `/finalize` sweeps
 `docs/plans/` and `docs/remove-before-merging/` before a branch goes green, so on
@@ -271,7 +275,9 @@ means you are looking at working state, not the product.
 | --- | --- | --- | --- | --- |
 | `README.md` | What this repo is, and the two ways to acquire it. Yours already exists. | — | — | never |
 | `ADOPTING.md` | The acquisition procedure. Read once, over the network, from the clone. | — | — | never |
+| `docs/img/` | `ADOPTING.md`'s only asset — the screenshot locating the environment setup script. Goes when that file does, or it is left an orphan. | — | — | never |
 | `docs/catalog.md` | This file. Read from a fresh clone on every sync, so it cannot go stale downstream. | — | — | never |
+| `/detemplate` | Turn a fresh template fork into a project: prune the `never` rows and unused groups, hydrate what stays, hand back the setup script. Routes through `/plan` and deletes itself last. | `gh`, `$GH_TOKEN`; a whole-tree fork, not a subset copy | `/plan` (G2); `/spinoff`, `/sync-agent-infra` (G0) | never |
 | `docs/plans/*` | Working artifacts: file-based plans mid-flight. `/finalize` sweeps them before they reach a trunk. | — | — | never |
 | `docs/remove-before-merging/*` | Working artifacts: the tracked squash-message draft. Swept at finalize. | — | — | never |
 
@@ -326,6 +332,40 @@ Two G2 rows are adopter choices rather than defaults:
   the repo never had. Already adopted it → ask the operator whether the backwards
   compatibility is worth that extra row, and record either answer in
   `upstream.json` so the question does not come back.
+
+## Reverse closure
+
+The same fact read backwards, for the fork that **deletes** a group instead of
+declining to copy it: every `@`-reference *into* the dropped group has to be
+stripped, or `scripts/check-skill-catalog.sh` reports the dangle. It is worth
+counting rather than deriving, because the cost is unevenly distributed and the
+expensive half is knowing which mentions to **leave alone**.
+
+The distinction that does the work: a mention is either **guarded** — prose that
+reads correctly when the target is absent ("`/test-on-gh`, if the project has
+hydrated it") — or an **assertion** that the file exists. Only assertions break.
+And a bare `/name` is invisible to the checker either way, so a broken one fails
+silently, in prose, forever.
+
+- **Dropping G6** costs exactly **one** `@`-reference edit:
+  `.claude/skills/bootstrap-workflow-dispatch/SKILL.md` cites
+  `@.claude/skills/test-on-gh/SKILL.md`. Six further files carry **guarded**
+  bare-name prose about it that must be left alone — `/sync-branch`,
+  `/watch-ci`, `/qa-checklist`, `/pr`, `/finalize` (twice) and `/from-branch`.
+  "`/test-on-gh`, if the project has hydrated it" reads correctly when the answer
+  is "it hasn't", and editing it makes every future `/sync-agent-infra` diff
+  noisier for no behavioral gain. `CLAUDE.md`'s stub list names it too, and that
+  one *is* rewritten — not for closure, but because the list stops being true
+  when the stubs go.
+- **Dropping G5** costs **two** `@`-references, both in `/finalize` and both to
+  `@.claude/skills/watch-ci/SKILL.md`, plus **two dead bare names** in
+  `/override-gh` — `/watch-ci` and `scripts/ci-watch-tick.sh` — which unlike the
+  G6 mentions *assert* that those files exist rather than guarding on it.
+  `/bootstrap-workflow-dispatch` references `/watch-ci` as well and needs no
+  edit: it is inside G5, so it goes with the group.
+
+Naming which is which saves the next fork six unnecessary edits and stops it
+missing four necessary ones.
 
 ## Keeping this file honest
 
