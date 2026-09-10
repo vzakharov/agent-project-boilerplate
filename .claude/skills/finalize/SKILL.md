@@ -65,7 +65,7 @@ Steps (stop on first unresolved failure):
 
    ### Attestation
 
-   Verified `<short-sha>` (`<branch>`) against `<base>` @ `<base-short-sha>` "<base subject>".
+   Verified <short-sha> (`<branch>`) against `<base>` @ <base-short-sha> "<base subject>".
 
    - `./scripts/vet.sh` — **green**
    - CI on this PR — **<green (run link) | nothing runs on a PR in this repo>**
@@ -81,7 +81,7 @@ Steps (stop on first unresolved failure):
 
    ### Attestation — none required
 
-   `<short-sha>` (`<branch>`) against `<base>` @ `<base-short-sha>` "<base subject>".
+   <short-sha> (`<branch>`) against `<base>` @ <base-short-sha> "<base subject>".
 
    Finalized in `no vet` mode: <why the diff has nothing to verify — e.g. "markdown only, no code path touched">. `./scripts/vet.sh` was skipped rather than run green, and no bucket was dispatched.
 
@@ -94,4 +94,5 @@ Steps (stop on first unresolved failure):
    - **Attest what you vetted, not what you meant to vet.** If the vet run was not green, or a dispatch was skipped for a reason other than "the diff doesn't reach it", or you stopped under the two-shot rule — say exactly that, in the comment. An honest partial attestation is useful; a tidy one that overstates is worse than none. That includes naming a stub: "`./scripts/vet.sh` is not implemented in this project yet" is an honest line, and it tells the reviewer exactly how much the attestation is worth.
    - **One comment, edited in place.** Re-running `/finalize` after a base-advanced re-verify updates it; it must always describe the branch's current head, not the first pass. A branch finalized once in `no vet` mode and later re-finalized for real replaces the no-op body with the full one.
    - **A no-op is a result, and it gets posted.** Never resolve `no vet` by staying silent. An operator coming back to the PR — days later, or from another machine — cannot distinguish "verification was skipped on purpose" from "nobody ever finalized this" unless one of them is written down, and the missing comment looks identical to the forgotten one. Say which it was.
+   - **The SHAs go bare, not in code spans** — GitHub only auto-links an un-backticked hash, per CLAUDE.md § "GitHub comments".
    - End the body with the attribution footer the repo requires of every GitHub comment.
