@@ -33,7 +33,7 @@ set -eu
 PROG="check-squash-message"
 
 TITLE_MAX_CHARS=80
-BODY_MAX_LINES=50
+BODY_MAX_LINES=40
 BODY_MAX_WIDTH=72
 
 TRACKED_PATH="docs/remove-before-merging/squash-message.md"

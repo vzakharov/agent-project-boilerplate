@@ -171,7 +171,7 @@ number>)`. **One line, at most 80 chars** — the mandatory suffix eats ~10 of i
     least of the change's reasoning. `scripts/check-squash-message.sh` fails a
     body that carries one.
 - **Hard-wrap the body at 72 chars with real newlines**, and keep it to **at most
-  50 lines**. A git commit message doesn't soft-wrap; one long line per paragraph
+  40 lines**. A git commit message doesn't soft-wrap; one long line per paragraph
   reads as an unwrapped wall in `git log`. Continuation lines of a bullet align
   under its text. A line holding a single unwrappable token — a URL, a long path,
   no interior whitespace — has no wrapped form and is exempt from the width.
@@ -184,11 +184,10 @@ Re-read the draft as the future reader above, and rewrite it until it hits the
 target.
 
 The target is **three paragraphs of prose, four at the outside**, inside the
-measured caps above — 80 chars of title, 50 lines of body at 72 wide. The
-opening says why the change exists; the rest say what it does about it, named at
-the level of the behavior, contract or module affected. Not a bullet-per-change
-inventory: detail that doesn't survive at that size was below the high-level
-picture and lives in the diff.
+measured caps above. The opening says why the change exists; the rest say what it
+does about it, named at the level of the behavior, contract or module affected.
+Not a bullet-per-change inventory: detail that doesn't survive at that size was
+below the high-level picture and lives in the diff.
 
 Why the change exists is whatever is honest. Often that's a defect or a gap. Just
 as often it's planned work landing as planned, and then the opening says where the
@@ -240,8 +239,8 @@ product area); a hotfix body for a minimal fix is one or two paragraphs. The pas
 runs at either size — trimming words inside each of a release's areas rather than
 dropping areas, and never padding a hotfix out to look substantial. The paragraph
 target moves with scope that way; the measured caps do not. They bind every lane,
-and a project whose release bodies genuinely outgrow 50 lines edits its own copy
-of `scripts/check-squash-message.sh` — raising the constant, or teaching the
+and a project whose release bodies genuinely outgrow the line cap edits its own
+copy of `scripts/check-squash-message.sh` — raising the constant, or teaching the
 script to recognize a release first and widen only there — as a reviewable
 change.
 

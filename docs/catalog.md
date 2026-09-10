@@ -51,7 +51,7 @@ conditions, and any row can be escaped individually.
 
 | Group | Adopt when |
 | --- | --- |
-| [G0 — The sync path](#g0--the-sync-path) | Always, unless you want a one-time snapshot and no future updates. Ships unhydrated: filling in the watermark is what makes it runnable. |
+| [G0 — The sync path](#g0--the-sync-path) | Always, unless you want a one-time snapshot and no future updates. The sync half ships unhydrated: filling in the watermark is what makes it runnable. |
 | [G1 — Prose & principles](#g1--prose--principles) | Always. Zero external dependencies, no stack assumptions, no GitHub. |
 | [G2 — The PR loop](#g2--the-pr-loop) | A change is a branch → PR → squash-merge, on GitHub, with `gh` and `$GH_TOKEN` reachable. **In a web/remote session, needs G4.** |
 | [G3 — Issue & backlog](#g3--issue--backlog) | G2 **and** work is actually tracked as GitHub issues. Same web-session dependency on G4. |
@@ -62,26 +62,37 @@ conditions, and any row can be escaped individually.
 
 ### G0 — The sync path
 
-Adopting this group is what makes every later change at the source reachable.
-Skipping it leaves you with a snapshot.
+The group owns the whole source-and-target relationship, in both directions:
+`/sync-agent-infra` pulls later changes at your source forward into your repo,
+and `/spinoff` pushes a new sibling repo out of it. Adopting the first is what
+makes every later change at the source reachable; skipping it leaves you with a
+snapshot.
 
-**It ships unhydrated**, this repo having no source of its own to sync from.
-Hydrating it is filling in the watermark, not writing a procedure: every step of
-the skill is usable as written. The [G6 hydrate-now-or-delete
+**`/sync-agent-infra` ships unhydrated**, this repo having no source of its own
+to sync from. Hydrating it is filling in the watermark, not writing a procedure:
+every step of the skill is usable as written. The [G6 hydrate-now-or-delete
 rule](#g6--stack-stubs) applies here too, and `scripts/check-skill-catalog.sh`
 enforces it the same way.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `/sync-agent-infra` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tighten-docs` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
-| `.claude/skills/sync-agent-infra/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, and what you adopted or declined. Ships pointed at this repo with the rest as placeholders. | — | — | **rewrite** |
+| `.claude/skills/sync-agent-infra/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
+| `/spinoff` | Seed a new sibling repo out of the adopter you are standing in: triage what travels, write the target's watermark, seed its `main` and a session branch, and hand over a session in it. Ships hydrated. | `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner; a caller that adopted this infrastructure rather than being it | `/sync-agent-infra` (this group); `/pr` (G2) | adopt |
 
-Its Step 8 hands off to `/dry`, `/tighten-docs` and `/pr`, and cites
-`/squash-message` for how the sync's own squash record is titled. The first two
-come with G1, which you are adopting anyway. **G2 is the escape**: if you decline
-it, strip those two citations from the skill and land sync PRs however your repo
-normally does — `scripts/check-skill-catalog.sh` will otherwise report the
-dangling references, which is the intended behavior rather than a nuisance.
+**Both skills are inert in this repo, for one structural reason: this tree is the
+root.** There is no source above it to sync from, and it is not an adopter, so
+there is nothing to spin off out of either — `/spinoff` refuses the moment it
+finds this catalog. Downstream both work.
+
+`/sync-agent-infra`'s Step 8 hands off to `/dry`, `/tighten-docs` and `/pr`, and
+cites `/squash-message` for how the sync's own squash record is titled; the first
+two come with G1, which you are adopting anyway. `/spinoff` reaches `/pr` as
+well, at its Step 4, to open the seed PR in the new repo. **G2 is the escape**:
+if you decline it, strip those citations from both skills and land the sync PR —
+and the seed PR — however your repo normally does. `scripts/check-skill-catalog.sh`
+will otherwise report the dangling references, which is the intended behavior
+rather than a nuisance.
 
 ### G1 — Prose & principles
 
