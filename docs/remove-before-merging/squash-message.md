@@ -22,8 +22,8 @@ helpers under G5.
 
 check-merge.sh therefore sources nothing outside its own group, so a
 G2-only adopter's PR loop is self-contained. ci-watch-tick.sh sources
-both files, and its catalog row cites the G2 one group-tagged — the
-form export-github-item.py's row already uses for lib/github.py. No
+both files, and its catalog row tags the G2 one with its group, so
+the one cross-group dependency stays visible where it is declared. No
 function changed behavior.
 
 Closes #49
