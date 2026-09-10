@@ -5,51 +5,40 @@ feat: #43 add /spinoff for seeding a sibling repo (pr #46)
 ```
 
 ```
-The agent infrastructure was written entirely from the adopter's
-side, pulling: ADOPTING.md is read over the network by the repo
-taking it on, docs/catalog.md is the inventory it selects from,
-and /sync-agent-infra keeps that selection current. Nothing served
-the source's side — standing in a working project and firing a new
-one out of it, which is the recurring next move once a real
-project runs on this infrastructure. "Another repo like this one"
-means that repo's foundation, not the boilerplate's.
+This infrastructure was written entirely from the adopter's side,
+pulling: ADOPTING.md is read over the network by the repo taking it
+on, docs/catalog.md is the inventory it selects from, and
+/sync-agent-infra keeps that selection current. Nothing served the
+source's side — standing in a working project and firing a new one
+out of it. "Another repo like this one" means that repo's
+foundation, not the boilerplate's.
 
 /spinoff <owner/name> is that operation, hydrated, in G0. What
 travels is the caller's foundation — how code there is organized —
-and a criterion decides it rather than a file list, which would go
-stale against every stack the skill has not seen: does this path
-encode how code here is organized, or what this particular product
-is. A second fork decides the form it travels in, since a spinoff
-can legitimately be "this repo, but in Python": under a matched
-stack organization travels as files, under a mismatched one as
-stated intent in the target's plan, because a layer boundary is
-the architectural decision and an import-boundary lint rule is
-one stack's way of writing it down. No directory travels
-wholesale — .claude/ and scripts/ both mix the loop with the
-stack, and a session-start hook is half of each.
+decided by a criterion rather than a file list, which would go stale
+against every stack the skill has not seen: does this path encode
+how code here is organized, or what this particular product is. A
+second fork decides the form, since a spinoff can legitimately be
+"this repo, but in Python": under a matched stack organization
+travels as files, under a mismatched one as stated intent in the
+target's plan. No directory travels wholesale — .claude/ and
+scripts/ both mix the loop with the stack.
 
 The seed splits by reviewedness. main takes the copies, which
 arrived reviewed and are exactly the /handle closure that
 check-skill-catalog.sh enforces; the rewrites go through PR #1 as
 ordinary reviewed work, rather than landing the least-reviewed
-content through the one path nothing reviews. main therefore
-reduces to what the boilerplate itself would ship, which makes a
-spinoff structurally identical to an adoption, and its vet.sh
-refuses to certify instead of being weakened until the seed
-passes. A caller-hydrated stub is omitted rather than re-stubbed:
-absent a catalog, a stub is the one disposition that fails main's
-own gate.
+content through the one path nothing reviews. main therefore reduces
+to what the boilerplate itself would ship, and its vet.sh refuses to
+certify instead of being weakened until the seed passes.
 
-The watermark always points at the root, because chains compose —
-a sibling of a sibling would make a sync walk the whole ancestry,
-every link multiplying the triage. Ancestry is recorded instead,
-in a new root-first lineage array that is provenance and never a
-second sync source. The skill runs from adopters only, refusing
-when docs/catalog.md is present, which keeps the
-boilerplate-to-project direction where the template fork already
-served it; and it keeps the caller read-only, asserting the target
-clone's origin before /pr is delegated to, since /pr aims at
-whatever cwd resolves to.
+The watermark points at the root, because chains compose: a sibling
+of a sibling would make a sync walk the whole ancestry. Ancestry is
+recorded instead, in a root-first lineage array that is provenance
+and never a second sync source. The skill runs from adopters only,
+refusing when docs/catalog.md is present, and keeps the caller
+read-only, asserting the target clone's origin before /pr is
+delegated to, since /pr aims at whatever cwd resolves to.
 
 Closes #43
 
