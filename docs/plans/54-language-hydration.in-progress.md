@@ -1,5 +1,3 @@
-> ⛔ **DRAFT — DO NOT IMPLEMENT.** This plan is not approved. Do not edit source while this file is named `*.draft.do-not-implement.md` — prep and spikes go in `tmp/`. On an explicit operator go-ahead, `git mv` it to `*.in-progress.md` and delete this banner (quoting the go-ahead in the commit) *before* touching code.
-
 # #54 — the language decision joins the hydration set
 
 Source: `docs/issue/54/issue.md`.
@@ -193,27 +191,22 @@ material.
   English-only, and its § "Language" ships stubbed exactly as § "About this
   project" does. Carrying a split here would stop it being a decision.
 
-## Open question
+## Resolved forks
 
-One left; the two resolved forks are collapsed above. The plan is written with
-the recommendation in force, so silence resolves it.
+All three are collapsed above; what each rejected, in a line:
 
-**Does § "Markers are not yours to reword" name today's markers, or only teach
-how to spot one?** The rule and the recognition test are in either version; the
-question is only whether four concrete instances are listed beneath them.
-
-- (a) **Rule, recognition test, and the four instances in one line**
-  *(recommended)*. There are four, they have been stable, and a reader who has
-  just been told "some headings are matched literally" wants to know which ones
-  without opening three skills. The recognition test carries the durability, so
-  the list going out of date costs nothing structural.
-- (b) Rule and recognition test only. Nothing to keep in sync, but every reader
-  re-derives the list, and the one who does it wrong translates a marker.
-
-Rejected in the same fork: adding a pointer at each marker site in
-`/qa-checklist` and `/squash-message` instead of one enumeration. Three copies
-of one constraint is the drift this repo's own doc rules name, and `CLAUDE.md`
-is always loaded, so a session writing either body already has the rule.
+- **§ "Language" is deletable, not fill-only.** A filled section reading "English
+  throughout, no split" plants the question in every session that loads
+  `CLAUDE.md` for a project with nothing to decide.
+- **No repo is named as the reporting example.** A citation would date the
+  section to whoever reported it; the improvement is general.
+- **§ "Markers are not yours to reword" names today's four markers**, beneath the
+  rule and the recognition test. The alternative — teaching only the recognition
+  test — leaves every reader to re-derive the list, and the one who gets it wrong
+  translates a marker. Also rejected in that fork: a pointer at each marker site
+  in `/qa-checklist` and `/squash-message` instead of one enumeration. Three
+  copies of one constraint is the drift this repo's own doc rules name, and
+  `CLAUDE.md` is always loaded, so a session writing either body already has it.
 
 ## DRY notes
 
