@@ -299,9 +299,8 @@ draft did, which no longer threatens anyone.
   constraint, and cutting it is the false positive this lens must not produce.
 
 **Resolve in this order** — existence, negation, durability, tightness (A, D, B,
-C). The two deletion verdicts come first: deciding a line shouldn't exist saves
-you rewording it, and deciding it describes nothing that exists saves you
-shortening a sentence you are about to delete.
+C): the two deletion verdicts first, so no rewrite or trim is ever spent on a
+line that is about to go.
 
 ## Step 4: Do NOT touch
 
