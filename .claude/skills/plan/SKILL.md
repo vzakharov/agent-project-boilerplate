@@ -37,9 +37,9 @@ Plan mode is reached two ways, neither of which asks the agent: the operator swi
 
 ## The `plan or go` entry
 
-`plan or go: <task>` hands the agent a decision the rest of this file takes as settled: **does this task get a plan, and does the plan block on the operator?** Two questions pick between three outcomes — plan and hand off, plan and then implement, or implement with no plan at all. The prose form is the invocation, like a bare `plan:`.
+`plan or go: <task>` hands the agent a decision the rest of this file takes as settled: **does this task get a plan, and does the plan block on the operator?** Two questions pick between three outcomes. The prose form is the invocation, like a bare `plan:`.
 
-**Load `@.claude/skills/plan/plan-or-go.md` when the prompt carries those words**, and only then. It owns the two questions, the outcomes and what each one runs. Most sessions are not that entry, which is why the page sits beside this file rather than in it — a paragraph they skip is cheap, a page they load is not.
+**Load `@.claude/skills/plan/plan-or-go.md` when the prompt carries those words**, and only then. It owns both questions and what each outcome runs. Most sessions are not that entry, which is why the page sits beside this file rather than in it — a paragraph they skip is cheap, a page they load is not.
 
 Absent the words there is nothing to load and nothing here changes: § "The approval gate" governs as written.
 

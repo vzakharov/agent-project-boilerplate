@@ -1,8 +1,8 @@
 # The `plan or go` entry
 
-Loaded from `@.claude/skills/plan/SKILL.md` § "The `plan or go` entry" when the operator's prompt carries those words. It answers one question before any other: **does this task get a plan, and does the plan block on the operator?** Two questions, three outcomes.
+The decision `@.claude/skills/plan/SKILL.md` § "The `plan or go` entry" routes here to make, before any other: **does this task get a plan, and does the plan block on the operator?**
 
-**The prompt is a conditional go-ahead.** It authorizes implementation *on condition that* the agent judges the operator's gate unnecessary, scoped to the task in that message and to that message alone. Everything the skill says about the gate holds unchanged for every other message: no agent clears it by deciding a plan would be overkill.
+**The prompt is a conditional go-ahead.** It authorizes implementation *on condition that* the agent judges the operator's gate unnecessary, scoped to the task in that message and to that message alone.
 
 ## Question 1 — does the operator need to decide before the work exists?
 
