@@ -1,5 +1,5 @@
 """The sections every export carries: the header block and the conversation
-comments, plus the login helper the review and timeline renderers share.
+comments.
 """
 
 from __future__ import annotations
@@ -7,14 +7,14 @@ from __future__ import annotations
 from typing import Any
 
 from gh_export.attachments import rewrite_attachment_refs
+from gh_export.authorship import attribution, split_agent_footer
 
 
-def login_of(holder: Any, default: str = "?") -> str:
-    """Login of a `user`/`actor`/`requested_reviewer`-shaped nested object."""
-    return (holder or {}).get("login") or default
-
-
-def header_section(item: dict[str, Any], pr: dict[str, Any] | None) -> str:
+def header_section(
+    item: dict[str, Any], pr: dict[str, Any] | None, body_by_agent: bool
+) -> str:
+    """`body_by_agent` is the caller's to compute — it holds the item body and
+    strips the footer where it renders it."""
     labels = item.get("labels") or []
     labels_md = (
         ", ".join(f"`{(lab.get('name') or '')}`" for lab in labels)
@@ -29,7 +29,7 @@ def header_section(item: dict[str, Any], pr: dict[str, Any] | None) -> str:
         "",
         f"- **State:** {item['state']}{state_suffix}",
         f"- **URL:** {item['html_url']}",
-        f"- **Author:** @{login_of(item.get('user'))}",
+        f"- **Author:** {attribution(item.get('user'), body_by_agent)}",
     ]
     if pr:
         base_ref = pr.get("base") or {}
@@ -70,10 +70,12 @@ def comments_section(
         return ""
     chunks = ["## Comments", ""]
     for c in comments:
-        text = rewrite_attachment_refs(c.get("body") or "_empty_", url_to_relative)
+        by_agent, body = split_agent_footer(c.get("body") or "")
+        text = rewrite_attachment_refs(body or "_empty_", url_to_relative)
         chunks.extend(
             [
-                f"### Comment by @{login_of(c.get('user'))} on {c.get('created_at', '')}",
+                f"### Comment by {attribution(c.get('user'), by_agent)}"
+                f" on {c.get('created_at', '')}",
                 "",
                 f"[{c.get('html_url', '')}]({c.get('html_url', '')})",
                 "",

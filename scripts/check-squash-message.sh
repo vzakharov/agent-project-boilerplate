@@ -2,7 +2,7 @@
 # Hold the squash proposal's copy-pasteable text to the rules
 # `@.claude/skills/squash-message/SKILL.md` states as prose — size caps, and no
 # session link in the body — and fail when one breaks. The skill's Step 3 is an
-# agent reading its own output; this is the part of that target a machine can
+# agent reading their own output; this is the part of that target a machine can
 # settle.
 #
 # There is deliberately no env override: a hatch in the boilerplate teaches
@@ -141,6 +141,16 @@ is_blank() {
   esac
 }
 
+# The caps are terminal columns, so they count characters — but `${#…}` counts
+# bytes under `dash` and under `bash` outside a UTF-8 locale, agreeing only while
+# the message is ASCII. Deleting UTF-8 continuation bytes leaves one byte per
+# character. `wc -m` is the other route and is worse: bytes under `LC_ALL=C`,
+# and otherwise a UTF-8 locale whose name differs between glibc and macOS.
+char_len() {
+  s=$(printf '%s' "$1" | LC_ALL=C tr -d '\200-\277')
+  printf '%s' "${#s}"
+}
+
 # True when the line still holds whitespace once its own indent and any trailing
 # spaces are gone — i.e. it is more than one unwrappable token and so had a
 # wrapped form available to it.
@@ -193,9 +203,10 @@ while IFS= read -r line || [ -n "$line" ]; do
       continue
     fi
     title_lines=$((title_lines + 1))
-    [ "${#line}" -le "$title_widest" ] || title_widest=${#line}
-    if [ "${#line}" -gt "$TITLE_MAX_CHARS" ]; then
-      title_over="${title_over}${NL}    ${#line} chars: ${line}"
+    len=$(char_len "$line")
+    [ "$len" -le "$title_widest" ] || title_widest=$len
+    if [ "$len" -gt "$TITLE_MAX_CHARS" ]; then
+      title_over="${title_over}${NL}    ${len} chars: ${line}"
     fi
     continue
   fi
@@ -222,10 +233,11 @@ while IFS= read -r line || [ -n "$line" ]; do
   # Exempt lines stay out of the widest-line figure, so a passing run never
   # reports a width above the cap.
   if is_wrappable "$line"; then
-    [ "${#line}" -le "$body_widest" ] || body_widest=${#line}
-    if [ "${#line}" -gt "$BODY_MAX_WIDTH" ]; then
+    len=$(char_len "$line")
+    [ "$len" -le "$body_widest" ] || body_widest=$len
+    if [ "$len" -gt "$BODY_MAX_WIDTH" ]; then
       body_over_count=$((body_over_count + 1))
-      body_over="${body_over}${NL}    line ${body_lines} (${#line} chars): ${line}"
+      body_over="${body_over}${NL}    line ${body_lines} (${len} chars): ${line}"
     fi
   fi
 done <"$SRC_FILE"

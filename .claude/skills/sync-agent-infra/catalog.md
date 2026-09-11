@@ -109,7 +109,7 @@ there is no condition under which it fails to apply.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `CLAUDE.md` | The always-loaded conventions: key principles, docstring policy, derive-types-from-source-of-truth, doc-sync rules, commit conventions. | — | — | adopt — **merge, don't overwrite** |
+| `CLAUDE.md` | The always-loaded conventions: key principles, docstring policy, derive-types-from-source-of-truth, doc-sync rules, commit conventions, the language decision. | — | — | adopt — **merge, don't overwrite** |
 | `.claude/rules/` | The path-scoped convention mechanism: a rule file loads only when a session touches the paths it declares. Ships with a README and no rules. | — | — | adopt |
 | `/dry` | Review the session's diff for DRY opportunities; apply the obvious wins, surface the ambiguous ones. | — | — | adopt |
 | `/tend-prose` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say, delete what survives only to deny a thing the change removed. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
@@ -118,6 +118,9 @@ there is no condition under which it fails to apply.
 
 `CLAUDE.md` is a **donor, not a replacement** — overwriting it is the one way to
 make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
+
+Its § "Language" is hydrated rather than merged: one line naming the language
+your team reads, the rest of the section holding whatever the project.
 
 ### G2 — The PR loop
 
@@ -299,7 +302,7 @@ means you are looking at working state, not the product.
 
 A skill copied without the siblings it `@`-references leaves a pointer to a file
 that isn't there, and **that failure is silent**: the agent reads the surviving
-prose and skips the step it could not load. Resolve each group's **Pulls in**
+prose and skips the step they could not load. Resolve each group's **Pulls in**
 column before copying, then run `bash scripts/check-skill-catalog.sh` in your
 repo to prove nothing dangles.
 

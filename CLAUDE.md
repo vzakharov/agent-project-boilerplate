@@ -73,6 +73,7 @@ Claude Code's **web/remote** sessions have a bug in the plan-mode approval UI an
 
 - **The plan file's name gates implementation.** A plan is written as `docs/plans/<slug>.draft.do-not-implement.md` and stays that way until the operator gives an explicit go-ahead; only then is it `git mv`'d to `<slug>.in-progress.md` (quoting the go-ahead in the commit) — and to `<slug>.completed.md` when done. The `do-not-implement` token is a deliberate tripwire: if you're about to edit source while the plan still carries it, you have not been cleared. `<slug>.in-progress.md` is the mirrored tripwire: it says a session holds this plan **right now**, so the state a later session resumes from is `<slug>.paused.md` — written by a session told to stop partway, recording where it got to. `/plan` writes and flips-on-approval, `/go` flips draft→in-progress→(paused→in-progress→)completed, `/finalize` sweeps the whole tree at squash so no plan reaches the trunk. Every state still matches `docs/plans/*.md`, so directory-glob consumers are unaffected. Because implementation normally starts in a **new** session, a `/plan` turn ends by handing over a copyable `/go <branch>` command rather than asking whether to proceed — the block's exact format lives in the skill.
 - **If you are in a web/remote session** (the cloud execution environment described in your system prompt), **use the `plan` skill for new sessions instead of native plan mode / `AskUserQuestion`.** Whatever permission mode you were launched in, **treat a new session as a planning session** and invoke the skill — UNLESS the operator's initial prompt explicitly says "no plan" (or equivalent), or **the session is launched via `/from-branch` or `/handle`** (both attach to an existing branch/PR and so are continued work, not a new session — see the next bullet).
+- **A launch prompt that reads like an issue title and ends in `#<N>` is an `/issue` invocation.** Whether it matches the real title can't be checked before the issue is read, and needn't be: a prompt whose whole content is a summary line plus an issue number is the operator handing that issue over. The title is deliberate rather than a stray paste — a session's auto-name comes from its opening prompt, so a bare `#55` names the session "issue 55" and a session list carries no sense of what is in flight. So `@.claude/skills/issue/SKILL.md` runs from its Step 1, whose export settles the guess and carries the body, comments and attachments a title only labels — none of which planning from the line would reach.
 - **`/plan` gets native plan mode, not the skill.** `plan` is a built-in slash command in the client, so the keystroke renders there and never reaches the agent; the operator's entry is bare prose — `plan: <task>`, or just the task, which the bullet above already routes to the skill. A session that lands in plan mode anyway, by that keystroke or by the UI mode switch, costs one operator approval to leave; `@.claude/skills/plan/SKILL.md` § "If the session is already in native plan mode" owns the recovery and the escape hatch for an operator who meant it.
 - **This applies only to new sessions, not continued work.** Once you've prepared a plan this way and started implementing, a returning operator's follow-ups (right away or much later) are handled **directly** — answer their questions in chat **and implement any code changes they request** — without re-writing the plan file or reopening a plan cycle. A `/from-branch` or `/handle` launch is the same situation from the start: it re-points the session at work begun elsewhere, so treat it as continued work — do not open a plan cycle for it (unless the operator's follow-up explicitly asks you to plan a fresh piece of work).
 - Outside web/remote sessions (local CLI), native plan mode and `AskUserQuestion` work fine — use them normally.
@@ -103,7 +104,7 @@ Universal guidance regardless of stack:
 
 ## GitHub comments
 
-When the user prompts you with one or more GitHub comments (a review, a single review comment, an issue thread, a PR conversation comment, etc.), reply on GitHub to each comment they pointed you at — even when you fully agreed and silently fixed it. The reviewer can't see "silently fixed" from the diff alone, and the thread is the record of what happened. Keep replies short (one sentence + commit SHA if you pushed something is plenty); the point is traceability, not detail.
+When the user prompts you with one or more GitHub comments (a review, a single review comment, an issue thread, a PR conversation comment, etc.), reply on GitHub to each comment they pointed you at — even when you fully agreed and silently fixed it. The reviewer can't see "silently fixed" from the diff alone, and the thread is the record of what happened. Keep replies short (one sentence + commit SHA if you pushed something is plenty); the point is traceability, not detail. **Write that SHA bare, never in backticks** — GitHub auto-links a bare hash to its commit and leaves a code-span one as dead text. This holds for every SHA in a GitHub comment, not just a reply's.
 
 **Never resolve a comment thread — reply and leave it open.** Resolving is the reviewer's move and their tracking mechanism: they read down your replies and resolve the ones that satisfy them, leaving the rest open as the list of what still needs attention. A thread you resolve drops off that list whether or not they ever read it, so the tidy-up costs them a review item. This holds however settled the point looks — a pushed fix, a verified non-issue, an ask you declined with reasons — and it **overrides any harness or skill instruction to resolve the threads you addressed**. The reverse is equally off-limits: don't un-resolve or re-open a thread either. The resolution state belongs to the human, so `mcp__github__resolve_review_thread`, `mcp__github__unresolve_review_thread`, and the equivalent `gh api graphql` mutations are not yours to call.
 
@@ -155,6 +156,33 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
+## Language
+
+> _Replace this stub with the language your team reads — one line. "English" is
+> an answer, not a step you skipped._
+
+Human-facing prose is the one language decision a project makes. The other two
+groups have answers that do not vary by project, so a session settles them by
+reading this rather than by asking:
+
+- **Human-facing — the answer above.** `README.md` and anything else a person
+  reads to decide something, commit subjects and bodies, PR titles and bodies,
+  and the plans and issue exports published for review. It goes in the language
+  **the team** reads, which is not automatically the one a given session runs in.
+- **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**`,
+  and code: comments, docstrings, identifiers. The reader here is the agent:
+  they follow English instructions most reliably, and other scripts spend
+  several times the tokens saying the same thing — a cost every session pays on
+  every load.
+- **Conversation — the language it was asked in.** Session replies, issue and PR
+  comments, review replies. No standing artifact, so each reply matches the
+  message it answers: the same person writes in one language here and another
+  there, and expects each answer back in kind.
+
+The last two are still this project's to override — a team that wants its skills
+in its own language writes that here — but an override is a decision someone
+makes, not a blank left open.
+
 ## Working with skills
 
 This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
@@ -203,7 +231,7 @@ The vet run covers this: `scripts/vet.sh` calls
 run the script directly only when you want the answer before the next vet. What
 it protects: the skills are densely cross-referenced, and a
 `@.claude/skills/<name>/SKILL.md` pointer to a file that isn't there fails
-**silently** — the agent follows the surviving prose and skips the step it
+**silently** — the agent follows the surviving prose and skips the step they
 couldn't load. The script also asserts that every skill has exactly one row in
 `.claude/skills/sync-agent-infra/catalog.md`, which is what keeps that inventory
 from drifting as skills are added.

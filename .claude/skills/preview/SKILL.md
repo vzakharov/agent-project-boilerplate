@@ -23,4 +23,4 @@ The failure mode this exists to prevent is specific and common: reasoning about 
 
 ## Related
 
-`/qa-checklist` classifies some verification steps as `manual-only` precisely because they need a human's eye on pixels; a hydrated `/preview` is what lets the agent close some of that gap itself.
+`/qa-checklist` classifies some verification steps as `manual-only` precisely because they need a human's eye on pixels; a hydrated `/preview` is what lets you close some of that gap yourself.

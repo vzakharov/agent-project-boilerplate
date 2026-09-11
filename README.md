@@ -1,7 +1,7 @@
 # agent-project-boilerplate
 
 Boilerplate for projects where Claude Code is a first-class collaborator.
-Language- and framework-agnostic.
+Stack-agnostic.
 
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
 stack, **30 skills** (22 working out of the box, 8 stubs awaiting hydration) that
@@ -83,8 +83,8 @@ into this repo: clone it somewhere temporary, read ADOPTING.md, and follow it.
 ```
 
 The agent selects a subset against your repo's actual shape, mostly by
-inspection — expect it to ask only about your session type and your deploy/test
-surface.
+inspection — expect them to ask only about your session type and your
+deploy/test surface.
 
 Either way, later changes here come forward with `/sync-agent-infra`, whose
 shipped watermark already names this repo — you fill in the rest (see

@@ -44,6 +44,7 @@ from gh_export.attachments import (
     rewrite_attachment_refs,
 )
 from gh_export.cli import parse_args
+from gh_export.authorship import split_agent_footer
 from gh_export.markdown import comments_section, header_section
 from gh_export.reviews import review_section
 from gh_export.timeline import timeline_section
@@ -93,7 +94,8 @@ def main() -> None:
     attachments_dir = out_dir / "attachments"
     md_path = out_dir / ("pr.md" if is_pr else "issue.md")
 
-    body_md = item.get("body") or "_No description._"
+    body_by_agent, body_md = split_agent_footer(item.get("body") or "")
+    body_md = body_md or "_No description._"
     prose = [
         body_md,
         *(c.get("body") or "" for c in comments),
@@ -111,7 +113,7 @@ def main() -> None:
     # The review section is dropped rather than joined as "" — an empty element
     # would leave a stray blank line in every issue export.
     sections = [
-        header_section(item, pr),
+        header_section(item, pr, body_by_agent),
         body_md,
         "",
         "---",

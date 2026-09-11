@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from gh_export.markdown import login_of
+from gh_export.authorship import login_of
 
 _STATIC_TIMELINE_SUFFIXES = {
     "reopened": "reopened {noun}.",

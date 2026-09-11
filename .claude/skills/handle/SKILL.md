@@ -31,7 +31,7 @@ Two lanes, and which runs is read off the branch:
 
   The realistic case is both at once — a fresh review _plus_ operator follow-ups on older threads — and the lane's input is their union. `python3 scripts/export-github-item.py <n>` writes the whole thread to `docs/pr/<n>/pr.md` and carries both halves the tail test needs: each thread header states `resolved` / `unresolved`, and its comments follow in order.
 
-  **Reading the tail needs a tell, because the login doesn't provide one.** `$GH_TOKEN` is the operator's own identity, so an agent reply and operator guidance appear under the same `@login`. What separates them is the **Claude Code attribution footer**, which every agent-authored GitHub post carries: a tail comment with the footer is your own reply, one without it is the operator.
+  **Whose post the tail is comes off the export's label, not the login** — shared identity puts both under the same `@login`. Every rendered author reads `@login (agent)` or `@login (human)`: a tail labelled `(agent)` is your own reply, `(human)` is guidance. `scripts/gh_export/authorship.py` owns the test, and why the footer it reads stays mandatory.
 
   **No verdict test.** A review's `state` is not consulted. Shared identity again: GitHub disables both verdicts on your own PR ("Pull request authors can't request changes on their own pull requests"), so every review that can reach these PRs is a plain `COMMENTED` one — `CHANGES_REQUESTED` is unreachable, not merely rare, and would have selected the same work anyway.
 
