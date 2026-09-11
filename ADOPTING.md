@@ -256,6 +256,19 @@ your team reads. The rest of that section is stated rather than asked and holds
 whatever you answer, which is why it stays in your tree even when the answer is
 "English".
 
+### Fill in the operator entries
+
+The house rule for explaining things to a person is adopt-as-is: take
+[`CLAUDE.md` § "Explaining things to people"](CLAUDE.md#explaining-things-to-people)
+**with** the `voice.md` it imports, keeping the reference unbackticked — the
+import parser skips code spans, so a backticked one loads nothing and says so
+nowhere.
+
+What you write is `.claude/skills/plainly/operators.md`, which ships carrying
+this repo's operator as the worked shape. Replace them with your own people, one
+short entry each, or leave only the template until someone states a preference —
+the rule is complete without any entries at all.
+
 ### Implement `scripts/vet.sh`
 
 Point it at lint/type-check/test commands your repo already has:
