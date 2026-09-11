@@ -21,7 +21,7 @@ copied into the adopting repo** — nothing here describes how to work in your
 project, only how to get the infrastructure into it.
 
 The inventory lives in
-[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md):
+[`.claude/skills/update-muthur/catalog.md`](.claude/skills/update-muthur/catalog.md):
 one row per skill, script and file, with the criteria for deciding whether you
 need it. This file
 does not restate what any skill does; it cites catalog rows. Read them together.
@@ -44,8 +44,8 @@ through a skill rather than by reading on — see that section below.
 ### Step 1 — Clone this repo somewhere temporary
 
 ```bash
-git clone --depth 1 https://github.com/vzakharov/agent-project-boilerplate \
-  <scratchpad>/boilerplate
+git clone --depth 1 https://github.com/vzakharov/muthur \
+  <scratchpad>/muthur
 ```
 
 Into your session's scratchpad or `tmp/` — **not** anywhere that will be
@@ -55,7 +55,7 @@ Plain `git clone`, never `gh repo clone`. This repo is public and git transport
 is not gated on your session's repository scope, so this is the one step that
 cannot fail on session configuration.
 
-`--depth 1` is right here and **wrong for `/sync-agent-infra`**, which needs full
+`--depth 1` is right here and **wrong for `/update-muthur`**, which needs full
 history to resolve its watermark SHA. Don't carry this flag over to that skill;
 it has its own clone recipe and its own warning about `--depth`.
 
@@ -132,7 +132,7 @@ So on the web, G4 is a **prerequisite of G2, G3 and G5** — not a nicety.
 
 **To adopt it**, copy `.claude/hooks/session-start.sh` and merge
 `.claude/settings.json` (see the [G4 catalog
-rows](.claude/skills/sync-agent-infra/catalog.md#g4--remote-session-plumbing)), then install the shim for
+rows](.claude/skills/update-muthur/catalog.md#g4--remote-session-plumbing)), then install the shim for
 the *current* session so the remaining steps and the newly-adopted skills have a
 working `gh`.
 
@@ -195,22 +195,22 @@ Making those skills proxy-safe at the source — which would remove this depende
 and this decision entirely — is tracked separately; see
 [Known gaps](#known-gaps).
 
-**Record the decision either way** in `upstream.json`'s `declined` map with the
+**Record the decision either way** in `watermark.json`'s `declined` map with the
 reason, so re-sync stops re-offering it. Then finish the procedure and **say what
 you skipped** in your report.
 
 ### Step 4 — Pick groups from the catalog, resolve the closure, copy
 
-Read [the catalog](.claude/skills/sync-agent-infra/catalog.md) and decide group
+Read [the catalog](.claude/skills/update-muthur/catalog.md) and decide group
 by group, using the Step 2 profile. Then, before copying, resolve each chosen
 group's **Pulls in**
 column — [Closure is not
-optional](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional) explains what breaks if you
+optional](.claude/skills/update-muthur/catalog.md#closure-is-not-optional) explains what breaks if you
 don't, and lists the four counter-intuitive cases. Don't re-derive them.
 
 Copy the resolved set from the clone into your repo — but **not**
-[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md#never),
-which taking `/sync-agent-infra` otherwise brings along inside its directory.
+[`.claude/skills/update-muthur/catalog.md`](.claude/skills/update-muthur/catalog.md#never),
+which taking `/update-muthur` otherwise brings along inside its directory.
 Then continue to the shared tail.
 
 ## Template fork
@@ -218,10 +218,10 @@ Then continue to the shared tail.
 *"Use this template"* already gave you every file, so there is nothing to select
 and nothing to clone — your work is removing what doesn't apply and hydrating
 what does. That means deleting the [`never`
-rows](.claude/skills/sync-agent-infra/catalog.md#never) that
+rows](.claude/skills/update-muthur/catalog.md#never) that
 describe the template, pruning the groups this project won't use and stripping
 the `@`-references pointing into them, hydrating or deleting the [G6
-stubs](.claude/skills/sync-agent-infra/catalog.md#g6--stack-stubs), and filling in the stubs the
+stubs](.claude/skills/update-muthur/catalog.md#g6--stack-stubs), and filling in the stubs the
 [shared tail](#shared-tail-both-modes) names. It is a large, largely
 irreversible diff over a tree nobody has reviewed.
 
@@ -241,9 +241,9 @@ and run that command.
 
 ### Reconcile `CLAUDE.md` rather than overwrite it
 
-Your repo already has conventions, or will. Take the boilerplate's sections,
+Your repo already has conventions, or will. Take the template's sections,
 merge them into yours, and keep your stack-specific content — it is a
-[donor, not a replacement](.claude/skills/sync-agent-infra/catalog.md#g1--prose--principles).
+[donor, not a replacement](.claude/skills/update-muthur/catalog.md#g1--prose--principles).
 
 Replace the remaining stubs — repository layout, testing — as those conventions
 stabilize, and add `.claude/rules/` files as area-specific conventions emerge
@@ -265,7 +265,7 @@ each, or leave only the template until someone states a preference — the rule 
 complete without any entries at all.
 
 Copying the section is the step with a trap in it. The [G1 catalog
-rows](.claude/skills/sync-agent-infra/catalog.md#g1--prose--principles) state it.
+rows](.claude/skills/update-muthur/catalog.md#g1--prose--principles) state it.
 
 ### Implement `scripts/vet.sh`
 
@@ -291,9 +291,9 @@ condition the shipped stub cannot show you. What is at stake at this step: an
 exit-0 stub over a real stack makes `/finalize` pass step 1 and attest to a vet
 run that checked nothing, and a false green is harder to notice than a loud
 stop. That is why the file is a
-[`rewrite`](.claude/skills/sync-agent-infra/catalog.md#three-dispositions-not-two)
+[`rewrite`](.claude/skills/update-muthur/catalog.md#three-dispositions-not-two)
 rather than a choice, for [the reason the catalog
-gives](.claude/skills/sync-agent-infra/catalog.md#closure-is-not-optional).
+gives](.claude/skills/update-muthur/catalog.md#closure-is-not-optional).
 
 Two lines in `vet.sh` — the calls to `scripts/check-skill-catalog.sh` and
 `scripts/check-squash-message.sh` — are not stack-specific, so decide each
@@ -302,16 +302,16 @@ says what dropping either costs.
 
 ### Hydrate or delete the G6 stubs
 
-Go through the [G6 rows](.claude/skills/sync-agent-infra/catalog.md#g6--stack-stubs) and apply the criterion
+Go through the [G6 rows](.claude/skills/update-muthur/catalog.md#g6--stack-stubs) and apply the criterion
 stated there: hydrate now, or delete. Hydrating means writing your project's real
 commands in and **deleting the banner** at the top — a stub that still carries its
 banner is still a stub.
 
 ### Hydrate the sync stub
 
-`/sync-agent-infra` is a stub for want of a watermark, not a procedure, so
-hydrating it is `.claude/skills/sync-agent-infra/upstream.json` — a
-[`rewrite`](.claude/skills/sync-agent-infra/catalog.md#three-dispositions-not-two). Write it for **your**
+`/update-muthur` is a stub for want of a watermark, not a procedure, so
+hydrating it is `.claude/skills/update-muthur/watermark.json` — a
+[`rewrite`](.claude/skills/update-muthur/catalog.md#three-dispositions-not-two). Write it for **your**
 repo, then clear both stub markers: delete the `⚠️ **STUB.**` banner and drop
 `STUB` from the frontmatter `description`. Half of either leaves the skill
 failing assertion 4.
@@ -324,17 +324,17 @@ delete the skill rather than carrying it unhydrated.
 
 ```json
 {
-  "repo": "vzakharov/agent-project-boilerplate",
+  "repo": "vzakharov/muthur",
   "lastSyncedSha": "<this repo's HEAD at the moment you cloned it>",
   "lastSyncedAt": "<YYYY-MM-DD>",
-  "lineage": [{ "repo": "vzakharov/agent-project-boilerplate", "atSha": "<the same sha>" }],
+  "lineage": [{ "repo": "vzakharov/muthur", "atSha": "<the same sha>" }],
   "adopted": ["CLAUDE.md", ".claude/skills/pr/", "scripts/check-merge.sh"],
   "declined": { ".claude/skills/issue/": "we track work in Linear, not GitHub issues" }
 }
 ```
 
 - `repo` is where you took this from — this repo, for a first-generation adopter.
-- `lastSyncedSha` is the HEAD you cloned (`git -C <scratchpad>/boilerplate rev-parse HEAD`).
+- `lastSyncedSha` is the HEAD you cloned (`git -C <scratchpad>/muthur rev-parse HEAD`).
   Recording it now is what makes the *next* sync a small diff instead of a
   re-triage of everything.
 - `lineage` is where your repo *started*, and it is the field a hand-filled
@@ -354,7 +354,7 @@ commit at or before it:
 
 ```bash
 gh api repos/<owner>/<fork> --jq .created_at
-gh api repos/vzakharov/agent-project-boilerplate/commits --paginate \
+gh api repos/vzakharov/muthur/commits --paginate \
   --jq '.[] | [.sha, .commit.committer.date] | @tsv'
 ```
 
@@ -377,7 +377,7 @@ One map with honest reasons beats a second `postponed` map: the useful distincti
 is not *which* dictionary a path sits in but *whether its stated reason still
 holds*, and that has to be re-read at sync time either way.
 
-From here on, pulling later changes forward is just `/sync-agent-infra`, once
+From here on, pulling later changes forward is just `/update-muthur`, once
 hydrated per the section above. Nothing further to install.
 
 Each sync lands as a `chore:` PR whose subject is the first thing your `git log`
@@ -515,7 +515,7 @@ silently:
    session's skill list. A skill in the wrong directory is invisible rather than
    broken.
 3. **The sync stub is hydrated**:
-   `.claude/skills/sync-agent-infra/upstream.json` points at the repo you adopted
+   `.claude/skills/update-muthur/watermark.json` points at the repo you adopted
    from, with a `lastSyncedSha` that resolves there rather than the shipped
    placeholder, and both stub markers are cleared.
 4. **If you adopted G4**: confirm one GraphQL-flavored call now succeeds — e.g.
@@ -535,7 +535,7 @@ reasonably refuse — but it touches roughly ten skills and changes behavior at 
 source as much as downstream, so it is judged on its own merits rather than as a
 rider on this entry point.
 
-Tracked at [#6](https://github.com/vzakharov/agent-project-boilerplate/issues/6).
+Tracked at [#6](https://github.com/vzakharov/muthur/issues/6).
 That link points **out of your repo, into this one on purpose**: it is the one
 thread that will say whether the gap is still open. If it has closed by the time
 you read this, the shim is no longer load-bearing and the G4 decision above is

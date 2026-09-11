@@ -1,11 +1,11 @@
 ---
-description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/sync-agent-infra/upstream.json` — the procedure below is usable as written. Use when the user says \"sync agent infra\", \"sync the boilerplate\", or \"/sync-agent-infra\"."
+description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/update-muthur/watermark.json` — the procedure below is usable as written. Use when the user says \"update muthur\", \"update the agent infra\", \"sync muthur\", \"sync the source\", or \"/update-muthur\"."
 ---
 
 > ⚠️ **STUB.** This skill has no watermark to run on. Before it can be invoked,
-> fill in `.claude/skills/sync-agent-infra/upstream.json`: `lastSyncedSha` (the
+> fill in `.claude/skills/update-muthur/watermark.json`: `lastSyncedSha` (the
 > source's HEAD when you cloned it), `lastSyncedAt`, and the real
-> `adopted`/`declined` sets for your repo. `repo` already names the boilerplate,
+> `adopted`/`declined` sets for your repo. `repo` already names the template,
 > and needs changing only if you adopted from a repo that itself adopted from it.
 > Delete this banner once you have, and drop `STUB` from the description above.
 > If you took a one-time snapshot and do not intend to re-sync, delete the skill
@@ -26,9 +26,20 @@ This is a path-scoped diff, not a fork merge. It never tries to reconcile whole
 histories — it reads a bounded set of paths, commit by commit, and re-expresses
 what applies.
 
+**The name is the infrastructure's, not your source's.** `muthur` is where this
+skill and everything it syncs came from; the repo it actually pulls from is
+whatever `repo` says in the watermark below, which for a spun-off sibling is its
+parent rather than the root. So `/update-muthur` in a repo two hops down still
+syncs from one hop up.
+
+**The verb splits: the command updates, the fields say synced.** `lastSyncedSha`
+and `lastSyncedAt` are on-disk in every downstream watermark, so renaming them to
+match orphans every adopter's file at once — and the prose below follows the
+fields, not the command.
+
 ## The watermark
 
-`.claude/skills/sync-agent-infra/upstream.json` is the state this skill runs on:
+`.claude/skills/update-muthur/watermark.json` is the state this skill runs on:
 
 ```json
 {
@@ -117,11 +128,11 @@ watermark.
 
 ### Never sync the watermark file itself
 
-`upstream.json` lives inside `.claude/`, which is inside `adopted` — so a naive
-sync overwrites this repo's watermark with the source's. That silently repoints
-the sync at a repo this one may not be able to clone and resets `lastSyncedSha`
-to a foreign history. **The failure surfaces one sync later, as an unresolvable
-SHA**, by which point the cause is several commits back.
+`watermark.json` lives inside `.claude/`, which is inside `adopted` — so a
+naive sync overwrites this repo's watermark with the source's. That silently
+repoints the sync at a repo this one may not be able to clone and resets
+`lastSyncedSha` to a foreign history. **The failure surfaces one sync later, as
+an unresolvable SHA**, by which point the cause is several commits back.
 
 Exclude it unconditionally, whatever `adopted` says.
 
@@ -138,9 +149,9 @@ chain is what makes it load-bearing.
 
 ### Step 1 — Read the watermark
 
-Read `upstream.json`. Stop and report if it is missing, or if `lastSyncedSha` is
-still a placeholder — there is no baseline to diff against, and guessing one would
-either re-port work already here or skip work that isn't.
+Read `watermark.json`. Stop and report if it is missing, or if `lastSyncedSha`
+is still a placeholder — there is no baseline to diff against, and guessing one
+would either re-port work already here or skip work that isn't.
 
 ### Step 2 — Clone the source
 
@@ -232,7 +243,7 @@ A commit that adds a skill in neither `adopted` nor `declined` is an open
 question, and the answer belongs in the watermark so it is asked exactly once.
 
 Read the new skill's row in the source's
-`.claude/skills/sync-agent-infra/catalog.md` — that file is the source's
+`.claude/skills/update-muthur/catalog.md` — that file is the source's
 inventory, read from the clone and never vendored, so it is current by
 construction — and surface the decision **with its criteria attached** rather than
 as a bare "upstream added `/foo`, want it?".
@@ -280,11 +291,11 @@ normally lands changes — the triage table still belongs wherever that record g
 **The squash record names the change, not the sync.** The `<essence>`
 `@.claude/skills/squash-message/SKILL.md` asks a title for is what landed in
 *this* tree — `chore: one job per loop skill, and a size cap on squash bodies`,
-not `chore: sync the boilerplate forward to <source sha>`. A source SHA is a
+not `chore: sync the template forward to <source sha>`. A source SHA is a
 commit in another repository, unresolvable from the log it sits in, and "sync
 forward" names the transport: the second title sends every reader to the diff.
 
-Provenance needs no prose. `upstream.json`'s `lastSyncedSha`, committed in Step
+Provenance needs no prose. `watermark.json`'s `lastSyncedSha`, committed in Step
 7, is the precise record and the only one that survives the squash. "The repo we
 vendor from moved" is still the honest *why*, so it earns one clause of the
 body's opening sentence and nothing more.

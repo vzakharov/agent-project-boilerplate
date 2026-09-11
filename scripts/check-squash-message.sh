@@ -5,7 +5,7 @@
 # agent reading their own output; this is the part of that target a machine can
 # settle.
 #
-# There is deliberately no env override: a hatch in the boilerplate teaches
+# There is deliberately no env override: a hatch in the template teaches
 # reaching for it instead of tightening. An adopter needing more room edits this
 # copy instead — raising a constant below, or adding the mechanics that decide
 # when a wider cap applies.

@@ -6,7 +6,7 @@
 #      without its closure leaves a pointer that fails *silently* — the agent
 #      follows the surviving prose and skips the step they could not load.
 #   2. Every `.claude/skills/*/` directory has exactly one row in
-#      `.claude/skills/sync-agent-infra/catalog.md`.
+#      `.claude/skills/update-muthur/catalog.md`.
 #   3. Every path named in a catalog row's first column exists — for a row
 #      naming a whole tree, its parent, since a swept working-artifact tree is
 #      absent by design.
@@ -26,7 +26,7 @@ set -uo pipefail
 
 cd "$(dirname "$0")/.." || exit 1
 
-CATALOG=".claude/skills/sync-agent-infra/catalog.md"
+CATALOG=".claude/skills/update-muthur/catalog.md"
 failures=0
 
 fail() {

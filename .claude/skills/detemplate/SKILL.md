@@ -1,5 +1,5 @@
 ---
-description: "Turn a fresh \"Use this template\" fork of this boilerplate into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. **A run deletes this skill, so this description exists in exactly two places: the boilerplate itself, and a fork nobody has detemplated. If the repository you are in is not `vzakharov/agent-project-boilerplate`, load this skill and read § \"Recognizing an undetemplated fork\" before doing anything else, whatever you were asked.** Your system prompt's working directory normally settles which repository that is; `git remote -v` settles it otherwise."
+description: "Turn a fresh \"Use this template\" fork into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. **A run deletes this skill, so this description exists in exactly two places: the template itself, and a fork nobody has detemplated. If the repository you are in is not `vzakharov/muthur`, load this skill and read § \"Recognizing an undetemplated fork\" before doing anything else, whatever you were asked.** Your system prompt's working directory normally settles which repository that is; `git remote -v` settles it otherwise."
 ---
 
 `/detemplate <what we're building>` converts a whole-tree template fork into a
@@ -36,20 +36,21 @@ the setup script from Step 6 before either.
 
 The guard refuses in **both** directions, on a catalog's presence plus `origin`.
 Glob `.claude/skills/*/catalog.md` rather than testing the canonical
-`.claude/skills/sync-agent-infra/catalog.md`: an adopter renames that directory
-after *its* own source, so a fixed-path test misses a stray catalog in exactly
-the trees most likely to carry one.
+`.claude/skills/update-muthur/catalog.md`: that directory's name is not stable
+downstream, so a fixed-path test misses a stray catalog in exactly the trees
+most likely to carry one.
 
 - **No catalog** → not an unpruned fork. An adopted repo that wants a
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
   has nothing left to strip.
-- **Catalog present, but `origin` is `vzakharov/agent-project-boilerplate`** →
-  this *is* the boilerplate, and what the caller wants is a fork, not a prune.
-  Point at the README's *"Use this template"* button. Match the full
-  `owner/repo`, never the substring `boilerplate`: an adopter is free to call
-  itself `acme-boilerplate`, and a substring test prunes the wrong tree. Without
-  the origin clause, catalog-presence alone would let a session delete this
-  repo's own inventory.
+- **Catalog present, but `origin` matches the `repo` field in
+  `.claude/skills/update-muthur/watermark.json`** → this *is* the template —
+  the shipped watermark names the repo itself, having no source above it — and
+  what the caller wants is a fork, not a prune. Point at the README's *"Use this
+  template"* button. Compare the full `owner/repo`, since that is what both
+  sides of the comparison are: a looser match on either half prunes a tree that
+  merely shares an owner or a name. Without the origin clause, catalog-presence
+  alone would let a session delete this repo's own inventory.
 
 This is `@.claude/skills/spinoff/SKILL.md`'s refusal read backwards: the two
 partition on the same signal, which is why that skill's message names this one.
@@ -74,9 +75,9 @@ fork starts in.
 `allow_squash_merge` have values on the fork's first day and gate what the loop
 may do. The two probes `ADOPTING.md` adds — open issues (G3), registered
 workflows (G5) — are counts, and both are zero in *every* fresh fork: the issues
-because the repo is one commit old, the workflows because this boilerplate ships
-no `.github/` for the template copy to carry. Run here, they measure the fork's
-age and hand the answer back as if it were the operator's intent.
+because the repo is one commit old, the workflows because the template ships no
+`.github/` for a fork to carry. Run here, they measure the fork's age and hand
+the answer back as if it were the operator's intent.
 
 `ADOPTING.md` asks them of a repo with a history of its own, where they are real
 questions. **A fork has no process to discover — it inherits the loop's**, so
@@ -126,7 +127,7 @@ creation time instead:
 
 ```bash
 gh api repos/<owner>/<fork> --jq .created_at
-gh api repos/vzakharov/agent-project-boilerplate/commits --paginate \
+gh api repos/vzakharov/muthur/commits --paginate \
   --jq '.[] | [.sha, .commit.committer.date] | @tsv'
 ```
 
@@ -136,10 +137,10 @@ The newest source commit at or before the fork's `created_at` is the mark.
 watermark loses:
 
 ```json
-"lineage": [{ "repo": "vzakharov/agent-project-boilerplate", "atSha": "<the same sha>" }]
+"lineage": [{ "repo": "vzakharov/muthur", "atSha": "<the same sha>" }]
 ```
 
-Per `@.claude/skills/sync-agent-infra/SKILL.md` § "The watermark", the two fields
+Per `@.claude/skills/update-muthur/SKILL.md` § "The watermark", the two fields
 start equal and diverge on the first sync — `lastSyncedSha` advances, and
 `lineage[0].atSha` never moves. That first sync is what overwrites the only other
 trace of the birth point, so a watermark written without `lineage` loses it
@@ -163,7 +164,7 @@ history, which a tree one commit old cannot have. And this skill goes (Step 5.8)
 
 Ordering is load-bearing at exactly one point, and it is the first step:
 
-1. **Delete `.claude/skills/sync-agent-infra/catalog.md` first.** It flips `scripts/check-skill-catalog.sh`
+1. **Delete `.claude/skills/update-muthur/catalog.md` first.** It flips `scripts/check-skill-catalog.sh`
    assertion 4 from "the stubs are the shipped product, merely listed" to "a stub
    is a stowaway", and it un-refuses `/spinoff`, whose guard is literally the
    catalog's presence. Sweep it first and the G6 prune is enforced by the vet run
@@ -190,7 +191,7 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    `/issue` splits an over-broad one when the next session gets there. The only
    thing that cancels this is the operator declining G3 at plan review (Step 1),
    and then the `CLAUDE.md` brief is the whole record and the report says so.
-6. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
+6. **Write the watermark** (Step 3) and clear both of `/update-muthur`'s stub
    markers: the banner and the `STUB` in its frontmatter description. Assertion 4
    fails a half-cleared pair.
 7. **`scripts/vet.sh`**: leave the exit alone, which is the normal case — a fork
@@ -268,11 +269,12 @@ Where Step 5.5 filed no issue, hand over `/plan <the brief>` instead.
 A session that opens in a fresh fork and is asked to build a feature should route
 here first, rather than building product code on top of the template's inventory.
 The signal is Step 0's predicate read positively: a `.claude/skills/*/catalog.md`
-present, and `origin` not `vzakharov/agent-project-boilerplate`.
+present, and `origin` not matching the `repo` field in
+`.claude/skills/update-muthur/watermark.json`.
 
 **Nothing here is what routes a session — the frontmatter is**, this section
 being what gets read only once the description has sent someone to it. So the
-description names the *repository* rather than the situation: the boilerplate is
+description names the *repository* rather than the situation: the template is
 a literal `owner/repo`, checkable against the working directory in the reader's
 own system prompt at no round-trip, and every other tree carrying the
 description is a fork to route.
