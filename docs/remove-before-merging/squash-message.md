@@ -14,16 +14,17 @@ a sentence about what the code does not contain passes cleanly, and
 Lens B's tells are change verbs that a clean present-tense negation
 never trips.
 
-The pass gains a fourth lens, `negation` (alias `polar-bear`), with its
+The pass gains a fourth lens, `negation` (alias `polar bear`), with its
 own tell, test, fix and report group. It is the only lens that reads
 the removed side of the diff: Step 1 collects the nouns the change
 deleted and greps them against the post-change tree, and a name
 surviving only inside prose is the candidate. The fix is deletion
 rather than rewriting, except where a mention carries a live fact
 alongside the denial — then the fact stays, phrased as what is there.
-A constraint-vs-residue discriminator keeps the lens off legitimate
-negative rules: a constraint answers a temptation that exists
-independently of the removal.
+The test asks whether the sentence is what put its subject in the
+reader's head: with it gone, would the subject have crossed their mind
+at all? A constraint's subject would, which is what keeps the lens off
+the legitimate negative rules a codebase is properly full of.
 
 `/tighten-docs` becomes `/tend-prose`, whose four lenses spell TEND —
 Tightness, Existence, Negation, Durability — as a memory aid, not the
