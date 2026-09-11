@@ -139,7 +139,7 @@ operator as the worked shape, and yours are different people.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/plan` | Write the plan to a `docs/plans/` file whose name is the approval gate, publish it as a draft PR so it is reviewed as a diff, and ask questions as numbered prose. | `gh` | `/finalize`, `/go`, `/pr` | adopt |
+| `/plan` | Write the plan to a `docs/plans/` file whose name is the approval gate, publish it as a draft PR so it is reviewed as a diff, and ask questions as numbered prose. Invoked as `plan or go`, judge for itself whether the task needs the operator's gate, a plan for the agent's own sake, or neither. | `gh` | `/finalize`, `/go`, `/pr` | adopt |
 | `/go` | The go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it. | — | `/dry`, `/tend-prose` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
 | `/implement` | Redirect to `/go`, for handoff blocks written before the rename. | — | `/go` | conditional — see below |
 | `/pr` | Own the PR object: rename the auto-branch, push, then open the draft PR or refresh the one that exists. | `gh` | `/branch-rename`, `/qa-checklist`, `/squash-message` | adopt |

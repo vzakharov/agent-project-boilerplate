@@ -37,7 +37,7 @@ Asking costs one round-trip. The point is that the operator makes the call knowi
 
 ## Planless entry
 
-Work with no plan behind it enters here with a **task** in place of one — the operator's own `/go <task>`, or a caller skill's task text (`@.claude/skills/from-branch/SKILL.md` Step 6's free-form follow-up). In that mode:
+Work with no plan behind it enters here with a **task** in place of one — the operator's own `/go <task>`, or a caller skill's task text (`@.claude/skills/from-branch/SKILL.md` Step 6's free-form follow-up, `@.claude/skills/plan/SKILL.md` § "The `plan or go` entry" outcome 2). In that mode:
 
 - **Step 1 is already satisfied** — the task text is the plan. Start at Step 2; do not go looking under `docs/plans/`, and do not ask which plan to implement.
 - **Step 3 runs unchanged** — its passes are the reason this entry exists. The trailing `git mv` to `*.completed.md` is a no-op with no plan file.
