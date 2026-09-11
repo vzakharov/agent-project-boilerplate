@@ -14,25 +14,27 @@ prompt never said to start a second gallery. Nothing in that third
 answer needed the first two; the page history and the prompt were
 readable from the start.
 
-CLAUDE.md now states the rule as a shape rather than a mood. The
-first sentence is the cause, in the nouns of the person affected,
-and evidence follows the conclusion it supports. Each step says why
-the next one followed. An unknown cause is unfinished investigation
-— go read what settles it, or say once what would and what that
-takes. Scope comes by reference to the audience partition in
-§ "Language", so the section states no group twice.
+The rule states a shape rather than a mood, and lives in its own
+file beside the skill that expands it, imported into CLAUDE.md so
+it loads every session. The first sentence is the cause, in the
+nouns of the person affected, and evidence follows the conclusion
+it supports. Each step says why the next one followed. An unknown
+cause is unfinished investigation. A frustration marker — repeated
+punctuation, a re-asked question — is a report that the last
+answer did not land, and the wrong reply to it is more detail.
 
-The long version lives in one skill, the way /tend-prose is the long
-version of § "Writing things down": six named defects, so a bad
-report can be called out in a word, and a worked before-and-after
-that teaches what the table only labels. The last of the six is the
-only one investigation cannot fix — a reply about what someone said,
-where what they said wanted an answer.
+The long version lives in the skill, the way /tend-prose is the
+long version of § "Writing things down": six named defects, so a
+bad report can be called out in a word, and a worked pair of
+answers that teaches what the table only labels. The last of the
+six is the only one investigation cannot fix — a reply about what
+someone said, where what they said wanted an answer.
 
-Preferences that vary by person get their own file, one short entry
-each, resolved against the session's operator. An entry tunes manner
-and never substance: it cannot drop a cause, skip a check, or
-quiet a failure. Anything that would is a change to CLAUDE.md, where
+Preferences that vary by person get their own file, one short
+entry each, resolved once against the session's operator rather
+than guessed at per reply. An entry tunes manner and never
+substance: it cannot drop a cause, skip a check, or quiet a
+failure. Anything that would is a change to the house rule, where
 everyone can see it. The entry decides whether a joke comes back;
 handing over a receipt instead of a reply is ruled out either way.
 
