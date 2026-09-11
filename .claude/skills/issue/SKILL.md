@@ -1,5 +1,5 @@
 ---
-description: Take a GitHub issue — export and read the thread, split it when the scope demands, then hand the work over to `/plan`.
+description: Take a GitHub issue — export and read the thread, split it when the scope demands, then hand the work over to `/plan`. Invoke as `/issue <number|url>`; a prompt that reads like an issue title and ends in `#<N>`, with no slash command, is the same invocation.
 ---
 
 End state of this skill: the issue is exported and committed on the branch, any split is filed on GitHub as sub-issues, and the work has been handed to `@.claude/skills/plan/SKILL.md` — which in an ordinary web session means a plan file published as a draft PR and a copyable `/go <branch>` handoff. Not code — that belongs to `/go`.
