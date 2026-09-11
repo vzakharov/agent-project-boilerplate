@@ -155,6 +155,7 @@ operator as the worked shape, and yours are different people.
 | `scripts/lib/gh-repo.sh` | Resolve `owner/repo` for `gh`, falling back to parsing the `origin` remote when a sandboxed proxy defeats `gh`'s own detection. | `bash` | — | adopt |
 | `scripts/pr-body.py` | Pull a PR body to `docs/pr/<n>/body.md` for local editing and PATCH it back. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` | — | adopt |
 | `scripts/lib/github.py` | Shared GitHub plumbing for the stdlib-only Python scripts: the proxy-then-direct `fetch` ladder every request goes through, token resolution, `origin` repo detection, and the `die` they report through. | `python3` ≥3.9 | — | adopt |
+| `scripts/lib/media.py` | Map a content type — or, when it is missing or generic, the leading magic bytes — to a file extension. Shared by the attachment download in G3 and the session-image extraction in G4, which is why it sits here rather than inside either. | `python3` ≥3.9 | — | adopt |
 | `scripts/check-squash-message.sh` | Measure the squash proposal against the size caps `/squash-message` states, locating it in the worktree or in history once `/finalize` has swept it. POSIX `sh`. | `sh`; `git` for the history rungs | — | adopt |
 | `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | `scripts/check-skill-catalog.sh` (G1), `scripts/check-squash-message.sh`, `scripts/check-repo-identity.sh` (never) | **rewrite** |
 | `scripts/run-parallel.sh` | Optional helper for `scripts/vet.sh`: run the checks concurrently, print output only for the ones that failed, and name files an autofix step rewrote. POSIX `sh`. | `sh`; `git` for the autofix check only | — | adopt |
@@ -191,10 +192,17 @@ around the proxy so the rest of the infrastructure works at all.
 loses answers there, so a session that lands in it is told where this repo's
 planning actually happens.
 
+`session-images.sh` is the one member that earns its keep on a laptop too: an
+attached image exists only inside the transcript wherever the session runs. It
+writes into gitignored `tmp/` and commits nothing, so it needs no `git`, leaves
+the working tree clean, and behaves the same everywhere.
+
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash`; **`gh` already on `PATH`** | — | adopt |
 | `.claude/hooks/plan-mode-notice.sh` | On every prompt submitted while the session is in native plan mode, inject the notice that this repo plans on disk and that the exit is plan mode's own. | web/remote sessions; `bash`, `jq` | `/plan` (G2) | adopt |
+| `.claude/hooks/session-images.sh` | On every prompt, run the extractor below and name any newly written file in the turn's context. Commits nothing. | `bash`, `jq`, `python3` ≥3.9 | `scripts/extract-session-images.py` | adopt |
+| `scripts/extract-session-images.py` | Write the images the operator attached to a session out of the transcript into gitignored `tmp/session-images/`, with a manifest row carrying the prompt each arrived with. Stdlib-only, idempotent. | `python3` ≥3.9, `scripts/lib/media.py` (G2) | — | adopt |
 | `.claude/settings.json` | Project settings wiring the SessionStart and UserPromptSubmit hooks. Merge into yours if you already have one. | — | — | adopt — merge if present |
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
