@@ -1,6 +1,6 @@
 # muthur
 
-> _"The option to ignore agentic development expires in T minus five minutes."_
+> _"The option to ignore agentic coding expires in T minus five minutes."_
 >
 > — Alien (well, almost)
 
@@ -10,6 +10,14 @@ Fork it into any project, change it to fit that project, and keep pulling
 later improvements forward — the part a copied skill directory can't do.
 Stack-agnostic.
 
+That last part runs on a watermark:
+[`upstream.json`](.claude/skills/sync-muthur/upstream.json) records where your
+copy came from, the commit you last synced to, and what you adopted or declined.
+`/sync-muthur` diffs the source since that commit and triages it one commit at a
+time against the copy you have since edited — so a skill you rewrote stays
+rewritten, a fix to one you left alone lands, and something you turned down is
+remembered rather than offered again.
+
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
 stack, **30 skills** (22 working out of the box, 8 stubs awaiting hydration) that
 compose into a plan → implement → PR → land loop, the path-scoped `.claude/rules/`
@@ -17,12 +25,12 @@ mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
 scripts behind it all.
 
 Per-item descriptions live in
-**[`.claude/skills/sync-agent-infra/catalog.md`](.claude/skills/sync-agent-infra/catalog.md)** — one row
+**[`.claude/skills/sync-muthur/catalog.md`](.claude/skills/sync-muthur/catalog.md)** — one row
 per skill, script and file, grouped so you can tell how much of it you need:
 
 | Group | What it covers |
 | --- | --- |
-| **G0** | The sync path, both directions: `/sync-agent-infra` pulls later changes forward (ships as a stub; hydrating it is filling in the watermark), `/spinoff` pushes a new sibling repo out. |
+| **G0** | The sync path, both directions: `/sync-muthur` pulls later changes forward (ships as a stub; hydrating it is filling in the watermark), `/spinoff` pushes a new sibling repo out. |
 | **G1** | Prose & principles: `CLAUDE.md`, `.claude/rules/`, `/dry`, `/tend-prose`. |
 | **G2** | The PR loop: `/plan`, `/go`, `/pr`, `/finalize` and the mechanical pieces they compose. |
 | **G3** | Issue & backlog: `/issue`, `/propose-issue`, `/audit-github-backlog`. |
@@ -93,7 +101,7 @@ The agent selects a subset against your repo's actual shape, mostly by
 inspection — expect them to ask only about your session type and your
 deploy/test surface.
 
-Either way, later changes here come forward with `/sync-agent-infra`, whose
+Either way, later changes here come forward with `/sync-muthur`, whose
 shipped watermark already names this repo — you fill in the rest (see
 [`ADOPTING.md`](ADOPTING.md) § "Hydrate the sync stub"). The infrastructure is
 adoptable **and** re-syncable; a fork is not a dead end.
