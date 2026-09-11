@@ -285,8 +285,7 @@ the sync.
 **Where Step 2 found the source renamed, `repo` moves to its canonical name in
 that same commit**, as does every `lineage` entry naming the old path — the
 ancestry describes the same repositories, whatever they are called now. Say so in
-the commit message: a redirect is what kept the stale name working, and the one
-thing a reader cannot tell from the diff is that nothing was broken.
+the commit message — the diff cannot show that the old name was still working.
 
 ### Step 8 — Report and hand off
 

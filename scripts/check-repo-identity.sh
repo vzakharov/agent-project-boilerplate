@@ -15,9 +15,8 @@
 #   2. No file in the search surface names a *different* repo under the
 #      canonical owner. That is what a half-finished rename looks like.
 #   3. `git remote get-url origin` agrees with the canonical name — a warning,
-#      never a failure. A rename lands on GitHub after the tree that describes
-#      it is already green, so the two disagree for as long as that takes, and
-#      failing here would deadlock the vet run that gates the rename.
+#      never a failure. A rename lands on GitHub only once the tree describing
+#      it is green, so failing here would deadlock the vet run that gates it.
 #
 # The whole run skips without the catalog, the same signal
 # `check-skill-catalog.sh` reads: downstream the watermark names someone else's
@@ -68,12 +67,11 @@ allowed=(
   .claude/skills/detemplate/SKILL.md
 )
 
-# The durable agent infrastructure, as git tracks it. Tracked is the right
-# surface twice over: an untracked file reaches nobody else's tree, and
-# `.claude/settings.local.json` is a per-machine permission log that quotes
-# whatever commands a session ran. Working artifacts under `docs/` are outside
-# it too — a plan discussing a rename quotes both names by necessity, and
-# `/finalize` sweeps them before they land.
+# The durable agent infrastructure, as git tracks it. Tracked is what matters —
+# an untracked file reaches nobody else's tree — and it keeps
+# `.claude/settings.local.json` out, a per-machine permission log quoting
+# whatever commands a session ran. `docs/` is outside the surface too: a plan
+# discussing a rename quotes both names by necessity.
 mapfile -t sources < <(
   git ls-files -z -- \
     '.claude/*.md' '.claude/*.sh' '.claude/*.json' \
