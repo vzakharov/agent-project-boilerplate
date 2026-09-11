@@ -6,10 +6,11 @@ End state of this skill: the branch is attached, the one lane the branch called 
 
 ## Argument shape
 
-Three parts, order-free:
+Four parts, order-free:
 
 - **Target** (**required**, first token by convention): a branch name, `#NNN`, or any PR URL — the grammar `@.claude/skills/from-branch/SKILL.md` § "Argument shape" defines, used as-is. With no target, **stop and ask which branch**: a bare `/handle` has nothing to attach to.
 - **`and finalize`** (flag; bare `finalize` counts too): recognized **anywhere** in the argument, since the operator writes it before the target as often as after (`/handle and finalize <branch>`).
+- **`and merge`** (`@.claude/skills/finalize/SKILL.md`'s flag): read as `and finalize`, and **not forwarded** — a lane produces its diff in this same turn, so the flag was typed before the thing it would merge existed. Land-prep as asked, then report that the merge was held and that `/finalize <branch> and merge` lands it once the operator has looked.
 - **Extra guidance** (optional): any remaining prose. Not a lane of its own — it directs whichever lane runs, and when no lane is discovered it _is_ the work (Step 4).
 
 ## A `/handle` session is continued work
@@ -57,12 +58,12 @@ With extra guidance in the argument, that guidance is the task → `/go` § "Pla
 
 ## Step 5 — `and finalize`
 
-Load and follow `@.claude/skills/finalize/SKILL.md` (no target token — the branch is already attached). It runs only after a lane actually did something, since land-prepping a branch you just declined to touch is exactly the unasked-for finalize the flag exists to prevent. Two turns cancel it: a Step-4 stop, and a plan-review turn, which ends with the plan still awaiting a go-ahead and nothing implemented to land.
+Load and follow `@.claude/skills/finalize/SKILL.md` (no target token — the branch is already attached — and no `and merge`, per § "Argument shape"). It runs only after a lane actually did something, since land-prepping a branch you just declined to touch is exactly the unasked-for finalize the flag exists to prevent. Two turns cancel it: a Step-4 stop, and a plan-review turn, which ends with the plan still awaiting a go-ahead and nothing implemented to land.
 
 Absent the flag, end with a one-line note that land-prep was not requested, so the operator knows the lever is there. It is opt-in because `/finalize` is the one lane whose consequences an unaware operator wouldn't want: it ends with the PR reading as merge-ready to anyone who looks at it.
 
 ## Do NOT
 
 - Act on a referenced skill from memory, or from the one-line summary this file gives it. Every "load and follow" above means literally read that file: its steps are its own and change without this one being touched.
-- Finalize unasked, or merge anything — the base branch into this one included, however the PR's merge state reads.
+- Finalize unasked, or merge anything — the base branch into this one included, however the PR's merge state reads, and the PR itself however the invocation was worded.
 - Open a plan cycle.
