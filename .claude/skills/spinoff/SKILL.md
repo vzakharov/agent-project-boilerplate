@@ -30,8 +30,8 @@ copyable command that opens the next session in the new repo.
 
 **Not from the template, and not from an unpruned fork of it.** If the caller
 has a catalog — glob `.claude/skills/*/catalog.md`, don't test the canonical
-`.claude/skills/sync-muthur/catalog.md`, since an adopter renames that
-directory after *its* own source — **stop**. A spinoff is the wrong operation
+`.claude/skills/sync-muthur/catalog.md`, since that directory's name is not
+stable downstream — **stop**. A spinoff is the wrong operation
 either way, but the two cases want different answers, so read `origin` before
 replying:
 
@@ -76,12 +76,11 @@ which of the two answers to give. Otherwise two things come out of the tree:
 
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by its watermark
-  file, not by its name.** The skill has been renamed at the source before, and
-  nothing pushes that rename onto a caller who already has it — one that adopted
-  early still carries `.claude/skills/sync-agent-infra/upstream.json`, and a
-  caller free to rename any skill may have picked its own. Hunting for
-  `sync-muthur/upstream.json` finds nothing and silently seeds an unlinked
-  repo. Glob `.claude/skills/*/*.json` and take the one whose object carries
+  file, not by its name.** That name is not stable and no rename is pushed
+  downstream: a caller that adopted before `/sync-muthur` carries
+  `.claude/skills/sync-agent-infra/upstream.json`, and one free to rename any
+  skill may have picked its own. Hunting for `sync-muthur/upstream.json` finds
+  nothing and silently seeds an unlinked repo. Glob `.claude/skills/*/*.json` and take the one whose object carries
   `repo` and `lastSyncedSha`.
 
 If the invocation did not give `<owner/name>`, ask for it — and in the same

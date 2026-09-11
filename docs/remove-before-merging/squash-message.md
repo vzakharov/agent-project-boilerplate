@@ -9,8 +9,9 @@ feat: rename the repo to muthur and single-source its identity (pr #65)
 a maintained upstream they keep resyncing from, not a one-shot starter,
 and a name promising starter files undersold the part that has no
 equivalent elsewhere: fork it, adapt it locally, and still pull later
-improvements forward. The README leads on that now rather than on the
-skills it ships.
+improvements forward. The README leads on that now, and the prose that
+called this repo "the boilerplate" calls it the template — the one of
+the two terms that names something the repo actually has.
 
 The repo's own name now lives in one place. `upstream.json`'s `repo`
 field is the source of truth, and the three guards that asked whether a
@@ -21,13 +22,14 @@ and `gh api` recipes a human copies, is held to an allowlist by
 `scripts/check-repo-identity.sh`, which the vet run calls. A future
 rename is that one JSON field plus whatever the check flags.
 
-`/sync-agent-infra` gains the general case of a source repo that was
-renamed: a clone that lands somewhere with a different canonical name
-updates the watermark as part of that sync, so every adopter re-targets
-on their next run without being told. The rename itself leans on
-GitHub's permanent redirect rather than a pointer repo at the old name —
-that path only stops redirecting if this account occupies it, and no one
-else can.
+ADOPTERS, two things travel with this. `/sync-agent-infra` is now
+`/sync-muthur`; rename your copy's directory when you take this, or
+leave it, since nothing locates the skill by name. And your
+`upstream.json` still says `vzakharov/agent-project-boilerplate`, which
+goes on cloning fine — the rename leans on GitHub's permanent redirect
+rather than a pointer repo at the old name, that path only stopping
+redirecting if this account occupies it, and no one else can. So update
+`repo` whenever you next touch the file.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```

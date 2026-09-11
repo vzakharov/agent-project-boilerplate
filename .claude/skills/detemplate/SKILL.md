@@ -36,9 +36,9 @@ the setup script from Step 6 before either.
 
 The guard refuses in **both** directions, on a catalog's presence plus `origin`.
 Glob `.claude/skills/*/catalog.md` rather than testing the canonical
-`.claude/skills/sync-muthur/catalog.md`: an adopter renames that directory
-after *its* own source, so a fixed-path test misses a stray catalog in exactly
-the trees most likely to carry one.
+`.claude/skills/sync-muthur/catalog.md`: that directory's name is not stable
+downstream, so a fixed-path test misses a stray catalog in exactly the trees
+most likely to carry one.
 
 - **No catalog** → not an unpruned fork. An adopted repo that wants a
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
