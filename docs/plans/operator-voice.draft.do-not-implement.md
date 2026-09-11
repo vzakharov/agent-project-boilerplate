@@ -22,35 +22,76 @@ The attached transcript is the whole case in three turns:
 | 3 | "why AI produced version with more than 24 photos???" | **the actual cause**: the gallery already held 24 photos, the edits attached more, and our prompt tells the model to keep the existing photos and put new ones in a gallery — but never says "when a gallery reaches 24, start another one" |
 
 Turn 3 is a good answer. Nothing in it needed turn 1 or turn 2 to exist: the
-page history and the prompt were both readable from the start. **The agent
-stopped investigating when it had a quotable error string**, then spent its
-report defending the completeness of the evidence rather than saying why the
-thing happened.
+page history and the prompt were both readable from the start. The report was
+finished before its cause was known, and it was written in the stack's nouns —
+*array*, *schema*, *validation*, *retry* — where the reader's nouns (*photos*,
+*gallery*, *the app tried again*) were available and exact.
 
-So this is not only a register problem, and a rule that only says "use simpler
-words" would not have produced turn 3. Two failures stack:
+Two things about this transcript bound everything below:
 
-1. **Reporting a symptom as if it were a finding.** "Validation rejected the
-   array" is what the system printed, not what happened. The report was finished
-   before the cause was known.
-2. **Speaking in the stack's nouns.** *Array*, *schema*, *validation*, *retry*
-   — where the reader's nouns (*photos*, *gallery*, *the app tried again*) were
-   available and exact.
+- **It is not a Claude transcript** — it came from a different vendor's agent.
+  The failure is not one lab's, and nothing shipped may imply it is.
+- **It stays out of the shipped prose.** The screenshots live on
+  [PR #64](https://github.com/vzakharov/agent-project-boilerplate/pull/64) for
+  whoever needs them; this plan is swept by `/finalize` before the branch lands.
+  What ships is phrased as **how to write**, never as how some agent once wrote
+  — a rule that recounts a failure plants a polar bear (CLAUDE.md § "Writing
+  things down"), and ages into a story about an incident nobody remembers.
 
 The second, personal half of the request: the maintainer wants an agent who
 returns a joke instead of deadpanning it, and that kind of preference varies per
 person — it cannot be a house rule, and today it has nowhere to live that
 survives a session.
 
+## How the pieces are arranged
+
+Everything lives in one skill directory, and `CLAUDE.md` reaches into it with a
+single import line:
+
+```text
+.claude/skills/<skill>/
+├── SKILL.md       # the long version: defects, triggers, the pass itself
+├── rule.md        # the short version — imported by CLAUDE.md, always loaded
+├── operators.md   # per-person entries — imported by rule.md, always loaded
+└── example.md     # the worked before/after — read on demand from SKILL.md
+```
+
+Two mechanisms make this work, and they are **not** the same mechanism, which is
+the thing to get right before writing a line of it
+([docs](https://code.claude.com/docs/en/memory#import-additional-files)):
+
+- **In `CLAUDE.md`, `@path` is a real import.** The file is expanded into
+  context at launch, imports nest four hops deep, and **parsing skips code spans
+  and fenced blocks**. Every existing `@` reference in this repo is written
+  inside backticks — `` `@.claude/skills/tend-prose/SKILL.md` `` — which is
+  exactly why § "Writing things down" can tell you to read that skill *sparingly*
+  and mean it. So the one new reference must be **unbackticked**, and the
+  house style around it makes that look like a typo: the line carries an HTML
+  comment saying why, which `CLAUDE.md` strips before anything reaches context.
+- **In a `SKILL.md`, `@path` imports nothing.** A skill's description is always
+  in context, its body loads on invocation, and the files beside it load only
+  when the agent reads them. This repo's `@`-reference-in-a-skill convention
+  works because "load and follow" means the agent opens the file — a habit, not
+  a loader. Good enough for `example.md`, which should not be resident.
+  Not good enough for `operators.md`: a preference that only applies once
+  someone invokes a skill is a preference that never applies, because the reply
+  that deadpans your joke is a reply nobody invoked anything for. So
+  `operators.md` is reached by import, from `rule.md`, and is resident.
+
+**The import is about ownership, not cost.** The docs are explicit that splitting
+a file out does not reduce what loads at launch. What it buys is what was asked
+for: a topic large and separate enough to edit on its own, sitting next to the
+skill that expands it, instead of growing inside `CLAUDE.md`.
+
 ## What this delivers
 
 Four pieces. The first two are the house rule; the third is the personal half;
 the fourth is registration.
 
-### 1. `CLAUDE.md` § "Explaining things to people" — a new section after § "Language"
+### 1. `rule.md` — the always-loaded short version
 
-Always-loaded, short, and it states the rule as a **shape** rather than a mood,
-so a violation is visible rather than a matter of taste:
+Roughly 20 lines, stating the rule as a **shape** rather than a mood, so a
+violation is visible rather than a matter of taste:
 
 - **The first sentence is the cause, in the reader's words.** Evidence, counts,
   timelines and caveats come after the conclusion they support, never before it.
@@ -60,54 +101,65 @@ so a violation is visible rather than a matter of taste:
   it, and say what that would take.
 - **Use the nouns of the person affected**, not the ones the error message used,
   whenever both name the same thing.
-- **State the chain, not the steps.** Each step says why the next one followed;
-  a numbered list with no *because* in it is the turn-2 failure, not the fix.
+- **State the chain, not the steps.** Every step says why the next one followed;
+  a sequence with no *because* in it is a list, not an explanation.
 - **Length is not thoroughness.** A report that takes five screens to reach its
   point has failed even when every line in it is true.
+- **Frustration is a signal, and it is about you.** Repeated punctuation, caps,
+  a re-asked question, "just tell me" — read it as a report that the last answer
+  did not land. Do not answer it with more detail. Answer the question that was
+  actually asked, from the cause, in shorter words.
 
 Scope is stated by reference, not restated: this governs the **human-facing** and
-**conversation** groups that § "Language" already partitions. Agent-facing prose
-keeps `/tend-prose`'s rules, and commit/PR conventions are unchanged.
+**conversation** groups that `CLAUDE.md` § "Language" already partitions.
+Agent-facing prose keeps `/tend-prose`'s rules, and commit/PR conventions are
+unchanged.
 
-It closes with pointers to the two files below, and nothing else — the long
-version lives in exactly one place.
+It ends with the identity line (piece 3) and a pointer to the skill, and nothing
+else — the long version lives in exactly one place.
 
-### 2. A skill holding the long version and the on-demand pass
+`CLAUDE.md` gains three lines: a short § "Explaining things to people" after
+§ "Language", saying the topic lives with its skill, and the import.
 
-`/plainly` (name is question 2), mirroring how `/tend-prose` is the long version
-of § "Writing things down":
+### 2. The skill — the long version and the on-demand pass
 
-- **Invoked bare at a bad answer**, it re-explains the previous answer as a
-  causal chain in plain words — the thing the operator had to type
-  "can't you explain in simple human words????" to get.
-- **Invoked with a question**, it answers that question under the rule, including
-  the investigation half: find the cause first.
-- **It names the defects, so a human can throw one word at a bad report** the way
-  `polar bear` already works for `/tend-prose`:
+Name is question 1 below. It mirrors how `/tend-prose` is the long version of
+§ "Writing things down":
+
+- **Invoked bare at an answer that did not land**, it re-explains the previous
+  answer as a causal chain in plain words — the thing an operator otherwise has
+  to ask for twice.
+- **Invoked with a question**, it answers that question under the rule,
+  including the investigation half: find the cause first.
+- **Its description carries the identity trigger**, per piece 3, because a
+  description is the one part of a skill that is always in context.
+- **It names the defects, so one word can call out a bad report** the way
+  `polar bear` already works for `/tend-prose`. These are tells to check a draft
+  of your own against:
 
   | Defect | Tell |
   | --- | --- |
-  | **Symptom-as-finding** | The report's headline is a quoted error string or a metric the system emitted |
+  | **Symptom-as-finding** | The headline is a quoted error string or a metric the system emitted |
   | **Buried lede** | Counts, windows, method notes or caveats before the conclusion |
   | **Untranslated nouns** | The stack's vocabulary where the domain's exists and is exact |
   | **Broken chain** | Steps in sequence with nothing saying why each one followed |
   | **Fog** | Uncertainty stated repeatedly and never resolved into "here's what would settle it" |
   | **Receipt** | A reply *about* what the person said, where the thing they said wanted an answer — a joke acknowledged instead of returned, an aside filed instead of engaged |
 
-- **A worked before/after**, built from the transcript above with the product
-  details generalized: the turn-1 answer, the turn-3 answer, and what the agent
-  would have had to read to open with turn 3. This is the part that teaches;
-  the defect list only gives it names.
+- **A worked before/after in `example.md`**: two answers to the same question —
+  a thin one and a full one — and what the full one had read that the thin one
+  had not. Invented domain, no vendor, no incident. This is the part that
+  teaches; the table only gives it names.
 
 **The sixth defect is the odd one, and it earns its place by being the only one
 investigation cannot fix.** The other five are cured by knowing more — read the
 history, find the cause, say it in the right nouns. *Receipt* is cured by
 answering the thing that was actually said. It is the same move as the rest, at
-the level of a conversation rather than a report: the agent narrates its
-response instead of making it, and a narrated response feels attentive while
-leaving the other person unanswered. Its tell is the register shift — a
-neighboring sentence goes formal, or refers to the remark in the third person
-("noted", "a fair point", "I'll take that on board").
+the level of a conversation rather than a report: narrating a response instead
+of making it, which feels attentive and leaves the other person unanswered. Its
+tell is the register shift — a neighboring sentence goes formal, or refers to
+the remark in the third person ("noted", "a fair point", "I'll take that on
+board").
 
 Where the personal half meets the house rule: **whether to return a joke at all
 is an operator entry** — some people want the deadpan — but **acknowledging one
@@ -115,11 +167,10 @@ instead of either returning it or passing it by is a defect for everyone**. The
 entry sets the register; this rule says don't hand someone a receipt in place of
 a reply.
 
-### 3. Per-operator entries
+### 3. `operators.md` — per-person entries
 
-A single `.claude/operators.md` (shape is question 3) with one short section per
-person, read at session start when the file exists, plus a template block and no
-real people in the boilerplate — adopters fill in their own.
+One short section per person, a template block and no real people in the
+boilerplate — adopters fill in their own.
 
 An entry tunes **manner only**:
 
@@ -127,86 +178,96 @@ An entry tunes **manner only**:
 > in it, what gets reported, or which checks run. "Keep it short" does not
 > license dropping the cause; "no need to flag small stuff" does not license a
 > silent failure. A preference that would change substance is not an entry — it
-> is a change to `CLAUDE.md` that everyone can see.
+> is a change to the house rule that everyone can see.
 
 Entries are written by an operator about themself (or with their say-so), and
-the growth mechanism is stated where CLAUDE.md already says the file is the
-agent's to grow: **when someone states a standing preference about how you talk
-to them, offer to write it into their entry.** That is how "I like it when you
-ping my jokes back" becomes durable instead of dying with the session.
+the growth mechanism sits where `CLAUDE.md` already says the loop is the agent's
+to grow: **when someone states a standing preference about how you talk to them,
+offer to write it into their entry.** That is how "I like it when you ping my
+jokes back" becomes durable instead of dying with the session.
 
-Resolution is one line: match the session's operator (the identity the harness
-supplies, else `git config user.email`) against the entries; no match means the
-house rule alone, which is a complete instruction on its own.
+**Identity is resolved once, at the start of a session, and then known.** The
+harness supplies it; when it does not, run the one lookup that settles it
+(`git config user.email`) and carry the answer for the rest of the session
+rather than re-deriving it per reply. No match against any entry means the house
+rule alone, which is a complete instruction on its own. The instruction lives in
+two places on purpose: in `rule.md`, which is resident, and in the skill's
+**description**, which is the only part of a skill that is in context before
+anyone invokes anything.
 
 ### 4. Registration
 
-- One catalog row per new item in **G1 — Prose & principles** (`/plainly`,
-  `.claude/operators.md`), which is where CLAUDE.md, `/dry` and `/tend-prose`
-  already sit — "always adopt, no stack assumptions, no GitHub" describes these
-  exactly. `scripts/check-skill-catalog.sh` assertion 2 requires the skill row.
+- Three rows in the catalog's **G1 — Prose & principles** — the skill, `rule.md`
+  (`adopt`), and `operators.md` (**rewrite**, the way
+  `sync-agent-infra/upstream.json` is: ships as a template, every adopter writes
+  their own). G1 is where `CLAUDE.md`, `/dry` and `/tend-prose` already sit, and
+  "always adopt, no stack assumptions, no GitHub" describes these exactly.
 - `README.md`: the skill count (**30 → 31**, 22 → 23 working) and the G1 row's
   one-line summary.
 - `ADOPTING.md` shared tail: a hydration step beside "Settle the language
   decision" — the house rule is adopt-as-is, only the operator entries are filled
   in. Same for `/detemplate`, which seeds the entry for whoever ran it if they
   state a preference during the run, and otherwise leaves the template.
-- `scripts/vet.sh` passes (it calls the catalog check).
+- `./scripts/vet.sh` passes — it calls `check-skill-catalog.sh`, whose assertion
+  2 wants exactly one catalog row per skill directory, and assertion 3 wants
+  every path a row names to exist.
 
 ## Why this is worth always-loaded context
 
-`CLAUDE.md` § "Writing things down" sets three tests, and a new always-resident
-section has to pass all of them:
+`CLAUDE.md` § "Writing things down" sets three tests, and new always-resident
+prose has to pass all of them whichever file it sits in — an import does not
+make it cheaper, only better placed:
 
 1. **A constraint, not a description.** It constrains output shape.
 2. **Not recoverable.** Nothing in the code says how to address a human.
-3. **Getting it wrong breaks something nameable.** The transcript above: three
-   turns and an irritated boss to reach an answer that was available in one.
+3. **Getting it wrong breaks something nameable.** Three turns and an irritated
+   boss to reach an answer that was available in one.
 
-The cost is real and bounded — roughly 20 lines resident, with the long version
-paid for only when invoked. The alternative of putting everything in the skill
-fails because the rule must apply to replies nobody invoked a skill for; the
-alternative of putting everything in `CLAUDE.md` costs every session the worked
-example and the defect table, which are reference material.
+The cost is real and bounded — roughly 20 lines plus a few per operator, with
+the long version paid for only when invoked. Putting everything in the skill
+instead fails because the rule must apply to replies nobody invoked a skill for;
+putting everything in the resident file costs every session a worked example and
+a defect table that are reference material.
 
 ## Open questions
 
-Recommendations are already in force in the plan above, so it is implementable as
-written; an answer that differs is a revision.
+Two of the original four are settled by review and folded in above: the rule
+lives in its own file under the skill directory rather than inside `CLAUDE.md`,
+and the operator entries are one file, in that same directory. What remains:
 
-1. **Shape.** (a) `CLAUDE.md` section + skill for the long version *(recommended
-   — it is exactly the `/tend-prose` split, and the split exists because the two
-   halves have different trigger conditions)*; (b) `CLAUDE.md` section only,
-   no skill; (c) skill only.
-2. **Skill name.** (a) `/plainly` *(recommended — it is what an operator would
-   type at a bad answer)*; (b) `/explain`; (c) `/tend-report`.
-3. **Per-operator storage.** (a) one `.claude/operators.md`, section per person
-   *(recommended — a few lines each, so a team's whole file costs less than one
-   skill load, and nothing has to match filenames to identities)*; (b) one file
-   per operator under `.claude/operators/` with a `matches:` frontmatter key, read
-   selectively; (c) drop the per-operator half and ship the house rule alone.
-4. **Reach.** (a) the house rule governs chat replies **and** human-facing GitHub
+1. **Skill name.** (a) `/plainly` *(recommended — it is what an operator would
+   type at an answer that did not land)*; (b) `/explain`; (c) `/tend-report`.
+   It now names the directory everything else in this plan sits under.
+2. **Reach.** (a) the house rule governs chat replies **and** human-facing GitHub
    prose — PR bodies, issue and review comments *(recommended — the boss reads
    the issue thread, not the session)*; (b) chat replies only.
 
+Both recommendations are in force in the plan above, so it is implementable as
+written; an answer that differs is a revision.
+
 ## Execution order
 
-1. Write `CLAUDE.md` § "Explaining things to people".
-2. Write the skill (frontmatter description, defect table, worked before/after).
-3. Write `.claude/operators.md` with the template block and the manner-only
-   guardrail; add the "offer to write it down" line to `CLAUDE.md`.
+1. Create the skill directory; write `SKILL.md` (description carrying the
+   identity trigger, defect table, the pass) and `example.md`.
+2. Write `rule.md`, and `operators.md` with the template block and the
+   manner-only guardrail.
+3. Add `CLAUDE.md` § "Explaining things to people": the placement sentence and
+   the unbackticked import, with the HTML comment guarding it.
 4. Catalog rows, `README.md` counts, `ADOPTING.md` and `/detemplate` hydration.
-5. `./scripts/vet.sh`, then `/dry` and `/tend-prose`, then `/pr`.
+5. Verify the import actually loads — `/context` lists it under memory files, or
+   a fresh session can quote a line from `rule.md` it was never handed.
+6. `./scripts/vet.sh`, then `/dry` and `/tend-prose`, then `/pr`.
 
 ## DRY notes
 
 - **§ "Language"'s audience partition is reused by citation, not restated.** It
-  already splits human-facing / agent-facing / conversation, and the new section
-  needs exactly that split to say what it governs. Restating it would create the
-  two-homes-one-constraint defect CLAUDE.md names in § "Writing things down".
-- **The long version goes in the skill and nowhere else**, the same arrangement
-  `/tend-prose` has with § "Writing things down". `CLAUDE.md` carries the rule
-  and a pointer; the defect table and the worked example exist once.
+  already splits human-facing / agent-facing / conversation, and the rule needs
+  exactly that split to say what it governs. Restating it would create the
+  two-homes-one-constraint defect `CLAUDE.md` names in § "Writing things down".
+- **`rule.md` is the short version and `SKILL.md` the long one, never both.**
+  Same arrangement `/tend-prose` has with § "Writing things down": the defect
+  table, the triggers and the worked example exist once each, and the resident
+  file carries the rule and a pointer.
 - **Not merged into `/tend-prose`, deliberately.** The overlap is one instinct
   (say it shorter) across two artifacts that share no mechanics: `/tend-prose`
   scopes itself with `git diff`, edits committed files, and runs at milestones;
@@ -214,10 +275,10 @@ written; an answer that differs is a revision.
   it. A fifth lens would have to opt out of Steps 1, 3 and 5 of that skill —
   which is a separate skill wearing a borrowed name. The two cross-reference
   instead.
-- **No new top-level doc.** `CLAUDE.md` § "Writing things down" requires asking
-  first and arguing the "don't" side; everything here lands under `.claude/` or
-  in files that already exist, so the question does not arise.
+- **No new top-level doc.** Everything lands under `.claude/skills/<skill>/`,
+  plus three lines in a file that already exists — so § "Writing things down"'s
+  ask-first rule does not arise.
 - **The stub/hydration conventions are reused as-is** — `ADOPTING.md`'s shared
-  tail, the catalog's G1 group, `/detemplate`'s hydration pass. No new marker
-  and no new mechanism; the operator entries are hydration in exactly the sense
-  the language decision already is.
+  tail, the catalog's G1 group and its `rewrite` disposition, `/detemplate`'s
+  hydration pass. No new marker and no new mechanism; the operator entries are
+  hydration in exactly the sense the language decision already is.
