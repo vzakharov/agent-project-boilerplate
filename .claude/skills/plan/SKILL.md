@@ -94,7 +94,7 @@ The plan file carries its state in its name, and moves through it by `git mv` (t
 3. `docs/plans/<slug>.paused.md` — a session stopped partway, recorded what is done and what is left, and released the plan. This is the resumable state, and the one a later `/go` continues from.
 4. `docs/plans/<slug>.completed.md` — flipped by `/go` once implementation and its quality passes are done, just before it hands the PR to `/pr`.
 
-Every state still matches `docs/plans/*.md`, so consumers that glob the directory (`/go`, `/from-branch`, `/handle`, `/finalize`, `/tighten-docs`) keep working unchanged.
+Every state still matches `docs/plans/*.md`, so consumers that glob the directory (`/go`, `/from-branch`, `/handle`, `/finalize`, `/tend-prose`) keep working unchanged.
 
 **The predicate the states exist to answer:**
 

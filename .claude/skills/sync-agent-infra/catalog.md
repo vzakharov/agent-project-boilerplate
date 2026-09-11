@@ -84,7 +84,7 @@ enforces it the same way.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/sync-agent-infra` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tighten-docs` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
+| `/sync-agent-infra` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tend-prose` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
 | `.claude/skills/sync-agent-infra/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
 | `/spinoff` | Seed a new sibling repo out of the adopter you are standing in: triage what travels, write the target's watermark, seed its `main` and a session branch, and hand over a session in it. Ships hydrated. | `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner; a caller that adopted this infrastructure rather than being it | `/sync-agent-infra` (this group); `/pr` (G2) | adopt |
 
@@ -93,7 +93,7 @@ root.** There is no source above it to sync from, and it is not an adopter, so
 there is nothing to spin off out of either — `/spinoff` refuses the moment it
 finds this catalog. Downstream both work.
 
-`/sync-agent-infra`'s Step 8 hands off to `/dry`, `/tighten-docs` and `/pr`, and
+`/sync-agent-infra`'s Step 8 hands off to `/dry`, `/tend-prose` and `/pr`, and
 cites `/squash-message` for how the sync's own squash record is titled; the first
 two come with G1, which you are adopting anyway. `/spinoff` reaches `/pr` as
 well, at its Step 4, to open the seed PR in the new repo. **G2 is the escape**:
@@ -112,7 +112,7 @@ there is no condition under which it fails to apply.
 | `CLAUDE.md` | The always-loaded conventions: key principles, docstring policy, derive-types-from-source-of-truth, doc-sync rules, commit conventions. | — | — | adopt — **merge, don't overwrite** |
 | `.claude/rules/` | The path-scoped convention mechanism: a rule file loads only when a session touches the paths it declares. Ships with a README and no rules. | — | — | adopt |
 | `/dry` | Review the session's diff for DRY opportunities; apply the obvious wins, surface the ambiguous ones. | — | — | adopt |
-| `/tighten-docs` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
+| `/tend-prose` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say, delete what survives only to deny a thing the change removed. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
@@ -124,14 +124,14 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `/plan` | Write the plan to a `docs/plans/` file whose name is the approval gate, publish it as a draft PR so it is reviewed as a diff, and ask questions as numbered prose. | `gh` | `/finalize`, `/go`, `/pr` | adopt |
-| `/go` | The go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it. | — | `/dry`, `/tighten-docs` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
+| `/go` | The go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it. | — | `/dry`, `/tend-prose` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
 | `/implement` | Redirect to `/go`, for handoff blocks written before the rename. | — | `/go` | conditional — see below |
 | `/pr` | Own the PR object: rename the auto-branch, push, then open the draft PR or refresh the one that exists. | `gh` | `/branch-rename`, `/qa-checklist`, `/squash-message` | adopt |
 | `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. | `gh`, `scripts/vet.sh` | `/check-merge`, `/from-branch`, `/plan`, `/squash-message`; **conditionally** `/issue` (G3), `/watch-ci` (G5) | adopt |
 | `/from-branch` | Attach the session to an existing branch or PR, abandoning the auto-created session branch. | `gh` | `/finalize`, `/go` | adopt |
 | `/handle` | Pick up a branch and do what it needs: attach, read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, land-prep only if asked. | `gh`; `scripts/export-github-item.py` (G3) for the review lane's thread export | `/from-branch`, `/go`, `/plan`, `/finalize` | adopt |
 | `/branch-rename` | Rename a harness auto-branch (`claude/<adjective>-<noun>-<hash>`) to a semantic name, keeping the random suffix. | `gh` | `/pr` | adopt |
-| `/squash-message` | Produce and post the copy-ready squash title/body for a PR; owns the format and the draft-then-tighten discipline. | `gh`, `jq`, `scripts/check-squash-message.sh` | `/tighten-docs` (G1) | adopt |
+| `/squash-message` | Produce and post the copy-ready squash title/body for a PR; owns the format and the draft-then-tighten discipline. | `gh`, `jq`, `scripts/check-squash-message.sh` | `/tend-prose` (G1) | adopt |
 | `/qa-checklist` | Generate a QA checklist from the branch's change and write it into the PR body, with each step classified for automatability. | `gh`, `python3` ≥3.9, `scripts/pr-body.py` | — | adopt |
 | `/check-merge` | Check once whether the PR's base advanced or the PR landed since the branch was last attested, and reconcile the squash proposal. | `gh`, `scripts/check-merge.sh` | `/finalize`, `/from-branch`, `/squash-message` | adopt |
 | `/sync-branch` | Bring a branch up to date with its merge target, resolving mechanically and logically in one merge commit. | `gh`, `scripts/vet.sh` | `/check-merge` | adopt |

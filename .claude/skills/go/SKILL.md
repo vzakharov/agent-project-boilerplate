@@ -1,7 +1,7 @@
 ---
 description: >-
   The go-ahead: start working. Executes an approved plan end-to-end, then runs
-  the mandatory quality passes (/dry, /tighten-docs) and hands the PR to /pr.
+  the mandatory quality passes (/dry, /tend-prose) and hands the PR to /pr.
   Invoke as `/go` (continue in this session), `/go <branch|#PR|PR-url>` (attach
   to that branch first), or `/go <task in prose>` (work with no plan behind it).
 ---
@@ -82,7 +82,7 @@ Commit/push discipline is already governed by CLAUDE.md — don't reinvent it he
 These run **every time**, in order, and override any contrary "wrap up after implementing" instinct. Each is a real pass over the just-written diff, not a rubber stamp — and each commits its own edits.
 
 1. **`/dry`** — did new duplication the plan didn't foresee creep in during implementation? Plans are written before the code exists, so WETness that wasn't visible at planning time often surfaces only now. Load `@.claude/skills/dry/SKILL.md` and run it over this session's diff: apply the obvious wins, surface the ambiguous calls.
-2. **`/tighten-docs`** — load `@.claude/skills/tighten-docs/SKILL.md` and run it over the prose you added. It carries **two halves of equal weight**: rewriting edit-narration into present-tense contracts, and cutting prose back to the non-obvious contract at the length that contract takes. Its report is split into `Durability` and `Tightness` groups. Commit this pass's edits.
+2. **`/tend-prose`** — load `@.claude/skills/tend-prose/SKILL.md` and run it over the prose you added. It carries **four lenses of equal weight**: cutting prose that shouldn't exist at all, rewriting edit-narration into present-tense contracts, trimming prose back to the non-obvious contract at the length that contract takes, and deleting what survives only to deny a thing this change removed. Its report is split into `Existence`, `Negation`, `Durability` and `Tightness` groups. Commit this pass's edits.
 
 Then **`git mv` the plan to `docs/plans/<slug>.completed.md`** and commit — implementation and its quality passes are done. (`/finalize` sweeps the whole `docs/plans/` tree at squash regardless, so this flip is just the honest end-state marker for an operator watching the branch.)
 

@@ -201,10 +201,11 @@ intermediate steps and "added a test for it"; process meta; benefit padding; and
 the linked issue's own symptom and repro re-filed here, which `Closes #N` already
 points at.
 
-This is `@.claude/skills/tighten-docs/SKILL.md`'s **Lens A (existence)** and
-**Lens C (bloat)** applied to a commit body. Only its Lens B (narration) is
-inapplicable — narrating the change is a commit message's whole job, which is why
-that skill's Step 4 excludes commit messages and PR bodies from its own sweep.
+This is `@.claude/skills/tend-prose/SKILL.md`'s **Lens A (existence)** and
+**Lens C (bloat)** applied to a commit body. Its Lens B (narration) and Lens D
+(negation) are both inapplicable, for one reason: naming what the change did and
+what it took away is a commit message's whole job. That is why that skill's Step
+4 excludes commit messages and PR bodies from its own sweep.
 
 Four things a draft reaches for fail Lens A, however well written:
 
