@@ -183,6 +183,19 @@ The last two are still this project's to override — a team that wants its skil
 in its own language writes that here — but an override is a decision someone
 makes, not a blank left open.
 
+## Explaining things to people
+
+Which language to write in is settled above; how to write is a large enough
+topic to live with the skill that expands it, so it is imported from there
+rather than stated here.
+
+<!-- Unbackticked on purpose: this is a real import, not a pointer, and the
+     import parser skips code spans — backticking it would silently stop the
+     rule from loading. Every other @-reference in this file is backticked
+     because it is a pointer the agent opens on demand. -->
+
+@.claude/skills/plainly/voice.md
+
 ## Working with skills
 
 This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
@@ -206,10 +219,11 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 - **`/implement`** — a redirect to `/go`, kept because handoff blocks written before the rename still say it.
 
-**Quality passes** (both are mandatory inside `/go`):
+**Quality passes** (the first two are mandatory inside `/go`):
 
 - **`/dry`** — review the session's diff for DRY opportunities; applies obvious wins, surfaces ambiguous ones.
 - **`/tend-prose`** — cut prose that shouldn't exist, rewrite what narrates the change into present-tense contracts, trim what the names and types already say, and delete what only denies a thing the change removed. Naming one lens (`existence`, `durability`, `tightness`, `negation`) runs only that one.
+- **`/plainly`** — re-explain an answer that didn't land, cause first and in the reader's nouns, or answer a question under that rule from the start. On demand: § "Explaining things to people" above is the resident short version and applies to every reply without being invoked.
 
 **Mechanical pieces**, individually invocable and composed by the loop above:
 
