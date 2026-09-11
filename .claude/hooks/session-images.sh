@@ -11,8 +11,11 @@
 # turn that ends without a commit — a bare question, the common case — still
 # leaves the file behind.
 #
-# TIMING: <recorded once verified — whether the prompt now being submitted is
-# already in the transcript when UserPromptSubmit fires>.
+# TIMING, measured rather than assumed: when UserPromptSubmit fires, the prompt
+# being submitted is NOT in the transcript yet — the last record is the
+# `queue-operation` that carries its text and never its image data. So an image
+# lands on disk at the Stop that ends the turn it arrived in, and the context
+# below names it at the start of the next turn.
 #
 # The commit is remote-only, matching CLAUDE.md § "Git conventions", which scopes
 # proactive committing to the sessions where the operator reviews from another
@@ -51,16 +54,6 @@ project="${CLAUDE_PROJECT_DIR:-$(field cwd)}"
 [ -n "$transcript" ] && [ -f "$transcript" ] || exit 0
 [ -n "$project" ] && [ -d "$project" ] || exit 0
 
-# TEMPORARY timing probe — removed once the header's TIMING line is filled in.
-if [ -n "${SESSION_IMAGES_PROBE:-}" ]; then
-  {
-    echo "--- $event $(date -u +%FT%TZ)"
-    echo "lines in transcript: $(wc -l <"$transcript")"
-    echo "user_input present: $(field user_input | head -c 80)"
-    echo "last record: $(tail -n 1 "$transcript" | jq -c '{type, origin, blocks: [.message.content[]?.type]}' 2>/dev/null)"
-  } >>"$SESSION_IMAGES_PROBE"
-fi
-
 rel_dir="docs/remove-before-merging/session-images"
 out="$project/$rel_dir"
 
@@ -75,7 +68,7 @@ if [ "$event" = "UserPromptSubmit" ]; then
   jq -n --arg names "$names" '{
     hookSpecificOutput: {
       hookEventName: "UserPromptSubmit",
-      additionalContext: ("Images attached to this session were written to the branch:\n" + $names + "\nThey are working artifacts under a tree /finalize sweeps; `git mv` one worth keeping to a permanent home.")
+      additionalContext: ("Images the operator attached earlier in this session are on the branch as files:\n" + $names + "\nThey are working artifacts under a tree /finalize sweeps; `git mv` one worth keeping to a permanent home.")
     }
   }'
   exit 0

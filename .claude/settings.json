@@ -38,8 +38,5 @@
         ]
       }
     ]
-  },
-  "env": {
-    "SESSION_IMAGES_PROBE": "/tmp/claude-0/-home-user-agent-project-boilerplate/aacf0e88-3ba4-52b7-9617-bd71f1a04a53/scratchpad/probe.log"
   }
 }
