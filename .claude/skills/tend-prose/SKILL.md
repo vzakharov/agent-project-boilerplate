@@ -36,9 +36,8 @@ Markdown (skill bodies, `docs/`, READMEs) — for four defects that carry
   "Comments describe the code's lasting contract, not the change that produced
   it."
 
-They are listed in the order that spells **TEND**, which is a memory aid and
-nothing more. It is not the order they run in: Step 2 walks them A–D and Step 3
-resolves them existence-first.
+They are listed in the order that spells **TEND** — a memory aid, not the run
+order: Step 2 walks them A–D and Step 3 resolves them existence-first.
 
 The output is **edits, not a report**. Fix the clear cases in place; only ask
 about genuinely ambiguous ones.
@@ -60,8 +59,8 @@ bear`.
 | D    | `negation`   | `polar bear`  |
 
 `negation` and `narration` are three characters apart and name **different**
-lenses. When you mean D and B is in the room, say `polar bear` — which is also
-how the request arrives from a PR comment.
+lenses — say `polar bear` for D, which is how the request arrives from a PR
+comment anyway.
 
 Then run **only** that lens: skip the other three in Step 2, apply only its fixes
 in Step 3, and report only its group in Step 5. This is the mode for "I just saw
@@ -100,9 +99,8 @@ field and type names, and named concepts. Grep each against the post-change
 tree. **A name that survives only inside prose is a Lens D candidate** — the
 code no longer has it, so any sentence still about it is about nothing.
 
-**Skip this sub-step when the diff removes nothing**, which is most additive
-work: no removals, no candidates, and the ordinary pass pays nothing for the
-lens.
+**Skip this sub-step when the diff removes nothing** — most additive work — so
+the ordinary pass pays nothing for the lens.
 
 ## Step 2: Read each added prose line and ask all four questions
 
@@ -284,9 +282,8 @@ draft did, which no longer threatens anyone.
 
 **Negation:**
 
-- **Delete.** This is the default and the point of the lens — the fix is a cut,
-  not a rewrite. A sentence whose whole content is that something is absent has
-  nothing to restate positively.
+- **Delete.** A sentence whose whole content is that something is absent has
+  nothing to restate positively, so this lens cuts where the others rewrite.
 - **Keep the fact, drop the denial** where the mention carries a live fact
   alongside it. Rephrase as what *is* there: "The mark is not generated —
   `public/aeapp-mark.svg` is committed" → "**One committed
