@@ -23,15 +23,18 @@ takes. Scope comes by reference to the audience partition in
 § "Language", so the section states no group twice.
 
 The long version lives in one skill, the way /tend-prose is the long
-version of § "Writing things down": five named defects, so a bad
+version of § "Writing things down": six named defects, so a bad
 report can be called out in a word, and a worked before-and-after
-that teaches what the table only labels.
+that teaches what the table only labels. The last of the six is the
+only one investigation cannot fix — a reply about what someone said,
+where what they said wanted an answer.
 
 Preferences that vary by person get their own file, one short entry
 each, resolved against the session's operator. An entry tunes manner
 and never substance: it cannot drop a cause, skip a check, or
 quiet a failure. Anything that would is a change to CLAUDE.md, where
-everyone can see it.
+everyone can see it. The entry decides whether a joke comes back;
+handing over a receipt instead of a reply is ruled out either way.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
