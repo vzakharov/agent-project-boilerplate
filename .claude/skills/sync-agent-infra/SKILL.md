@@ -270,7 +270,7 @@ the sync.
 
 Report the triage table — every candidate, with its verdict and one line of
 reasoning, skips included. Then hand off to `@.claude/skills/dry/SKILL.md`,
-`@.claude/skills/tighten-docs/SKILL.md` and `@.claude/skills/pr/SKILL.md`; the
+`@.claude/skills/tend-prose/SKILL.md` and `@.claude/skills/pr/SKILL.md`; the
 skipped commits' reasoning belongs in the PR body, since the watermark advances
 past them and nothing else records why.
 
