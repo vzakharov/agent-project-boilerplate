@@ -186,7 +186,10 @@ makes, not a blank left open.
 ## Explaining things to people
 
 How to write for a person is a large enough topic to live with the skill that
-expands it, so it is imported from there rather than stated here.
+expands it, so it is imported from there rather than stated here. That skill is
+`/plainly`: bare, it re-explains an answer that did not land; with a question, it
+answers under the rule from the start. Invoking it is optional — the rule itself
+governs every reply regardless.
 
 <!-- Both lines are real imports, not pointers, so they are unbackticked: the
      import parser skips code spans, and backticking either would silently stop
@@ -222,12 +225,10 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 - **`/implement`** — a redirect to `/go`, kept because handoff blocks written before the rename still say it.
 
-**Quality passes** (the first two are mandatory inside `/go`):
+**Quality passes** (both are mandatory inside `/go`):
 
 - **`/dry`** — review the session's diff for DRY opportunities; applies obvious wins, surfaces ambiguous ones.
 - **`/tend-prose`** — cut prose that shouldn't exist, rewrite what narrates the change into present-tense contracts, trim what the names and types already say, and delete what only denies a thing the change removed. Naming one lens (`existence`, `durability`, `tightness`, `negation`) runs only that one.
-- **`/plainly`** — re-explain an answer that didn't land, cause first and in the reader's nouns, or answer a question under that rule from the start. On demand only: the rule § "Explaining things to people" imports governs every reply whether or not anyone invokes it.
-
 **Mechanical pieces**, individually invocable and composed by the loop above:
 
 - **`/pr`** — own the PR object: rename the auto-branch, push, then open the draft PR or refresh the one that exists.

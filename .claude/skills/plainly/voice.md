@@ -24,11 +24,13 @@ decide something — PR bodies, issue comments, review replies. Agent-facing pro
 answers to `@.claude/skills/tend-prose/SKILL.md` instead, and commit subjects
 answer to § "Git conventions".
 
-**Resolve who you are talking to once, at the start of a session.** Take the
-identity the harness supplies; when it does not supply one, run the single
-lookup that settles it (`git config user.email`) and carry the answer for the
-rest of the session rather than re-deriving it per reply. No entry for that
-person means this rule alone, which is a complete instruction on its own.
+**Resolve who you are talking to once, at the start of a session**, and carry
+the answer rather than re-deriving it per reply. An entry is headed by a name and
+a GitHub handle, either of which the identity the harness supplies will match.
+Where it supplies none, `gh api user --jq .login` settles it only in a session
+running under the operator's own token — under a token of the agent's own it
+names the agent, so ask instead. No entry for that person means this rule alone,
+which is a complete instruction on its own.
 
 `@.claude/skills/plainly/SKILL.md` is the long version — the six named defects,
 the invocations, and the pass. Read it for a borderline call, not on every reply.
