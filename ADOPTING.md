@@ -195,7 +195,7 @@ Making those skills proxy-safe at the source — which would remove this depende
 and this decision entirely — is tracked separately; see
 [Known gaps](#known-gaps).
 
-**Record the decision either way** in `upstream.json`'s `declined` map with the
+**Record the decision either way** in `watermark.json`'s `declined` map with the
 reason, so re-sync stops re-offering it. Then finish the procedure and **say what
 you skipped** in your report.
 
@@ -299,7 +299,7 @@ banner is still a stub.
 ### Hydrate the sync stub
 
 `/sync-muthur` is a stub for want of a watermark, not a procedure, so
-hydrating it is `.claude/skills/sync-muthur/upstream.json` — a
+hydrating it is `.claude/skills/sync-muthur/watermark.json` — a
 [`rewrite`](.claude/skills/sync-muthur/catalog.md#three-dispositions-not-two). Write it for **your**
 repo, then clear both stub markers: delete the `⚠️ **STUB.**` banner and drop
 `STUB` from the frontmatter `description`. Half of either leaves the skill
@@ -504,7 +504,7 @@ silently:
    session's skill list. A skill in the wrong directory is invisible rather than
    broken.
 3. **The sync stub is hydrated**:
-   `.claude/skills/sync-muthur/upstream.json` points at the repo you adopted
+   `.claude/skills/sync-muthur/watermark.json` points at the repo you adopted
    from, with a `lastSyncedSha` that resolves there rather than the shipped
    placeholder, and both stub markers are cleared.
 4. **If you adopted G4**: confirm one GraphQL-flavored call now succeeds — e.g.

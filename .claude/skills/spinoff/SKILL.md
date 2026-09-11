@@ -36,7 +36,7 @@ either way, but the two cases want different answers, so read `origin` before
 replying:
 
 - **`origin` matches the `repo` field in
-  `.claude/skills/sync-muthur/upstream.json`** → this *is* the template:
+  `.claude/skills/sync-muthur/watermark.json`** → this *is* the template:
   the shipped watermark names the repo itself, having no source above it. Point
   at its `README.md` § "Create a new project from this template": what the
   caller wants is a fork, not a sibling. Compare the full `owner/repo`, since
@@ -75,13 +75,14 @@ and not from an unpruned fork of it" above — reading `origin` too, since it pi
 which of the two answers to give. Otherwise two things come out of the tree:
 
 - **The tree**, as the input to Step 2's triage.
-- **The caller's own sync skill and watermark.** **Locate it by its watermark
-  file, not by its name.** That name is not stable and no rename is pushed
-  downstream: a caller that adopted before `/sync-muthur` carries
-  `.claude/skills/sync-agent-infra/upstream.json`, and one free to rename any
-  skill may have picked its own. Hunting for `sync-muthur/upstream.json` finds
-  nothing and silently seeds an unlinked repo. Glob `.claude/skills/*/*.json` and take the one whose object carries
-  `repo` and `lastSyncedSha`.
+- **The caller's own sync skill and watermark.** **Locate it by what the file
+  contains, not by where it sits.** Neither half of that path is stable and no
+  rename is pushed downstream: a caller that adopted before `/sync-muthur`
+  carries `.claude/skills/sync-agent-infra/upstream.json` — both segments as
+  they were then — and one free to rename any skill may have picked its own.
+  Hunting for `sync-muthur/watermark.json` finds nothing and silently seeds an
+  unlinked repo. Glob `.claude/skills/*/*.json` and take the one whose object
+  carries `repo` and `lastSyncedSha`.
 
 If the invocation did not give `<owner/name>`, ask for it — and in the same
 breath ask **public-or-private** and **the target's stack**, since Step 4 needs

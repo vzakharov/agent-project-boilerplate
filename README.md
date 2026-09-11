@@ -11,7 +11,7 @@ later improvements forward — the part a copied skill directory can't do.
 Stack-agnostic.
 
 That last part runs on a watermark:
-[`upstream.json`](.claude/skills/sync-muthur/upstream.json) records where your
+[`watermark.json`](.claude/skills/sync-muthur/watermark.json) records where your
 copy came from, the commit you last synced to, and what you adopted or declined.
 `/sync-muthur` diffs the source since that commit and triages it one commit at a
 time against the copy you have since edited — so a skill you rewrote stays

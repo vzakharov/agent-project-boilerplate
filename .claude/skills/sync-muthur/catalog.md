@@ -45,7 +45,7 @@ inventory, so every item appears under exactly one, and
   files qualify, and both are load-bearing: `scripts/vet.sh` (what it must exit
   turns on whether your repo has a stack yet, and
   [`CLAUDE.md` § "Vetting"](../CLAUDE.md#vetting) is that contract's home) and
-  `.claude/skills/sync-muthur/upstream.json` (the SHA and adopted set are
+  `.claude/skills/sync-muthur/watermark.json` (the SHA and adopted set are
   per-repo by definition; only `repo` ships correct). Naming this disposition is
   what stops an adopter inheriting a placeholder SHA and a foreign `adopted` set
   — the placeholder halts the skill, the foreign set fails silently by
@@ -85,7 +85,7 @@ enforces it the same way.
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `/sync-muthur` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tend-prose` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
-| `.claude/skills/sync-muthur/upstream.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
+| `.claude/skills/sync-muthur/watermark.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
 | `/spinoff` | Seed a new sibling repo out of the adopter you are standing in: triage what travels, write the target's watermark, seed its `main` and a session branch, and hand over a session in it. Ships hydrated. | `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner; a caller that adopted this infrastructure rather than being it | `/sync-muthur` (this group); `/pr` (G2) | adopt |
 
 **Both skills are inert in this repo, for one structural reason: this tree is the
@@ -153,7 +153,7 @@ Two things in this group are less optional than they look — see
 
 Adopt on top of G2, and only if work is genuinely tracked as GitHub issues. If
 you plan in Linear, Jira or a doc, decline the group and record why in
-`upstream.json`'s `declined` map so re-sync stops offering it.
+`watermark.json`'s `declined` map so re-sync stops offering it.
 
 **A fork reverses the default.** The rule above weighs the group against a
 process the repo already has; a whole-tree fork has none and inherits this
@@ -349,10 +349,10 @@ Two G2 rows are adopter choices rather than defaults:
   redirect, and the stub would be a permanent extra row standing in for a name
   the repo never had. Already adopted it → ask the operator whether the backwards
   compatibility is worth that extra row, and record either answer in
-  `upstream.json` so the question does not come back. A **fork** is neither case
-  and asks nothing: it carries `/implement` because it carries everything, and a
-  tree one commit old has no plan file or PR comment old enough to say it, so
-  `/detemplate` deletes it outright.
+  `watermark.json` so the question does not come back. A **fork** is neither
+  case and asks nothing: it carries `/implement` because it carries everything,
+  and a tree one commit old has no plan file or PR comment old enough to say it,
+  so `/detemplate` deletes it outright.
 
 ## Reverse closure
 

@@ -44,9 +44,9 @@ most likely to carry one.
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
   has nothing left to strip.
 - **Catalog present, but `origin` matches the `repo` field in
-  `.claude/skills/sync-muthur/upstream.json`** → this *is* the template — the
-  shipped watermark names the repo itself, having no source above it — and what
-  the caller wants is a fork, not a prune. Point at the README's *"Use this
+  `.claude/skills/sync-muthur/watermark.json`** → this *is* the template —
+  the shipped watermark names the repo itself, having no source above it — and
+  what the caller wants is a fork, not a prune. Point at the README's *"Use this
   template"* button. Compare the full `owner/repo`, since that is what both
   sides of the comparison are: a looser match on either half prunes a tree that
   merely shares an owner or a name. Without the origin clause, catalog-presence
@@ -266,7 +266,7 @@ A session that opens in a fresh fork and is asked to build a feature should rout
 here first, rather than building product code on top of the template's inventory.
 The signal is Step 0's predicate read positively: a `.claude/skills/*/catalog.md`
 present, and `origin` not matching the `repo` field in
-`.claude/skills/sync-muthur/upstream.json`.
+`.claude/skills/sync-muthur/watermark.json`.
 
 **Nothing here is what routes a session — the frontmatter is**, this section
 being what gets read only once the description has sent someone to it. So the
