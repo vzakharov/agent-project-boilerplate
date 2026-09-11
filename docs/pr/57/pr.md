@@ -7,7 +7,7 @@
 - **Draft:** yes
 - **Merged:** _not merged_
 - **Created:** 2026-09-10T21:41:45Z
-- **Updated:** 2026-09-11T01:13:07Z
+- **Updated:** 2026-09-11T01:22:19Z
 - **Closed:** _not closed_
 - **Labels:** _none_
 
@@ -24,20 +24,23 @@
 - **Guards against over-deletion.** This repo's prose is full of legitimate negative constraints, so the lens carries a constraint-vs-residue discriminator with a worked pair: a constraint's subject is something the reader reaches for anyway, so it crosses their mind with or without the sentence.
 - **The four lenses spell TEND** — Tightness, Existence, Negation, Durability — and the skill's intro lists them in that order. With the three shipped names fixed, the fourth letter was the only free one, and `N` the only choice yielding a word that describes the pass. `negation` is also the better name on its own: it is the issue's framing, and unlike `absence` it does not read as `existence`'s antonym, which would make two of four lenses sound like opposites in one list. TEND is the memory aid; the run order is existence-first and the skill says so where it names the acronym.
 - **The lenses are numbered 1–4, not lettered.** `A`–`D` read as the initials of TEND, so "lens D" was ambiguous between the fourth lens and durability. The numbers are the order Step 2's sections come in, and spell nothing.
+- **Every lens carries its alias in the frontmatter description** — durability / narration, tightness / bloat, negation / polar bear — rather than the description singling the polar bear out. The alias in the always-loaded description is what lets a bare mention of it route to this pass without the skill being opened, and there is no reason for that to be the fourth lens's privilege alone.
+- **Durability names its special case.** Its definition said "relative to the previous intra-PR step" while its tells (`no longer`, `migrated from`) and its year-from-now test caught narration against the state before the branch just as well — so the lens had been doing two jobs under a definition that described one. Both states are named now, and the special case earns its name where it changes an outcome: narrating the branch against the state before it is a commit body's *job*, while reporting what a draft became on the way there is a defect even there.
 - **The pass no longer reports.** Step 5 is the commit alone. A per-lens count of what was fixed gave the operator nothing to act on, and the edits — plus the commit body that carries their reasons — are what outlives the session. `/go` stops describing the pass on its behalf for the same reason: it loads the skill and runs the full sweep, and the agent gets the rest from the skill.
 - **`/tighten-docs` becomes `/tend-prose`.** The old name was wrong twice over, and the fourth lens made the first worse: "tighten" names one lens specifically, though two of the four produce nothing but deletions; and "docs" is not the word the skill's own description or `CLAUDE.md` uses for what it reads — both already say *prose*. **No redirect stub** — the `/implement` → `/go` precedent doesn't transfer, since `/implement` earned its stub by appearing in copyable handoff blocks, whereas this pass is reached through `@.claude/skills/…` pointers from `/go` and `/handle` that this PR repoints. A stub would cost a permanent line in every session's skill list to serve a mistyping that already fails legibly.
-- **Repoints every site that names the skill or counts its lenses** — 16 references across 8 files. `/go`'s Step 3 was already stale before this change (it described "two halves" and two report groups against a three-lens skill) and now names neither, pointing at the skill instead, since a copy of that list is what went stale. `/squash-message` **claims** the negation lens rather than excusing itself from it: a body drafted while the branch still did some non-obvious thing, and kept after the branch dropped it, denies something no reader of the squashed commit would have raised — the lens reaches a squash body through the stale draft, not the diff. Only narration stays inapplicable there, narrating the change being a commit message's job. `CLAUDE.md` § "Writing things down" gains the convention its repointing rule doesn't cover — when a convention goes away, stop stating it rather than negating it in place — and carries the idiom so the always-loaded file holds the routing token.
-- **The lens caught two polar bears in this PR's own diff.** `/go` Step 3 justified not enumerating the lenses by pointing at the enumeration this branch had just deleted (`14f8c30`; the clause is gone entirely now). And the new lens table denied a mapping between the numbers and the TEND bullets that only the discarded letters ever invited (`19f0a7f`). Both were subjects no later reader would have raised.
+- **Repoints every site that names the skill or counts its lenses** — 16 references across 8 files. `/go`'s Step 3 was already stale before this change (it described "two halves" and two report groups against a three-lens skill) and now names neither, pointing at the skill instead, since a copy of that list is what went stale. `/squash-message` **claims** the negation lens rather than excusing itself from it: a body drafted while the branch still did some non-obvious thing, and kept after the branch dropped it, denies something no reader of the squashed commit would have raised — the lens reaches a squash body through the stale draft, not the diff — as does durability's special case, by the same route, so the two are stated there as one mechanism. All four lenses reach a commit body; durability reaches it in only one of its two readings. `CLAUDE.md` § "Writing things down" gains the convention its repointing rule doesn't cover — when a convention goes away, stop stating it rather than negating it in place — and carries the idiom so the always-loaded file holds the routing token.
+- **The lens caught four polar bears in this PR's own diff**, two in the pass over the work and two in review. `/go` Step 3 justified not enumerating the lenses by pointing at the enumeration this branch had just deleted (`14f8c30`), then its replacement clause denied a single-lens option that caller never had (`a28c008`). The lens table denied a mapping between the numbers and the TEND bullets that only the discarded letters ever invited (`19f0a7f`). And Step 5's closing clause said the commit is "the whole step", which means something only to a reader who remembers the report beside it (`a28c008`). Every one had a subject no later reader would have raised.
 
 ## QA Checklist
 
-- [ ] `description-carries-idiom` — open a fresh session and check the skill list: the `/tend-prose` description names the polar-bear idiom, so an agent that has not opened the skill can route a bare `polar bear here` PR comment to it
+- [ ] `description-carries-aliases` — open a fresh session and check the skill list: the `/tend-prose` description names all four lenses with their aliases, so an agent that has not opened the skill can route a bare `polar bear here` or `that's bloat` PR comment to it
+- [ ] `durability-special-case` — write a commit body that reports what an intermediate draft became ("changed X to Y" where only Y ever ships) and confirm `/squash-message` cuts it, while leaving the body's narration of the branch against `main` intact
 - [ ] `single-lens` — run `/tend-prose negation` and `/tend-prose polar bear` on a branch; confirm only that lens runs
 - [ ] `no-report` — run the full `/tend-prose` and confirm it ends at the commit: edits applied, reasons in the commit body, no per-lens tally printed into the session
 - [ ] `negation-in-squash` — draft a squash body for a branch that dropped a scope item mid-flight, and confirm `/squash-message` cuts the sentence denying the dropped thing rather than keeping it as a decision record
 - [ ] `removed-noun-step` — run the full `/tend-prose` on a branch whose diff **deletes** a module or field, and confirm Step 1 produces the removed-noun list and greps it against the post-change tree
 - [ ] `no-op-skip` — run the full `/tend-prose` on a purely additive branch and confirm the removed-noun sub-step skips instead of grepping an empty list. Not exercised on this branch: the rename makes this diff a removing one, so the sub-step ran (see `self-applied` below)
-- [ ] `self-applied` — the pass ran over this branch's own diff. The removed nouns were `tighten-docs`, "three lenses" and "two halves of equal weight"; each survives only in the working artifacts `/finalize` sweeps. It found one live polar bear in `/go` Step 3, which is fixed in `14f8c30`
+- [ ] `self-applied` — the pass ran over this branch's own diff. The removed nouns were `tighten-docs`, "three lenses" and "two halves of equal weight"; each survives only in the working artifacts `/finalize` sweeps. It found four live polar bears across the branch, fixed in `14f8c30`, `19f0a7f` and `a28c008`
 - [ ] `constraint-survives` — point the lens at `CLAUDE.md`'s own negative constraints (dev artifacts go in `tmp/`, never create a top-level doc) and confirm the discriminator keeps them
 - [ ] `live-fact-exception` — check a negated mention that carries a real fact is rewritten to state the fact positively, not deleted wholesale
 - [ ] `citations-consistent` — `grep -rn "tighten-docs"` yields **zero** hits outside the working artifacts `/finalize` sweeps and this branch's own name; with no redirect stub, anything left is a real dangling reference. No site outside those artifacts still says "three lenses", "two halves of equal weight", or `Lens A`–`Lens D`
@@ -45,13 +48,14 @@
 
 | Item | Automatable | Covered? | Notes |
 |------|-------------|----------|-------|
-| `description-carries-idiom` | manual-only | — | Whether an agent recognizes the idiom from the description alone is a judgment call |
+| `description-carries-aliases` | manual-only | — | Whether an agent recognizes an alias from the description alone is a judgment call |
+| `durability-special-case` | manual-only | — | Needs a branch whose draft body outlived an intermediate step |
 | `single-lens` | manual-only | — | Requires running the skill and judging which lens it applied |
 | `no-report` | manual-only | — | Observable only by running the pass |
 | `negation-in-squash` | manual-only | — | Needs a branch that dropped a scope item after its draft was written |
 | `removed-noun-step` | manual-only | ✅ | Ran on this branch's own diff; candidates all resolved to swept artifacts |
 | `no-op-skip` | manual-only | — | Needs an additive branch; this one removes |
-| `self-applied` | manual-only | ✅ | `14f8c30` |
+| `self-applied` | manual-only | ✅ | `14f8c30`, `19f0a7f`, `a28c008` |
 | `constraint-survives` | manual-only | — | The discriminator is a judgment call by construction |
 | `live-fact-exception` | manual-only | — | Same |
 | `citations-consistent` | unit | ✅ | `scripts/check-skill-catalog.sh` passes; grep is clean. The "three lenses" wording has no harness |
@@ -81,12 +85,11 @@ feat: #48 add a negation lens and rename the pass /tend-prose (pr #57)
 ```
 When a change removes something the prose described, the reflex is to
 negate the sentence in place rather than delete it, and the mention
-survives as its own denial. Every later reader then pays for a thing
-that is not there. The existing lenses sit either side of the defect:
-the existence lens's tells all point at prose describing how the code
-works, which a sentence about what the code does not contain passes
-cleanly, and the durability lens's tells are change verbs that a clean
-present-tense negation never trips.
+survives as its own denial, which every later reader pays for. The
+existing lenses sit either side of it: the existence lens's tells point
+at prose describing how the code works, which a sentence about what the
+code lacks passes cleanly, and the durability lens's tells are change
+verbs a clean present-tense negation never trips.
 
 The pass gains a fourth lens, `negation` (alias `polar bear`), with its
 own tell, test and fix. It is the only lens that reads the removed side
@@ -96,24 +99,26 @@ the candidate. The fix is deletion, except where a mention carries a
 live fact alongside the denial — the fact then stays, phrased as what
 is there. The test asks whether the sentence is what put its subject in
 the reader's head: with it gone, would the subject have crossed their
-mind at all? A constraint's subject would, which is what keeps the lens
-off the legitimate negative rules a codebase is full of.
+mind at all? A constraint's subject would, which keeps the lens off the
+legitimate negative rules a codebase is full of.
 
 `/tighten-docs` becomes `/tend-prose`, whose four lenses spell TEND —
 Tightness, Existence, Negation, Durability — as a memory aid, not the
 run order. The old name was wrong twice over: "tighten" named one lens
-specifically, though two of the four produce nothing but deletions, and
-"docs" was never the word the skill or CLAUDE.md used for what it reads.
-No redirect stub holds the old name: the pass is reached through skill
-pointers rather than typed, so every caller is repointed and the catalog
-check proves it. The polar-bear idiom sits in the frontmatter
-description, which every session loads, so an agent that has not opened
-the skill still resolves a bare "polar bear here" on a PR comment to the
-pass that handles it.
+specifically, and "docs" was never the word the skill or CLAUDE.md used
+for what it reads. No redirect stub holds it: the pass is reached
+through pointers, and the catalog check proves every caller is
+repointed. Each lens carries its alias in the frontmatter description,
+so a bare "polar bear here" on a PR comment reaches the pass without
+the skill being opened.
 
-The pass also stops printing a per-lens report at the end of a run. The
-counts gave the operator nothing to act on; the edits and the commit
-body that carries their reasons are what outlives the session.
+Durability gains the distinction its tells always drew — narration
+against the state before the branch, and against an intermediate step
+inside it. Only the second is a defect in a commit body, so
+`/squash-message` now claims that lens too. The pass also stops
+printing a per-lens report: the counts gave the operator nothing to act
+on, and the edits and the commit body carrying their reasons are what
+outlives the session.
 
 Closes #48
 
@@ -336,6 +341,15 @@ _Generated by [Claude Code](https://claude.ai/code)_
 
 I still don't understand, sorry: why is it supposed to read arguments at all? I'm not sure the paragraph survives existence check. Maybe it's even a polar bear.
 
+**@vzakharov** — 2026-09-11T01:19:10Z
+
+Cut — and you were right on both counts, which turn out to be the same count. The table directly above it already maps both tokens to their lenses, so the only thing the paragraph contributed was the confusion it warned about.
+
+Run the negation test on it: with the sentence gone, would an agent reading `narration` have wondered whether it meant `negation`? No — it would read the row. The sentence is what put the bear there, even though no removal planted it, which is a nice demonstration that the test outlives its tell. a28c008
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
 ---
 
 ### `.claude/skills/tend-prose/SKILL.md`:61 — resolved
@@ -418,6 +432,13 @@ _Generated by [Claude Code](https://claude.ai/code)_
 
 polar bear (lol)
 
+**@vzakharov** — 2026-09-11T01:19:11Z
+
+Caught. Cut — `/go` never names a lens, so the clause denies an option that caller never had. It is residue of the "don't enumerate the lenses here" warning that used to sit in the same sentence. a28c008
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
 ---
 
 ### `.claude/skills/squash-message/SKILL.md`:215 — unresolved
@@ -460,6 +481,28 @@ I think it also reveals a defect in our definition of Durability, because it can
 
 In the skill we only describe a), but sometimes (not in a squash message) b) is a defect too: for example, you introduce a PR, and it changes smth, and the docstrings say "this does now that". Interestingly, the skill has been working fine for weeding those out all along -- I'm guessing its description somewhere mentions that without noticing the mismatch between the two sublenses of durability.
 
+**@vzakharov** — 2026-09-11T01:19:21Z
+
+Names throughout that section now — and you are right about durability. The mismatch was in the definition, not in the lens.
+
+The definition said "relative to the previous intra-PR step" — your (a) — while its tells ("no longer", "migrated from", "used to") and the a-year-from-now test are all (b). That is why it has been weeding out (b) all along: the working parts of the lens were never limited to (a), only the sentence defining it was. Both states are named now, in the intro bullet and at the head of lens 2.
+
+That makes the squash body's case precise instead of "inapplicable": narrating the branch against the state before it is the body's job, narrating it against an earlier step inside the branch is the defect — exactly your 1-2-3-4. And it reaches a body by the same route negation does, a draft written while the branch still did the thing it later dropped, so the two are stated as one mechanism. a28c008
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
+**@vzakharov** — 2026-09-11T01:20:22Z
+
+Follow-up on your note about naming it: the special case is now stated in lens 2 itself rather than only readable from here.
+
+> **The special case is narration against an intermediate step inside the branch.** In shipped prose it is the same defect as the rest of the lens. It earns a name because it is the half that survives in the documents Step 4 excludes: a commit body is *meant* to narrate the branch against the state before it, and still has no business reporting what a draft became on the way there.
+
+Step 4's exclusion line reads "narrating the branch is their job" for the same reason — "the change" was the word that let the special case hide. 27868e9
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
+
 ---
 
 ### `.claude/skills/tend-prose/SKILL.md`:9 — unresolved
@@ -491,6 +534,13 @@ In the skill we only describe a), but sometimes (not in a squash message) b) is 
 **@vzakharov** — 2026-09-11T01:09:16Z
 
 I wouldn't single out the polar bear here; just include the alias for every defect -- then whenever it's mentioned, the agent will reach for the skill
+
+**@vzakharov** — 2026-09-11T01:19:22Z
+
+Done — **durability** / **narration**, **tightness** / **bloat**, **negation** / **polar bear**, each alias inline with its defect, and the dedicated polar-bear sentence is gone. The invocation line now says naming a lens by either of its names runs only that one. a28c008
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
 
 ---
 
@@ -530,6 +580,13 @@ I wouldn't single out the polar bear here; just include the alias for every defe
 btw "archaeology" is also one way we talk about non-durable prose, but it's actually a THIRD meaning: something that goes too much into describing how we came up with something, in a document that is *meant* to describe changes. But I don't think this meaning should be part of this skill. First, this is an operator's call, it would be too hard for an agent too judge how much is too much; second, we use it only when the document is by definition describing change that was meant to be there.
 
 All of this is just context -- no need to describe it hear lest it becomes a polar bear (I'm talking in rhymes now), but let's remove any mentions of "archaeology" here and throughout the skill
+
+**@vzakharov** — 2026-09-11T01:19:30Z
+
+Gone — it was a single mention, in single-lens mode's example, now "I just saw narration in there". Agreed on the third sense and it stays out: nothing in the skill gestures at it, so there is nothing for a reader to wonder about. a28c008
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
 
 ---
 
@@ -584,6 +641,17 @@ All of this is just context -- no need to describe it hear lest it becomes a pol
 **@vzakharov** — 2026-09-11T01:12:54Z
 
 is that last sentence legitimate or a polar bear too? (Damn, now I see the cursed thing everywhere too.)
+
+**@vzakharov** — 2026-09-11T01:19:31Z
+
+Both, and both cut.
+
+"On a feature branch that is the whole step" is residue — it only means something to someone who remembers the report that used to sit beside the commit.
+
+The vet clause is a genuine constraint rather than a bear: an agent that just finished a pass does reach for the vet run, so its subject crosses the mind anyway. It goes for the other reason — CLAUDE.md § "Git conventions" states it and loads on every session, so a third statement here buys nothing and can drift. Step 5 is one sentence now. a28c008
+
+---
+_Generated by [Claude Code](https://claude.ai/code)_
 
 ---
 

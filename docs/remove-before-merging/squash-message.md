@@ -7,12 +7,11 @@ feat: #48 add a negation lens and rename the pass /tend-prose (pr #57)
 ```
 When a change removes something the prose described, the reflex is to
 negate the sentence in place rather than delete it, and the mention
-survives as its own denial. Every later reader then pays for a thing
-that is not there. The existing lenses sit either side of the defect:
-the existence lens's tells all point at prose describing how the code
-works, which a sentence about what the code does not contain passes
-cleanly, and the durability lens's tells are change verbs that a clean
-present-tense negation never trips.
+survives as its own denial, which every later reader pays for. The
+existing lenses sit either side of it: the existence lens's tells point
+at prose describing how the code works, which a sentence about what the
+code lacks passes cleanly, and the durability lens's tells are change
+verbs a clean present-tense negation never trips.
 
 The pass gains a fourth lens, `negation` (alias `polar bear`), with its
 own tell, test and fix. It is the only lens that reads the removed side
@@ -22,24 +21,26 @@ the candidate. The fix is deletion, except where a mention carries a
 live fact alongside the denial — the fact then stays, phrased as what
 is there. The test asks whether the sentence is what put its subject in
 the reader's head: with it gone, would the subject have crossed their
-mind at all? A constraint's subject would, which is what keeps the lens
-off the legitimate negative rules a codebase is full of.
+mind at all? A constraint's subject would, which keeps the lens off the
+legitimate negative rules a codebase is full of.
 
 `/tighten-docs` becomes `/tend-prose`, whose four lenses spell TEND —
 Tightness, Existence, Negation, Durability — as a memory aid, not the
 run order. The old name was wrong twice over: "tighten" named one lens
-specifically, though two of the four produce nothing but deletions, and
-"docs" was never the word the skill or CLAUDE.md used for what it reads.
-No redirect stub holds the old name: the pass is reached through skill
-pointers rather than typed, so every caller is repointed and the catalog
-check proves it. The polar-bear idiom sits in the frontmatter
-description, which every session loads, so an agent that has not opened
-the skill still resolves a bare "polar bear here" on a PR comment to the
-pass that handles it.
+specifically, and "docs" was never the word the skill or CLAUDE.md used
+for what it reads. No redirect stub holds it: the pass is reached
+through pointers, and the catalog check proves every caller is
+repointed. Each lens carries its alias in the frontmatter description,
+so a bare "polar bear here" on a PR comment reaches the pass without
+the skill being opened.
 
-The pass also stops printing a per-lens report at the end of a run. The
-counts gave the operator nothing to act on; the edits and the commit
-body that carries their reasons are what outlives the session.
+Durability gains the distinction its tells always drew — narration
+against the state before the branch, and against an intermediate step
+inside it. Only the second is a defect in a commit body, so
+`/squash-message` now claims that lens too. The pass also stops
+printing a per-lens report: the counts gave the operator nothing to act
+on, and the edits and the commit body carrying their reasons are what
+outlives the session.
 
 Closes #48
 
