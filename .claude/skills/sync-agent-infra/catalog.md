@@ -113,6 +113,9 @@ there is no condition under which it fails to apply.
 | `.claude/rules/` | The path-scoped convention mechanism: a rule file loads only when a session touches the paths it declares. Ships with a README and no rules. | — | — | adopt |
 | `/dry` | Review the session's diff for DRY opportunities; apply the obvious wins, surface the ambiguous ones. | — | — | adopt |
 | `/tend-prose` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say, delete what survives only to deny a thing the change removed. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
+| `/plainly` | Explain something to a person cause-first and in their nouns: re-explain an answer that did not land, or answer a question under the rule from the start. Names six defects so a bad report can be called out in one word. The long version of `voice.md`. | — | `/tend-prose` (this group) | adopt |
+| `.claude/skills/plainly/voice.md` | The resident short version of that rule — the shape an explanation takes, and the instruction to resolve the session's operator once. CLAUDE.md § "Explaining things to people" imports it. | — | — | adopt |
+| `.claude/skills/plainly/operators.md` | Per-person entries tuning how each operator wants to be talked to, imported by CLAUDE.md alongside `voice.md`. Ships carrying this repo's own operator as the worked shape; an entry tunes manner only and can never lower a bar. | — | — | **rewrite** |
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
@@ -121,6 +124,16 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 
 Its § "Language" is hydrated rather than merged: one line naming the language
 your team reads, the rest of the section holding whatever the project.
+
+**§ "Explaining things to people" travels with both its import lines, and those
+lines are the half that is easy to drop.** `voice.md` and `operators.md` reach
+context only because CLAUDE.md imports each with an unbackticked `@` reference —
+the import parser skips code spans, so a copy that backticks them for
+consistency with their neighbours loads nothing and fails silently. Both are
+imported from CLAUDE.md directly, because an import inside an imported file does
+not load; keep them that way rather than tidying the second into the first.
+`operators.md` is **rewrite** rather than adopt: it ships with this repo's own
+operator as the worked shape, and yours are different people.
 
 ### G2 — The PR loop
 
