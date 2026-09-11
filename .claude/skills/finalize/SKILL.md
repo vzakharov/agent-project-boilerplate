@@ -1,10 +1,14 @@
 ---
-description: Finalize (a.k.a. "prep merge") — land prep: verify there's a draft PR, run the vet suite, merge the base branch, mark ready for review, propose a squash title/body, and post the attestation comment. Pass an optional branch/PR target first (`/finalize <branch|#PR|PR-url>`) to attach to that existing branch before finalizing. `/finalize no vet` is the docs-only mode.
+description: Finalize (a.k.a. "prep merge") — land prep: verify there's a draft PR, run the vet suite, merge the base branch, mark ready for review, propose a squash title/body, and post the attestation comment. Pass an optional branch/PR target first (`/finalize <branch|#PR|PR-url>`) to attach to that existing branch before finalizing. `/finalize no vet` is the docs-only mode; `/finalize and merge` squash-merges the PR as well, but only if the run turned up nothing to decide.
 ---
 
 **Optional branch/PR target**: if the first token of the argument is a branch name, `#NNN` PR number, or PR URL, then `/finalize <target>` is shorthand for attaching to that branch first and then finalizing — equivalent to `/from-branch <target> /finalize`. Load `@.claude/skills/from-branch/SKILL.md` and follow it to attach to `<target>`, then run the finalize steps below. If the argument has no target token, skip this and finalize the current branch as usual.
 
 **`no vet` is the docs-only mode.** Pass it when the diff has nothing to verify — markdown, top-level docs, read-only reference data. It skips the vet run (there is nothing for it to check) and skips any bucket dispatch. It does **not** skip step 7: the attestation still goes up, stating that verification was a deliberate no-op and why. Everything else below still applies. (`no ci` and `no attest` are accepted spellings of this flag.)
+
+**`and merge` delegates the click, not the judgment.** Recognized anywhere in the argument (bare `merge` counts too), it asks you to squash-merge the PR yourself at step 8 — **but only if the run gives you no reason not to**. Standing down is an ordinary outcome of the flag rather than a failure of it, which is why the flag reaches step 8 as a condition to evaluate and not as an instruction to carry out. That step owns the gate, the merge and the report.
+
+**The flag is only ever the operator's to type, on work that already exists.** It says something about a specific diff, so it means nothing written before that diff did — which is why a caller that produces work in the same turn must not forward it, and `@.claude/skills/handle/SKILL.md` § "Argument shape" holds the merge back rather than passing it on. Any future caller answers the same question: was the flag written after the operator could have looked?
 
 **Pre-check**:
 
@@ -50,13 +54,13 @@ Steps (stop on first unresolved failure):
      - **Default to re-verify when unsure.** The test is _interaction_, not _whether the base touched code_ — most advances touch some code, and that alone doesn't warrant it. Skip re-verification when, having read the diff, you can say why the incoming commits and this branch's changes don't overlap: they're in different areas/modules, nothing this branch imports or depends on was touched, and no symbol/signature/pattern this branch uses was changed. If you can see a plausible interaction, or you genuinely can't tell, re-verify.
        - **Interacting or ambiguous** → re-run step 2 (`git merge origin/<base>`, applying any dedup/simplification it opens), then step 1 (`./scripts/vet.sh`), push, and re-run any step-6 dispatch the diff still warrants. The two-shot rule does **not** apply to these base-advanced re-runs; they're keeping the target current, not fixing failures.
        - **Demonstrably independent** → `git merge origin/<base>`, push, and run `/check-merge` again when you return to confirm `origin/<base>` hasn't moved since. Unrelated code changes qualify: e.g. the base reworks a frontend modal while this branch changes a background job's retry policy — both touch code, but they don't interact.
-   - Do NOT merge the PR — the user controls the final title/body and merge.
+   - Do NOT merge the PR here — step 8 owns that, and only under `and merge` and the gate it states. Absent the flag the operator controls the final title/body and merge.
 
    **Then, once the merge check is done, sweep `docs/remove-before-merging/`** — `git rm -r` the **entire** tree, not just the `squash-message.md` that `@.claude/skills/squash-message/SKILL.md` tracks there: the directory's name is a standing declaration that nothing inside it may land, so a screenshot or anything else an agent parked there goes with it. Paired with the earlier add, the deletion cancels out in the squash. Push it before step 7 so the SHA the attestation names is the branch's final head.
 
    **Why this tree goes last, after everything else.** The squash proposal is a live doc for the whole time the PR is in flight: every edit to it — a review comment, what the base merge brought in, a fix pushed after a red dispatch, work `/check-merge` just pulled in from an advanced base — is a deliberation over the text that's already there. Sweeping it at step 3 would leave the single most important edit, the one that becomes the permanent `git log` record, as the only one made with the doc gone; sweeping it before `/check-merge` would do the same to whatever that check drags in.
 
-   A directory name is not self-enforcing: upstream, this tree reached the trunk anyway, carrying a ~1MB deploy-log dump with customer email addresses in it. So verify the sweep actually ran — and **never end the turn with the tree still on the branch**, since from here the operator is free to merge.
+   A directory name is not self-enforcing: upstream, this tree reached the trunk anyway, carrying a ~1MB deploy-log dump with customer email addresses in it. So verify the sweep actually ran — and **never end the turn with the tree still on the branch**, since from here the branch is merge-able: by the operator, or by step 8 itself.
 
 7. **Attest** — the last act, and the only durable record that this branch was verified beyond whatever CI reports. Post it on the PR — or, on a re-run, edit it in place; it is sticky, keyed on the `<!-- finalize-attestation -->` marker, and the marker is how you find it (mechanic below the templates):
 
@@ -96,3 +100,36 @@ Steps (stop on first unresolved failure):
    - **A no-op is a result, and it gets posted.** Never resolve `no vet` by staying silent. An operator coming back to the PR — days later, or from another machine — cannot distinguish "verification was skipped on purpose" from "nobody ever finalized this" unless one of them is written down, and the missing comment looks identical to the forgotten one. Say which it was.
    - **The SHAs go bare, not in code spans** — GitHub only auto-links an un-backticked hash, per CLAUDE.md § "GitHub comments".
    - End the body with the attribution footer the repo requires of every GitHub comment.
+
+8. **Merge — under `and merge` only, and only if the run was uneventful.** Without the flag, stop at step 7 and report.
+
+   One predicate governs, and the list below only spells out how it fails: **merge only when the run's whole effect on the branch was step 3's sweep and whatever a tool's own fixer rewrote, and every check it ran passed the first time it ran.** The gate is evaluated once, here, by walking the run back against the list — not decided step by step as the run goes.
+
+   **Stand down if any of this happened**, at whichever step it happened:
+
+   - **Pre-check** — `HEAD` was detached, or there was no PR and you created one. A PR opened and merged inside one turn was never a reviewable object. (A PR you flipped back to draft is fine — that is the ordinary re-finalize.)
+   - **Step 1** — the vet run needed a change **you authored** to go green. A tool's own fixer (`--fix`, a formatter rewriting its own output) that clears it does not count; that is the autofix this flag allows. The test is whether you had to read the failure and decide what to change.
+   - **Step 2** — any conflict, however trivially resolved; or you applied a dedup/simplification the base merge opened, or surfaced one as ambiguous. A clean merge that **brought commits in** is survivable, but step 1 vetted a tree without them: re-run it, green first try, and stand down on any interaction of the kind that step already has you reading the incoming diff for.
+   - **Step 4** — a red CI run. Same autofix exception as step 1, plus one case it does not cover: a red run that cleared itself on a re-run with no change at all. "It was a flake" is a judgment, and an unexplained red is the most ordinary reason to want a human at the button.
+   - **Step 5** — the reconcile rewrote the proposal in substance, or no proposal existed and this composed the first one. Either way the text about to become the permanent `git log` record has had no reader but you. Only what the run itself mechanically settles (`(pr #tbd)` → `(pr #N)`) is free.
+   - **Step 6** — `/check-merge` returned anything but `contained`. An advanced base makes everything verified stale and its deliberation is a judgment; a merged or closed PR leaves nothing to merge.
+   - **Anywhere** — the two-shot rule engaged; the PR carries feedback nobody answered (`@.claude/skills/handle/SKILL.md` Step 2's tail test, which is what keeps a merge from burying an open thread); or you reached a point where you would otherwise have asked the operator something.
+   - **Under `no vet`** — the mode is the operator's call and does not stand the merge down, but its stated precondition is yours to check: if any check in the vet run would have had something to say about this diff, the mode was misapplied, and that misapplication is a stand-down.
+
+   The list is walked step by step so the verdict is auditable, and it is **not exhaustive** — a procedure that grows a step grows a way for a run to be eventful. So the predicate, not the list, is the verdict: **if the run made you decide anything, stand down.** Deciding it well is not the same as the operator having decided it.
+
+   **Merging.** Step 7 goes up first: the record of what the merge rests on belongs on the PR before the merge, not after it. Then squash-merge with the title and body **step 5 settled**, verbatim; do not recompose them here. The comment is the source, so read it back rather than reconstructing it:
+
+   ```bash
+   gh api repos/<owner>/<repo>/issues/comments/<id> --jq .body > tmp/proposal.md
+   ```
+
+   Split its two fenced blocks into `tmp/squash-title.txt` and `tmp/squash-body.txt`, then **print both and read them** — the title against the `<type>: #<issue> <essence> (pr #<n>)` shape, the body ending at its `Co-authored-by:` byline. A mis-split silently lands the attribution footer, or the title block, inside the permanent record. Then:
+
+   ```bash
+   gh pr merge <n> --squash --subject "$(cat tmp/squash-title.txt)" --body-file tmp/squash-body.txt
+   ```
+
+   No `--admin`, no `--auto`, no `--delete-branch`, and nothing disabled to get the merge through. A refusal — branch protection, a required check still pending, an un-mergeable head — is GitHub's answer and gets reported as a stand-down, not routed around. Report the commit the squash landed on `<base>`, then end the turn: the PR is no longer a place to do work.
+
+   **Standing down is a result and gets reported as one** — the condition that fired, the step it fired at, and what would clear it. It goes in the turn's report and nowhere else: the attestation already carries what the run found, and a third PR comment announcing that you declined to merge is addressed to the wrong reader. Then end the turn. Do not ask for permission to merge anyway — the report is the ask, and a pending question pins a session the operator may not return to for days.
