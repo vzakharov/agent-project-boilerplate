@@ -201,13 +201,18 @@ intermediate steps and "added a test for it"; process meta; benefit padding; and
 the linked issue's own symptom and repro re-filed here, which `Closes #N` already
 points at.
 
-This is `@.claude/skills/tend-prose/SKILL.md`'s **Lens A (existence)** and
-**Lens C (bloat)** applied to a commit body. Its Lens B (narration) and Lens D
-(negation) are both inapplicable, for one reason: naming what the change did and
-what it took away is a commit message's whole job. That is why that skill's Step
-4 excludes commit messages and PR bodies from its own sweep.
+This is `@.claude/skills/tend-prose/SKILL.md`'s **lens 1 (existence)**, **lens 3
+(bloat)** and **lens 4 (negation)** applied to a commit body. Only its lens 2
+(narration) is inapplicable — narrating the change is a commit message's whole
+job, which is why that skill's Step 4 excludes commit messages and PR bodies from
+its own sweep.
 
-Four things a draft reaches for fail Lens A, however well written:
+**Lens 4 reaches a squash body through the draft, not the diff.** A branch that
+tried something non-obvious and then dropped it leaves a draft written while the
+thing was still there; kept, the body denies something no reader of the squashed
+commit would otherwise have considered, and the log carries that bear forever.
+
+Four things a draft reaches for fail lens 1, however well written:
 
 - **Standing context**, which a draft reaches for in the opening paragraph —
   what the project is, what the tooling is for, how the work is normally done. A
