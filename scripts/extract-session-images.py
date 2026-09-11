@@ -125,6 +125,11 @@ def iter_attachments(transcript: Path, verbose: bool) -> Iterator[Attachment]:
     records carry the prompt text but never the image data.
     """
     seen = matched = 0
+
+    def rejected(why: str) -> None:
+        if verbose:
+            print(f"  line {seen}: {why}, skipped", file=sys.stderr)
+
     with transcript.open(encoding="utf-8", errors="replace") as fh:
         for line in fh:
             line = line.strip()
@@ -136,8 +141,7 @@ def iter_attachments(transcript: Path, verbose: bool) -> Iterator[Attachment]:
             except json.JSONDecodeError:
                 # A transcript is appended to while this reads it, so the last
                 # line can be half-written. The next firing catches the record.
-                if verbose:
-                    print(f"  line {seen}: unparseable, skipped", file=sys.stderr)
+                rejected("unparseable")
                 continue
             if not isinstance(record, dict):
                 continue
@@ -164,20 +168,12 @@ def iter_attachments(transcript: Path, verbose: bool) -> Iterator[Attachment]:
             for ordinal, block in enumerate(images, start=1):
                 source = block.get("source")
                 if not isinstance(source, dict) or source.get("type") != "base64":
-                    if verbose:
-                        print(
-                            f"  line {seen}: image source is not base64, skipped",
-                            file=sys.stderr,
-                        )
+                    rejected("image source is not base64")
                     continue
                 try:
                     data = base64.b64decode(source.get("data", ""), validate=True)
                 except (binascii.Error, ValueError):
-                    if verbose:
-                        print(
-                            f"  line {seen}: image data is not valid base64, skipped",
-                            file=sys.stderr,
-                        )
+                    rejected("image data is not valid base64")
                     continue
                 if not data:
                     continue

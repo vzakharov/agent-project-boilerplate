@@ -90,11 +90,9 @@ if [ -e "$git_dir/MERGE_HEAD" ] || [ -d "$git_dir/rebase-merge" ] || [ -d "$git_
 fi
 
 git -C "$project" add -- "$rel_dir" 2>/dev/null || { say "git add failed."; exit 0; }
-if [ -z "$(git -C "$project" diff --cached --name-only -- "$rel_dir")" ]; then
-  exit 0
-fi
-
 files="$(git -C "$project" diff --cached --name-only -- "$rel_dir")"
+[ -n "$files" ] || exit 0
+
 if ! git -C "$project" commit --quiet --only \
   -m "chore: capture operator-attached session images" -m "$files" \
   -- "$rel_dir" 2>/dev/null; then
