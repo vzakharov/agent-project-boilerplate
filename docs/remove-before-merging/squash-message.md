@@ -33,9 +33,10 @@ Asserting any of this needed a Python test hook the repo did not have,
 so the exporter gets a stdlib `unittest` file, run by path from
 `scripts/vet.sh` — not through `unittest discover`, which reports
 `Ran 0 tests ... OK` over a namespace package on Python 3.11 and would
-have certified a run that executed nothing. A session prompt that is a
-bare issue title ending in `#<N>` now invokes `/issue`, which is what
-the operator means by it.
+have certified a run that executed nothing. A prompt shaped like an
+issue title and ending in `#<N>` now invokes `/issue` — the shape
+being all that is testable before the export, and the export what
+settles it.
 
 Closes #55
 
