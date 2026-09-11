@@ -202,7 +202,7 @@ the linked issue's own symptom and repro re-filed here, which `Closes #N` alread
 points at.
 
 This is `@.claude/skills/tend-prose/SKILL.md`'s **existence**, **tightness** and
-**negation** lenses applied to a commit body, plus half of **durability**:
+**negation** lenses applied to a commit body, plus **durability**'s special case:
 narrating the branch against the state before it is this document's job, which is
 why that skill's Step 4 excludes commit messages and PR bodies from its own
 sweep. Narrating it against an earlier step *inside* the branch is not.

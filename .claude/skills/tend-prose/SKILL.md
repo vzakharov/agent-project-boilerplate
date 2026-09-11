@@ -174,6 +174,13 @@ The test: **would this sentence still be true and useful to someone reading the
 final code a year from now, with no memory of the edit?** If it only informs
 "what changed", it's narration.
 
+**The special case is narration against an intermediate step inside the branch.**
+In shipped prose it is the same defect as the rest of the lens. It earns a name
+because it is the half that survives in the documents Step 4 excludes: a commit
+body is *meant* to narrate the branch against the state before it, and still has
+no business reporting what a draft became on the way there
+(`@.claude/skills/squash-message/SKILL.md` owns that pass).
+
 ### Lens 3 — is it bloat?
 
 A line is bloat when it costs a reader more than it tells them — either they
@@ -295,7 +302,7 @@ line that is about to go.
 
 ## Step 4: Do NOT touch
 
-- **Commit messages and PR bodies** — narrating the change is their job.
+- **Commit messages and PR bodies** — narrating the branch is their job.
 - **`docs/plans/*.md`** — transient by nature, swept at finalize.
 - **`docs/remove-before-merging/squash-message.md`** — a commit body, and transient
   by nature.
