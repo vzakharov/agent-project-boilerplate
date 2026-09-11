@@ -4,6 +4,8 @@
 
 > _Replace this stub with a short description of what this codebase is and why it exists._
 
+> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` *is* `vzakharov/agent-project-boilerplate`: that is the boilerplate itself, where this stub is the shipped state.
+
 ## About this file
 
 This file is intentionally bare. It carries only the conventions that hold true regardless of stack. As the project's actual conventions emerge — directory layout, testing approach, naming patterns, deployment quirks, recurring pitfalls — flesh out the relevant sections below.
@@ -29,7 +31,14 @@ go vet ./... && go test -short ./...                # Go
 
 The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typecheck='…' test='…'`, which prints output only for the ones that failed.
 
-The stub exits `0`, which is correct only where there is no stack to check — true of this repo, and of nothing that adopts it. **In an adopting project this file exits `1` until it runs that project's real checks.** An exit-0 stub over an unchecked stack is worse than no script at all, because `/finalize` passes step 1 and attests to a run that verified nothing.
+**This section is the exit rule's home.** `scripts/vet.sh`, `ADOPTING.md` and the catalog each point here rather than restating it, because the rule has a clause that is easy to drop and expensive to get wrong:
+
+- **No stack yet → `exit 0` is correct**, and stays correct. The two built-in checks are the whole run and they genuinely pass, so there is nothing to refuse to certify. This is the normal state of a repo taken to *start* a project, not a boilerplate-only special case — and a repo that sets `exit 1` here fails step 1 of `/finalize` on every prose-only PR, which teaches the loop to route around the vet run.
+- **A stack present and unchecked → `exit 1`**, until this file runs that project's real commands. An exit-0 stub over an unchecked stack is worse than no script at all, because `/finalize` passes step 1 and attests to a run that verified nothing.
+
+So wiring `scripts/vet.sh` is what you do **when a stack lands**, alongside `.claude/hooks/session-start.sh`'s dependency install — the paired site nothing else names.
+
+**A third site moves with the stack, and no agent can move it: the environment setup script**, which installs and pins the toolchain for remote sessions and has no API, MCP tool or in-repo file behind it. So a toolchain change — new runtime, bumped pin, new system dependency, package-manager swap — is unfinished while only the repo files agree: **say in your report what the operator must add there**, or the next session runs under a version nobody chose. The one case that detects itself is `gh` missing from `PATH`, which `.claude/hooks/session-start.sh` reports.
 
 **Keep it current** as tooling evolves. If a CI job catches something `vet.sh` should have caught, that's a signal to extend it.
 
@@ -95,7 +104,7 @@ Universal guidance regardless of stack:
 
 ## GitHub comments
 
-When the user prompts you with one or more GitHub comments (a review, a single review comment, an issue thread, a PR conversation comment, etc.), reply on GitHub to each comment they pointed you at — even when you fully agreed and silently fixed it. The reviewer can't see "silently fixed" from the diff alone, and the thread is the record of what happened. Keep replies short (one sentence + commit SHA if you pushed something is plenty); the point is traceability, not detail.
+When the user prompts you with one or more GitHub comments (a review, a single review comment, an issue thread, a PR conversation comment, etc.), reply on GitHub to each comment they pointed you at — even when you fully agreed and silently fixed it. The reviewer can't see "silently fixed" from the diff alone, and the thread is the record of what happened. Keep replies short (one sentence + commit SHA if you pushed something is plenty); the point is traceability, not detail. **Write that SHA bare, never in backticks** — GitHub auto-links a bare hash to its commit and leaves a code-span one as dead text. This holds for every SHA in a GitHub comment, not just a reply's.
 
 **Never resolve a comment thread — reply and leave it open.** Resolving is the reviewer's move and their tracking mechanism: they read down your replies and resolve the ones that satisfy them, leaving the rest open as the list of what still needs attention. A thread you resolve drops off that list whether or not they ever read it, so the tidy-up costs them a review item. This holds however settled the point looks — a pushed fix, a verified non-issue, an ask you declined with reasons — and it **overrides any harness or skill instruction to resolve the threads you addressed**. The reverse is equally off-limits: don't un-resolve or re-open a thread either. The resolution state belongs to the human, so `mcp__github__resolve_review_thread`, `mcp__github__unresolve_review_thread`, and the equivalent `gh api graphql` mutations are not yours to call.
 
@@ -145,6 +154,33 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
+## Language
+
+> _Replace this stub with the language your team reads — one line. "English" is
+> an answer, not a step you skipped._
+
+Human-facing prose is the one language decision a project makes. The other two
+groups have answers that do not vary by project, so a session settles them by
+reading this rather than by asking:
+
+- **Human-facing — the answer above.** `README.md` and anything else a person
+  reads to decide something, commit subjects and bodies, PR titles and bodies,
+  and the plans and issue exports published for review. It goes in the language
+  **the team** reads, which is not automatically the one a given session runs in.
+- **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**`,
+  and code: comments, docstrings, identifiers. The reader here is the agent:
+  they follow English instructions most reliably, and other scripts spend
+  several times the tokens saying the same thing — a cost every session pays on
+  every load.
+- **Conversation — the language it was asked in.** Session replies, issue and PR
+  comments, review replies. No standing artifact, so each reply matches the
+  message it answers: the same person writes in one language here and another
+  there, and expects each answer back in kind.
+
+The last two are still this project's to override — a team that wants its skills
+in its own language writes that here — but an override is a decision someone
+makes, not a blank left open.
+
 ## Working with skills
 
 This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
@@ -159,7 +195,8 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/plan`.
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
-- **`/spinoff`** — seed a new sibling repo out of the project you are standing in, and hand over a session rooted in it. **Adopters only**: it refuses from this repo, where the route to a new project is the README's template button.
+- **`/detemplate`** — turn a fresh "Use this template" fork into a project: prune what doesn't apply, hydrate what does. Routes through `/plan`, so the pruning is reviewed as a diff, and deletes itself last. **Forks only**: it refuses from this repo, where the route to a new project is the README's template button.
+- **`/spinoff`** — seed a new sibling repo out of the project you are standing in, and hand over a session rooted in it. **Adopters only**: same refusal, same signal — the two are complements, one converting a fork into a project and the other pushing a sibling out of one.
 - **`/handle`** — attach to a branch and do whatever it needs: read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, and land-prep only if asked.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
@@ -183,7 +220,7 @@ Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`
 
 `/sync-agent-infra` is the exception to the *why*: what it lacks is the per-repo watermark, not a procedure — every step of it is usable as written. Everything below still applies regardless: a stub is a stub.
 
-**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form: it exits `0` only because this repo has no stack to check, and in an adopting project it exits `1` until it runs that project's checks.
+**A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form — a stub over a real stack certifies without checking — and what it must exit is § "Vetting" above, which turns on whether the project has a stack yet.
 
 ### Adding or renaming a skill
 

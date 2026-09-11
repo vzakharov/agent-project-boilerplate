@@ -1,13 +1,9 @@
 #!/bin/bash
 # Vet: the fast checks the agent runs before pushing review-ready work.
 #
-# ADOPTERS: this file exits non-zero until it runs your project's real checks —
-# `exit 1` at the bottom, and it stays there until they are wired in. Exiting 0
-# is correct only where there is no stack to check, as in the boilerplate, whose
-# prose, shell and one tested module the calls below cover entirely. Over an
-# unchecked stack that same exit is a false green: step 1 of `/finalize` passes,
-# its attestation records a vet run, and nothing was compiled, linted or tested.
-# A script that certifies without checking is worse than no script at all.
+# ADOPTERS: what this file must exit is CLAUDE.md → Vetting's contract. Read it
+# there rather than inferring it from what this stub does — the exit turns on
+# whether your repo has a stack yet, which is not a thing this file can see.
 #
 # Wire these up for your stack (lint, type-check, format-check, fast tests).
 # Serial:
@@ -36,7 +32,7 @@
 #     reads to tell its own replies from an operator's. Run by path, never
 #     through `unittest discover`: `scripts/` carries no `__init__.py`, and
 #     discovery over a namespace package reports `Ran 0 tests ... OK` and exits
-#     0 — the false green this file's whole note is about.
+#     0, so the line would pass here without running a test.
 #
 # See CLAUDE.md → Vetting for the contract.
 
@@ -47,6 +43,6 @@ set -euo pipefail
 "$(dirname "$0")/test_authorship.py"
 
 echo "vet: no stack-specific checks are configured; the checks above are the run." >&2
-echo "vet: a project with a stack exits 1 here until its own checks are wired in" >&2
-echo "     (see the ADOPTERS note at the top, and CLAUDE.md → Vetting)." >&2
+echo "vet: a repo whose stack is present and unchecked exits 1 here instead" >&2
+echo "     (see CLAUDE.md → Vetting for the contract)." >&2
 exit 0

@@ -1,5 +1,5 @@
 ---
-description: "Seed a new sibling repository out of the project you are standing in: triage what travels, write the new repo's sync watermark, seed `main` plus a session branch, and hand over a session rooted in it. Runs from a repo that *adopted* this agent infrastructure, and refuses when invoked from the boilerplate itself. Invoke as `/spinoff <owner/name>`. Use when the operator says \"spin off\", \"a new repo like this one\", \"start a sibling project\", or \"/spinoff\"."
+description: "Seed a new sibling repository out of the project you are standing in: triage what travels, write the new repo's sync watermark, seed `main` plus a session branch, and hand over a session rooted in it. Runs from a repo that *adopted* this agent infrastructure, and refuses from the boilerplate itself or an unpruned fork of it. Invoke as `/spinoff <owner/name>`. Use when the operator says \"spin off\", \"a new repo like this one\", \"start a sibling project\", or \"/spinoff\"."
 ---
 
 `/spinoff <owner/name>` creates `<owner/name>`, seeds it out of the repo you are
@@ -21,20 +21,32 @@ principle.
 
 End state: the target exists; its `main` carries the foundation's already-reviewed
 half, enough for a session there to run `/handle`, with `bash
-scripts/check-skill-catalog.sh` passing and `scripts/vet.sh` refusing to certify;
+scripts/check-skill-catalog.sh` passing and `scripts/vet.sh` passing over a tree
+that has no stack in it yet;
 a draft PR carries the rest, rewritten for the target; and the operator holds a
 copyable command that opens the next session in the new repo.
 
 ## Two invariants
 
-**Not from the boilerplate.** If the caller has a catalog — glob
-`.claude/skills/*/catalog.md`, don't test the canonical
+**Not from the boilerplate, and not from an unpruned fork of it.** If the caller
+has a catalog — glob `.claude/skills/*/catalog.md`, don't test the canonical
 `.claude/skills/sync-agent-infra/catalog.md`, since an adopter renames that
-directory after *its* own source — **stop** and point at that repo's `README.md`
-§ "Create a new project from this template". The catalog is what a tree has when
-it *is* the boilerplate or an unpruned copy of one, and in either case a spinoff
-is the wrong operation — the template route plus `ADOPTING.md` produce a project,
-and that pruned result is a legitimate caller here later.
+directory after *its* own source — **stop**. A spinoff is the wrong operation
+either way, but the two cases want different answers, so read `origin` before
+replying:
+
+- **`origin` is `vzakharov/agent-project-boilerplate`** → this *is* the
+  boilerplate. Point at its `README.md` § "Create a new project from this
+  template": what the caller wants is a fork, not a sibling. Match the full
+  `owner/repo` — an adopter may legitimately be called `acme-boilerplate`, and a
+  substring test would refuse it.
+- **`origin` is anything else** → an unpruned fork, carrying the template's
+  own inventory and no project yet. Point at `/detemplate <what you're
+  building>`, the skill that fork ships to convert itself.
+
+Either way the pruned result is a legitimate caller here later; the catalog's
+absence is what says so. This guard is `/detemplate`'s Step 0 read backwards, and
+the two partition on the same signal.
 
 **The caller is read-only.** No commit, branch, PR or issue lands in it. It is a
 source of files and a source of the watermark; every artifact this skill produces
@@ -56,8 +68,9 @@ use `git -C <clone>`, in every command meant to run in the target.
 ## Step 1 — Read the caller
 
 Read the caller at HEAD, starting with the refusal: **any
-`.claude/skills/*/catalog.md` present → stop**, per § "Not from the boilerplate"
-above. Otherwise two things come out of the tree:
+`.claude/skills/*/catalog.md` present → stop**, per § "Not from the boilerplate,
+and not from an unpruned fork of it" above — reading `origin` too, since it picks
+which of the two answers to give. Otherwise two things come out of the tree:
 
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by its watermark
@@ -162,6 +175,10 @@ stack-agnostic parts carry across unchanged, and the parts describing the caller
 — "About this project", "Repository layout", "Vetting", "Working with skills" —
 are written for the target.
 
+**The caller's language decision is a candidate default, not an inheritance.** A
+sibling can serve a different audience than the repo that pushed it out, so the
+target re-decides § "Language"'s one line instead of copying it across.
+
 **The product hatch.** A product piece travels when the operator asks for it,
 under two constraints: it lands on the **session branch, never on `main`**, and
 it is stripped of caller-specific content (real copy, real routes, real data).
@@ -242,7 +259,8 @@ copyable at all.
 2. **`main` gets one commit: the copies.** Then, **in the target**, run `bash
    scripts/check-skill-catalog.sh` — a partial copy dangles `@`-references
    *silently*, which is precisely the failure a hand-copy produces — and assert
-   that `bash scripts/vet.sh` exits **non-zero**.
+   that `bash scripts/vet.sh` exits **`0`** while naming no stack-specific
+   checks, per the consequence below.
 3. **A session-style branch gets the rewrites**, plus
    `docs/plans/<slug>.paused.md` — the plan for the new product, in the state
    `/handle`'s plan lane resumes from, and under a mismatched stack also where
@@ -278,13 +296,19 @@ Three consequences, each stated by a check rather than by taste:
   both leaving it out and carrying it hydrated pass. Under a mismatched stack the
   absence is unconditional: a deploy lane for another language is not a starting
   point.
-- **`main`'s `vet.sh` exits non-zero**, per the contract its own header and the
-  caller's `CLAUDE.md` § "Vetting" already state. `main` has no stack yet, so the
-  honest script refuses to certify and PR #1 wires in the real checks. An exit-0
-  `vet.sh` there is the false green the boilerplate exists to prevent, sitting
-  unchallenged until PR #1 lands. **Do not weaken the caller's `vet.sh` to make
-  the seed pass** — the reduction is a *refusal to certify*, not a narrowed set
-  of checks that quietly passes.
+- **`main`'s `vet.sh` is the stub, and the stub exits `0`** — `main` has no stack
+  yet, so the loop's own checks are the whole run and they genuinely pass. That
+  is `CLAUDE.md` § "Vetting"'s no-stack-yet clause, and the assertion worth
+  making is the pair: the script passes **and** it names no stack-specific
+  checks. A non-zero exit here would be a `main` whose `/finalize` cannot pass
+  for a reason the contract calls legitimate.
+  **What must not happen is the source repo's own `vet.sh` reaching `main`** —
+  the working one you are standing in, which runs its lint, types and tests.
+  It certifies nothing there — it fails, `pnpm lint` having no `package.json` to
+  read — so `main` reds from the moment it is seeded and every PR against it
+  opens red until something lands the stack. Same defect as a non-zero stub,
+  reached from the other side. The target's stack and the checks over it arrive
+  together, in PR #1, or not at all.
 
 **Why the `main` floor cannot be carved smaller.** Closure decides it:
 `check-skill-catalog.sh` fails on a dangling `@.claude/skills/…` reference, and
