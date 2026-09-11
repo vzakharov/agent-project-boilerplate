@@ -38,8 +38,14 @@ The bonus is that **TEND stops being a mnemonic and becomes the name**: Tightnes
 **Costs, all bounded:**
 
 - 16 references across 8 files, 5 of which this plan already edits. The dangling-pointer risk `CLAUDE.md` warns is **silent** is covered: `scripts/check-skill-catalog.sh` runs inside `./scripts/vet.sh` and asserts both that `@.claude/skills/<name>/SKILL.md` pointers resolve and that every skill has exactly one catalog row. The rename is mechanically guarded, so the vet run is the proof rather than a careful read.
-- A redirect stub at the old name, exactly as `/implement` → `/go` already does — ten lines, no procedure of its own, forwarding to `@.claude/skills/tend-prose/SKILL.md`. Plan files and PR comments in this repo and in adopters' trees still say `/tighten-docs`.
 - **Scope.** This grows the PR beyond the issue as filed, but the two are entangled: the name is wrong *because* of the fourth lens, and both edit the same eight files. Splitting means either landing #48 under a name already known to be wrong, or a follow-up PR that walks the same sites again.
+
+**No redirect stub at the old name.** The `/implement` → `/go` precedent does not transfer: `/implement` earned its stub because it appears in **copyable handoff blocks** that `/plan` hands operators verbatim, so the old name kept arriving from outside the repo. This skill is almost never operator-launched — its callers are `/go` Step 3 and `/handle`, which reach it through `@.claude/skills/…` pointers that this plan repoints and `scripts/check-skill-catalog.sh` verifies. The two exposures that remain are both acceptable:
+
+- An operator typing `/tighten-docs` from muscle memory gets "no such skill" — an immediate, legible failure, not silently wrong behaviour.
+- Adopting repos port the rename through `/sync-agent-infra`, which triages commit by commit, so the rename lands as a visible commit and their own catalog check catches anything they miss.
+
+Against that, a stub costs a **permanent line in every session's skill list**, since descriptions are always loaded — the standing context tax `CLAUDE.md` § "Writing things down" exists to refuse. `/implement` pays it for a reason; a second stub without one is the kind of prose that should not exist.
 
 **The branch keeps its name.** `claude/48-tighten-docs-polar-bear-1zzzif` is now slightly stale, but renaming a branch that already has a PR closes that PR (`@.claude/skills/branch-rename/SKILL.md` § "Caveat"), and a stale slug is cheaper than a replacement PR over the same diff.
 
@@ -72,17 +78,13 @@ Do the move first, so every later edit lands in the file at its final path.
 
 Step 4 ("Do NOT touch") needs no edit: commit messages, PR bodies, plans and changelogs are already excluded, and those are exactly where naming a removal is correct.
 
-### 3. `.claude/skills/tighten-docs/SKILL.md` — the redirect stub
-
-Modelled on `.claude/skills/implement/SKILL.md` verbatim in shape: a description saying `/tighten-docs` is now `/tend-prose`, an instruction to load and follow `@.claude/skills/tend-prose/SKILL.md` with whatever arguments were passed, an explicit "do not act on the summary above — this file carries no procedure of its own", and the adopters' pointer to the catalog row.
-
-### 4. `CLAUDE.md` — three repointings
+### 3. `CLAUDE.md` — three repointings
 
 - **§ "Writing things down"**: one line after *"When a convention changes, every place that states it changes with it"*, which covers repointing a citation but not the case where the right move is to stop stating it. Names the idiom so the always-loaded file carries it, and points at the skill as the home. One line, not a restatement of the lens.
 - **§ "Writing things down"**, the "Read the long version sparingly" paragraph: repoint `@.claude/skills/tighten-docs/SKILL.md` → `@.claude/skills/tend-prose/SKILL.md`.
 - **§ "Working with skills"**, the `/tighten-docs` bullet: rename to `/tend-prose`, and the parenthetical lens list `(existence, durability, tightness)` gains `negation`. Also the "Key principles" bullet on comments describing the lasting contract, which names the skill as the pass that enforces it.
 
-### 5. Citations that name the skill or state the lens count
+### 4. Citations that name the skill or state the lens count
 
 Adding a lens changes every place that states how many there are, and the rename changes every place that names it — `CLAUDE.md`'s own repointing rule, applied to itself.
 
@@ -90,13 +92,13 @@ Adding a lens changes every place that states how many there are, and the rename
 - **`.claude/skills/squash-message/SKILL.md`** — says only Lens B is inapplicable to a commit body. Lens D is inapplicable for the same reason: naming what a change removed is a commit message's job. Extend the sentence to both, and repoint the skill name.
 - **`.claude/skills/plan/SKILL.md`** and **`.claude/skills/handle/SKILL.md`** — each names the skill once, in a list of consumers and in the lane hand-off respectively. Repoint only.
 - **`.claude/skills/sync-agent-infra/SKILL.md`** — names the skill in its Step 8 hand-off. Repoint only.
-- **`.claude/skills/sync-agent-infra/catalog.md`** — the `/tighten-docs` row becomes the `/tend-prose` row, with the fourth lens in its summary; every other row citing the skill in its "composes" column is repointed; and a **new conditional row for the `/tighten-docs` redirect**, following the guidance the catalog already carries for `/implement` (worth taking only where the old name was already adopted).
+- **`.claude/skills/sync-agent-infra/catalog.md`** — the `/tighten-docs` row becomes the `/tend-prose` row, with the fourth lens in its summary, and every other row citing the skill in its "composes" column is repointed. The row count is unchanged, so `scripts/check-skill-catalog.sh`'s one-row-per-skill assertion is what catches a half-done rename.
 - **`README.md`** — the G1 group row names the skill.
 
 ## Verification
 
-- `./scripts/vet.sh` — now genuinely load-bearing rather than a regression check: `scripts/check-skill-catalog.sh` is what proves no `@.claude/skills/…` pointer was left dangling by the move, and that both the renamed skill and the redirect have exactly one catalog row each.
-- `grep -rn "tighten-docs"` over the tree: the only surviving hits should be the redirect stub, its catalog row, and the working artifacts `/finalize` sweeps.
+- `./scripts/vet.sh` — now genuinely load-bearing rather than a regression check: `scripts/check-skill-catalog.sh` is what proves no `@.claude/skills/…` pointer was left dangling by the move, and that the renamed skill has exactly one catalog row.
+- `grep -rn "tighten-docs"` over the tree: **zero** surviving hits outside the working artifacts `/finalize` sweeps (`docs/plans/`, `docs/issue/`, `docs/remove-before-merging/`) and this branch's own name. With no redirect stub, any hit left is a real dangling reference.
 - Confirm the four lens names still spell TEND after the final wording pass, and that no site lists only three.
 - Self-apply: run the new Lens D over this branch's own diff. The change removes nothing, so the Step 1 sub-step should correctly no-op — which is the cheapest available test that the skip clause reads right.
 
@@ -104,7 +106,7 @@ Adding a lens changes every place that states how many there are, and the rename
 
 - **The lens itself is stated once.** `@.claude/skills/tend-prose/SKILL.md` declares itself "the only home for these rules"; `CLAUDE.md` § "Writing things down" gets a **pointer plus the idiom**, not a copy of the tells or the test. The idiom appears in both places on purpose — it is a routing token, and a token has to be visible where the routing decision is made (the always-loaded file and the skill list) rather than only where it is defined.
 - **The TEND acronym has one home**, the skill's intro beside the four bullets. `CLAUDE.md`'s lens list stays a bare enumeration — spelling the acronym out in the always-loaded file would be a second copy of a memory aid that costs context on every session and informs none of them.
-- **The redirect stub carries no procedure**, by design and by precedent. `/implement` establishes the shape: description, a load-and-follow line, and an explicit warning against acting on the summary. Duplicating any of `/tend-prose`'s content into it would create exactly the two-homes drift `CLAUDE.md` warns about.
+- **The old name gets no second home.** Declining the redirect stub is a DRY call as much as a context one: a stub is a file whose whole content is a pointer to another skill, and every such file is one more thing that can fall out of step with what it points at. `/implement` accepts that cost because copyable handoff blocks keep sending operators the old name; nothing sends them this one.
 - **No extraction is warranted for the four-lens structure.** Each lens's tells and fixes are prose in one file; there is no shared mechanism to factor. Lens D reuses the existing Step 1 scope, Step 3 fix-block shape, and Step 5 report shape rather than introducing a parallel structure — which is the whole reason to add it as a lens rather than as a free-standing check.
 - **The citation sites are citations, not duplicates.** `/go`, `/squash-message`, `/plan`, `/handle`, `/sync-agent-infra`, `catalog.md` and `README.md` each name the skill for a local purpose. Collapsing them into a single reference would make each read worse at its own call site; keeping them in sync is what `CLAUDE.md`'s repointing rule already asks for, and this plan does it.
 - **The removed-noun collection is a procedure, not a script.** It could be a `scripts/` helper, but the noun list needs judgement at every step (which deleted identifiers are *concepts* the prose named), so a script would produce a list a human still has to filter. Prose in Step 1 is the right level.
