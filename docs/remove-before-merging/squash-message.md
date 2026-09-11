@@ -9,7 +9,8 @@ feat: rename the repo to muthur and single-source its identity (pr #65)
 a maintained upstream they keep resyncing from, not a one-shot starter,
 and a name promising starter files undersold the part that has no
 equivalent elsewhere: fork it, adapt it locally, and still pull later
-improvements forward.
+improvements forward. The README leads on that now rather than on the
+skills it ships.
 
 The repo's own name now lives in one place. `upstream.json`'s `repo`
 field is the source of truth, and the three guards that asked whether a
