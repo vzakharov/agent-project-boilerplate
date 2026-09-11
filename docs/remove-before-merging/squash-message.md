@@ -28,20 +28,20 @@ answer did not land, and the wrong reply to it is more detail.
 The long version lives in /plainly, the way /tend-prose is the
 long version of § "Writing things down": six named defects, so a
 bad report can be called out in a word. Each is a tell to look
-again rather than a verdict — a literal answer to a literal
-question can still be the wrong one, and which reading was owed
-is not always decidable. The last of the six is the only one
+again rather than a verdict: which of two readings a question
+wanted is not always decidable. The last of the six is the only one
 investigation cannot fix: a reply about what someone said, where
 what they said wanted an answer.
 
 Preferences that vary by person get their own file, one short
-entry each under a GitHub handle, resolved once against the
-session's operator rather than guessed at per reply and written
-down when stated rather than offered. An entry tunes manner and
-never substance: it cannot drop a cause, skip a check, or quiet a
-failure. Anything that would is a change to the house rule, where
-everyone can see it. The entry decides whether a joke comes back;
-handing over a receipt instead of a reply is ruled out either way.
+entry each under a GitHub handle and no name, so the identity a
+session is handed has to be mapped onto one rather than matched by
+eye. That resolution happens once, not per reply, and a stated
+preference is written down rather than offered. An entry tunes
+manner and never substance: it cannot drop a cause, skip a check,
+or quiet a failure. Anything that would is a change to the house
+rule, where everyone can see it. The entry decides whether a joke
+comes back; a receipt in place of a reply is ruled out either way.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
