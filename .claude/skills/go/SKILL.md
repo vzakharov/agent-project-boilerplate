@@ -82,7 +82,7 @@ Commit/push discipline is already governed by CLAUDE.md — don't reinvent it he
 These run **every time**, in order, and override any contrary "wrap up after implementing" instinct. Each is a real pass over the just-written diff, not a rubber stamp — and each commits its own edits.
 
 1. **`/dry`** — did new duplication the plan didn't foresee creep in during implementation? Plans are written before the code exists, so WETness that wasn't visible at planning time often surfaces only now. Load `@.claude/skills/dry/SKILL.md` and run it over this session's diff: apply the obvious wins, surface the ambiguous calls.
-2. **`/tend-prose`** — load `@.claude/skills/tend-prose/SKILL.md` and run it over the prose you added, as a full sweep rather than a single named lens.
+2. **`/tend-prose`** — load `@.claude/skills/tend-prose/SKILL.md` and run it over the prose you added.
 
 Then **`git mv` the plan to `docs/plans/<slug>.completed.md`** and commit — implementation and its quality passes are done. (`/finalize` sweeps the whole `docs/plans/` tree at squash regardless, so this flip is just the honest end-state marker for an operator watching the branch.)
 

@@ -2,13 +2,13 @@
 description: >-
   Review the prose you added in recent work — code comments, docstrings, and
   Markdown — against four equal defects: **existence** (it should not have been
-  written at all), **durability** (it narrates the change instead of the code's
-  lasting contract), **tightness** (it spends more words than it informs), and
-  **negation** (it denies a thing the change removed, so the mention survives as
-  its own denial). That last one is the **polar bear**: a bare "polar bear here"
-  on a PR comment asks for this pass. Rewrites, moves and cuts in place. Invoke
-  as: /tend-prose [lens] [optional focus guidance] — naming one of the four runs
-  only that lens.
+  written at all), **durability** / **narration** (it narrates the change
+  instead of the code's lasting contract), **tightness** / **bloat** (it spends
+  more words than it informs), and **negation** / **polar bear** (it denies a
+  thing the change removed, so the mention survives as its own denial). Rewrites,
+  moves and cuts in place. Invoke as: /tend-prose [lens] [optional focus
+  guidance] — naming one of the four, by either of its names, runs only that
+  lens.
 ---
 
 You are reviewing prose _you_ recently added — code comments, docstrings, and
@@ -27,10 +27,10 @@ Markdown (skill bodies, `docs/`, READMEs) — for four defects that carry
   its own denial instead of being removed altogether. It is written in clean
   present tense, so it reads as a constraint and no change verb fires. The idiom
   is *don't think about the polar bear*.
-- **D**urability — text that describes the change relative to
-  the previous intra-PR step rather than the code's durable behaviour. CLAUDE.md:
-  "Comments describe the code's lasting contract, not the change that produced
-  it."
+- **D**urability — text that describes the change that produced the code rather
+  than the code's durable behaviour, whether it narrates against the state before
+  the branch or against an earlier step inside it. CLAUDE.md: "Comments describe
+  the code's lasting contract, not the change that produced it."
 
 They are listed in the order that spells **TEND**, which is a memory aid only.
 Step 2 has no order — it applies all four to each line in one pass — and Step 3
@@ -56,14 +56,9 @@ bear`.
 | 3    | `tightness`  | `bloat`       |
 | 4    | `negation`   | `polar bear`  |
 
-The numbers are the order Step 2's sections come in. `narration` and `negation`
-are three characters apart and name **different** lenses — 2 and 4 — so read the
-argument against this table rather than from memory.
-
 Then run **only** that lens: skip the other three in Step 2 and apply only its
-fixes in Step 3. This is the mode for "I just saw archaeological narration in
-there", and for a bare `polar bear here` on a PR comment — a targeted pass, not
-the full sweep.
+fixes in Step 3. This is the mode for "I just saw narration in there", and for a
+bare `polar bear here` on a PR comment — a targeted pass, not the full sweep.
 
 With no lens named, all four run.
 
@@ -167,8 +162,8 @@ name it only when the rule is _about_ that name.
 
 ### Lens 2 — is it narration?
 
-A line is narration when it only makes sense to a reader who knows the previous
-step. Tells:
+A line is narration when it only makes sense to a reader who knows an earlier
+state of the code — the state before the branch, or a step inside it. Tells:
 
 - Change verbs anchored to the past: **"no longer"**, **"now also"**, **"used to"**,
   **"previously"**, **"migrated from"**, **"this used to…"**, **"as of this change"**, **"renamed from"**.
@@ -314,6 +309,4 @@ line that is about to go.
 
 ## Step 5: Commit
 
-Commit the edits, with the fixes and their reasons in the body. On a feature
-branch that is the whole step — the vet run happens at milestones via
-`/finalize`, not per commit.
+Commit the edits, with the fixes and their reasons in the body.
