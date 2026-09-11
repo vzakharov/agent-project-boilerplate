@@ -175,6 +175,10 @@ stack-agnostic parts carry across unchanged, and the parts describing the caller
 — "About this project", "Repository layout", "Vetting", "Working with skills" —
 are written for the target.
 
+**The caller's language decision is a candidate default, not an inheritance.** A
+sibling can serve a different audience than the repo that pushed it out, so the
+target re-decides § "Language"'s one line instead of copying it across.
+
 **The product hatch.** A product piece travels when the operator asks for it,
 under two constraints: it lands on the **session branch, never on `main`**, and
 it is stripped of caller-specific content (real copy, real routes, real data).

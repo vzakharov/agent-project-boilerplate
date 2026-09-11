@@ -94,9 +94,18 @@ the template's has no manifest, no lockfile and no source.
 
 What the tree cannot answer, asked as numbered prose in the plan turn per
 `@.claude/skills/plan/SKILL.md` Part 2: whether sessions run on Claude Code
-web/remote (G4), and whether the project will have a deploy path, a visual
-surface, deployed logs, a production datastore, or sequential numbered migrations
-— the five that decide the individual G6 rows.
+web/remote (G4); whether the project will have a deploy path, a visual surface,
+deployed logs, a production datastore, or sequential numbered migrations — the
+five that decide the individual G6 rows; and the language decision.
+
+**Language is the one question with evidence in hand**, so read it before asking:
+the language the brief is written in, the language the operator writes to the
+session in, and whether the brief describes a product for a non-English market.
+Only the human-facing answer is ever in play — `CLAUDE.md` § "Language" fixes the
+other two groups — so any of the three pointing away from English makes it a
+question, and all three English make it a confirmation. **The plan states that
+confirmation either way**, never leaves it inferred: an operator whose team reads
+something other than what they wrote the brief in has one place to say so.
 
 ## Step 2 — Read the catalog into the plan, before anything is deleted
 
@@ -141,8 +150,8 @@ permanently.
 Per-group keep/drop with the criterion that decided each; the G6 rows as
 hydrate-now-or-delete; the reverse-closure edits; the derived watermark and
 `lineage`; the `CLAUDE.md` brief; the first issue's body (Step 5.5);
-`scripts/vet.sh`'s disposition; and the deletion list. Plus the `## DRY notes`
-section CLAUDE.md requires of every plan.
+`scripts/vet.sh`'s disposition; the language answer; and the deletion list. Plus
+the `## DRY notes` section CLAUDE.md requires of every plan.
 
 **Two dispositions are pre-decided, and the plan states them rather than asking.**
 `/implement` goes, unconditionally: it redirects a name that predates `/go`, and
@@ -167,7 +176,9 @@ Ordering is load-bearing at exactly one point, and it is the first step:
 4. **Fill `CLAUDE.md`'s "About this project" stub** from the brief — which
    retires the standing notice in § "Recognizing an undetemplated fork" along
    with it — and delete § "Git conventions"'s adopter-inverts rule, which
-   instructs adopters to delete it.
+   instructs adopters to delete it. **§ "Language"'s stub is replaced in the same
+   pass** with the Step 1 answer, one line; the rest of that section holds as
+   shipped.
 5. **File the project's first issue** through `/propose-issue`, carrying the
    brief, any spec the operator attached, and any answer they gave for the
    prune's sake that also describes the product. A scarce brief makes a scarce
