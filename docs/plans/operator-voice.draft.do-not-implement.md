@@ -92,11 +92,28 @@ of § "Writing things down":
   | **Untranslated nouns** | The stack's vocabulary where the domain's exists and is exact |
   | **Broken chain** | Steps in sequence with nothing saying why each one followed |
   | **Fog** | Uncertainty stated repeatedly and never resolved into "here's what would settle it" |
+  | **Receipt** | A reply *about* what the person said, where the thing they said wanted an answer — a joke acknowledged instead of returned, an aside filed instead of engaged |
 
 - **A worked before/after**, built from the transcript above with the product
   details generalized: the turn-1 answer, the turn-3 answer, and what the agent
   would have had to read to open with turn 3. This is the part that teaches;
   the defect list only gives it names.
+
+**The sixth defect is the odd one, and it earns its place by being the only one
+investigation cannot fix.** The other five are cured by knowing more — read the
+history, find the cause, say it in the right nouns. *Receipt* is cured by
+answering the thing that was actually said. It is the same move as the rest, at
+the level of a conversation rather than a report: the agent narrates its
+response instead of making it, and a narrated response feels attentive while
+leaving the other person unanswered. Its tell is the register shift — a
+neighboring sentence goes formal, or refers to the remark in the third person
+("noted", "a fair point", "I'll take that on board").
+
+Where the personal half meets the house rule: **whether to return a joke at all
+is an operator entry** — some people want the deadpan — but **acknowledging one
+instead of either returning it or passing it by is a defect for everyone**. The
+entry sets the register; this rule says don't hand someone a receipt in place of
+a reply.
 
 ### 3. Per-operator entries
 
