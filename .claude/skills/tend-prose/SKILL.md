@@ -219,20 +219,20 @@ denial, and every later reader pays for a thing that is not there. Tells:
 
 - **A subject from Step 1's removed-noun list.** The name survives only inside
   prose; grep says the tree no longer has it. This is the tell that does the
-  work — the other two only confirm it.
+  work — the other only confirms it.
 - **A negated predicate in clean present tense** — "X is not a Y", "nothing
   generates X", "X is not a segment". No change verb, which is exactly why Lens
   B waves it through.
-- **It answers a question nobody asked.** The sentence pre-empts an expectation
-  the reader never formed.
 
-The test: **would a reader who had never seen the previous version need this
-sentence?**
+The test: **with the sentence gone, would its subject have crossed the reader's
+mind at all?** If the sentence is the only reason they are thinking about the
+thing, the sentence is what put the bear there.
 
 **The discriminator — constraint or residue.** This is where the lens
 over-deletes if you run it on the tells alone, because a codebase's prose is
-properly full of negative rules. The question is whether the temptation exists
-**independently of the removal**:
+properly full of negative rules. Apply the test and the two separate cleanly: a
+constraint's subject is something the reader reaches for **anyway**, so it
+crosses their mind with or without the sentence.
 
 - *"Dev artifacts go under gitignored `tmp/`, not as new `.gitignore` entries."*
   — a **constraint**. The next editor reaches for a `.gitignore` line whether or
@@ -242,9 +242,8 @@ properly full of negative rules. The question is whether the temptation exists
   tree would propose a catalogue; the sentence exists to answer the draft that
   had one. Cut it.
 
-Same grammar, opposite verdicts. A negative sentence is a constraint when it
-guards against something a reader might do next, and residue when it guards
-against something a previous draft did.
+Same grammar, opposite verdicts: residue guards against something a previous
+draft did, which no longer threatens anyone.
 
 ## Step 3: Fix
 
