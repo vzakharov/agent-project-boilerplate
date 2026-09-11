@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 from gh_export.api import request
 from lib.github import AllRoutesFailed, format_route_statuses
+from lib.media import extension_for_bytes
 
 ATTACHMENT_URL_RE = re.compile(
     r"https://(?:"
@@ -41,29 +42,6 @@ def slug_from_url(url: str, index: int) -> str:
         return safe or f"asset-{index}"
     except Exception:
         return f"asset-{index}"
-
-
-def extension_for_bytes(buf: bytes, content_type: str | None) -> str:
-    ct = (content_type or "").split(";")[0].strip().lower()
-    if ct == "image/png":
-        return ".png"
-    if ct in ("image/jpeg", "image/jpg"):
-        return ".jpg"
-    if ct == "image/gif":
-        return ".gif"
-    if ct == "image/webp":
-        return ".webp"
-    if ct == "image/svg+xml":
-        return ".svg"
-    if len(buf) >= 4 and buf[:4] == b"\x89PNG":
-        return ".png"
-    if len(buf) >= 3 and buf[:3] == b"\xff\xd8\xff":
-        return ".jpg"
-    if len(buf) >= 3 and buf[:3] == b"GIF":
-        return ".gif"
-    if len(buf) >= 4 and buf[:4] == b"RIFF":
-        return ".webp"
-    return ""
 
 
 class AttachmentDownloadError(Exception):
