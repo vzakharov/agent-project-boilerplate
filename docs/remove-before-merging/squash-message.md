@@ -18,13 +18,16 @@ because those surfaces are copied apart from one another; the rest are
 feed-findings-down rule and `check-squash-message.sh`'s header.
 `README.md` and `ADOPTING.md` carry one each and travel with them.
 
-Only the actor takes "they". A session, a run, a skill, a script, a
-check, the harness and Claude Code the product are not actors and keep
-"it", so most of what the grep turns up is deliberately untouched. No
-entry in CLAUDE.md or `.claude/rules/` codifies this: stating the
-boundary takes more room than the sweep and misfires on the "it" cases
-more often than it helps, so consistent prose carries the convention
-into adopting repos the way the rest of the loop's voice already does.
+Only the actor takes "they" — except in `/preview`'s note, the sweep's
+one reflexive, which takes second person because a reflexive is where
+singular they reads worst and that file already says "your own eyes".
+A session, a run, a skill, a script, a check, the harness and Claude
+Code the product are not actors and keep "it", so most of what the grep
+turns up is deliberately untouched. No entry in CLAUDE.md or
+`.claude/rules/` codifies this: stating the boundary takes more room
+than the sweep and misfires on the "it" cases more often than it helps,
+so consistent prose carries the convention into adopting repos the way
+the rest of the loop's voice already does.
 
 Fixes #60
 
