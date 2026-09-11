@@ -30,11 +30,12 @@ Tightness, Existence, Negation, Durability — as a memory aid, not the
 run order. The old name was wrong twice over: "tighten" named Lens C
 specifically, though two of the four lenses produce nothing but
 deletions, and "docs" was never the word the skill or CLAUDE.md used
-for what it reads. A redirect stub holds the old name, on the
-`/implement` precedent. The polar-bear idiom sits in the frontmatter
-description, which every session loads, so an agent that has not opened
-the skill still resolves a bare "polar bear here" on a PR comment to
-the pass that handles it.
+for what it reads. No redirect stub holds the old name: the pass is
+reached through skill pointers rather than typed, so every caller is
+repointed and the catalog check proves it. The polar-bear idiom sits
+in the frontmatter description, which every session loads, so an agent
+that has not opened the skill still resolves a bare "polar bear here"
+on a PR comment to the pass that handles it.
 
 Closes #48
 
