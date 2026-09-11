@@ -17,21 +17,21 @@ mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
 scripts behind it all.
 
 The "keep pulling" part runs on
-[`watermark.json`](.claude/skills/sync-muthur/watermark.json), which records
+[`watermark.json`](.claude/skills/update-muthur/watermark.json), which records
 where your copy came from, the commit you last synced to, and what you adopted
 or declined.
-`/sync-muthur` diffs the source since that commit and triages it one commit at a
+`/update-muthur` diffs the source since that commit and triages it one commit at a
 time against the copy you have since edited — so a skill you rewrote stays
 rewritten, a fix to one you left alone lands, and something you turned down is
 remembered rather than offered again.
 
 Per-item descriptions live in
-**[`.claude/skills/sync-muthur/catalog.md`](.claude/skills/sync-muthur/catalog.md)** — one row
+**[`.claude/skills/update-muthur/catalog.md`](.claude/skills/update-muthur/catalog.md)** — one row
 per skill, script and file, grouped so you can tell how much of it you need:
 
 | Group | What it covers |
 | --- | --- |
-| **G0** | The sync path, both directions: `/sync-muthur` pulls later changes forward (ships as a stub; hydrating it is filling in the watermark), `/spinoff` pushes a new sibling repo out. |
+| **G0** | The sync path, both directions: `/update-muthur` pulls later changes forward (ships as a stub; hydrating it is filling in the watermark), `/spinoff` pushes a new sibling repo out. |
 | **G1** | Prose & principles: `CLAUDE.md`, `.claude/rules/`, `/dry`, `/tend-prose`, `/plainly` and the voice rule it expands. |
 | **G2** | The PR loop: `/plan`, `/go`, `/pr`, `/finalize` and the mechanical pieces they compose. |
 | **G3** | Issue & backlog: `/issue`, `/propose-issue`, `/audit-github-backlog`. |
@@ -102,7 +102,7 @@ The agent selects a subset against your repo's actual shape, mostly by
 inspection — expect them to ask only about your session type and your
 deploy/test surface.
 
-Either way, later changes here come forward with `/sync-muthur`, whose
+Either way, later changes here come forward with `/update-muthur`, whose
 shipped watermark already names this repo — you fill in the rest (see
 [`ADOPTING.md`](ADOPTING.md) § "Hydrate the sync stub"). The infrastructure is
 adoptable **and** re-syncable; a fork is not a dead end.

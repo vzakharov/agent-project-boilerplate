@@ -1,9 +1,9 @@
 ---
-description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/sync-muthur/watermark.json` — the procedure below is usable as written. Use when the user says \"sync muthur\", \"sync agent infra\", \"sync the source\", or \"/sync-muthur\"."
+description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/update-muthur/watermark.json` — the procedure below is usable as written. Use when the user says \"update muthur\", \"update the agent infra\", \"sync muthur\", \"sync the source\", or \"/update-muthur\"."
 ---
 
 > ⚠️ **STUB.** This skill has no watermark to run on. Before it can be invoked,
-> fill in `.claude/skills/sync-muthur/watermark.json`: `lastSyncedSha` (the
+> fill in `.claude/skills/update-muthur/watermark.json`: `lastSyncedSha` (the
 > source's HEAD when you cloned it), `lastSyncedAt`, and the real
 > `adopted`/`declined` sets for your repo. `repo` already names the template,
 > and needs changing only if you adopted from a repo that itself adopted from it.
@@ -29,12 +29,17 @@ what applies.
 **The name is the infrastructure's, not your source's.** `muthur` is where this
 skill and everything it syncs came from; the repo it actually pulls from is
 whatever `repo` says in the watermark below, which for a spun-off sibling is its
-parent rather than the root. So `/sync-muthur` in a repo two hops down still
+parent rather than the root. So `/update-muthur` in a repo two hops down still
 syncs from one hop up.
+
+**The verb splits: the command updates, the fields say synced.** `lastSyncedSha`
+and `lastSyncedAt` are on-disk in every downstream watermark, so renaming them to
+match the command orphans every adopter's file at once. The prose follows the
+fields.
 
 ## The watermark
 
-`.claude/skills/sync-muthur/watermark.json` is the state this skill runs on:
+`.claude/skills/update-muthur/watermark.json` is the state this skill runs on:
 
 ```json
 {
@@ -238,7 +243,7 @@ A commit that adds a skill in neither `adopted` nor `declined` is an open
 question, and the answer belongs in the watermark so it is asked exactly once.
 
 Read the new skill's row in the source's
-`.claude/skills/sync-muthur/catalog.md` — that file is the source's
+`.claude/skills/update-muthur/catalog.md` — that file is the source's
 inventory, read from the clone and never vendored, so it is current by
 construction — and surface the decision **with its criteria attached** rather than
 as a bare "upstream added `/foo`, want it?".

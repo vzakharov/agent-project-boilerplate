@@ -17,7 +17,7 @@ Two audiences:
 - **Adopting a subset into an existing repo** — read this alongside
   [`ADOPTING.md`](../../../ADOPTING.md), which owns the procedure. This file owns
   the inventory; it does not restate the steps.
-- **`/sync-muthur`, on every run** — when a commit at the source adds a skill
+- **`/update-muthur`, on every run** — when a commit at the source adds a skill
   that is in neither your `adopted` nor your `declined` list, the sync reads that
   skill's row here to surface the decision with its criteria attached.
 
@@ -45,7 +45,7 @@ inventory, so every item appears under exactly one, and
   files qualify, and both are load-bearing: `scripts/vet.sh` (what it must exit
   turns on whether your repo has a stack yet, and
   [`CLAUDE.md` § "Vetting"](../CLAUDE.md#vetting) is that contract's home) and
-  `.claude/skills/sync-muthur/watermark.json` (the SHA and adopted set are
+  `.claude/skills/update-muthur/watermark.json` (the SHA and adopted set are
   per-repo by definition; only `repo` ships correct). Naming this disposition is
   what stops an adopter inheriting a placeholder SHA and a foreign `adopted` set
   — the placeholder halts the skill, the foreign set fails silently by
@@ -71,12 +71,12 @@ conditions, and any row can be escaped individually.
 ### G0 — The sync path
 
 The group owns the whole source-and-target relationship, in both directions:
-`/sync-muthur` pulls later changes at your source forward into your repo,
+`/update-muthur` pulls later changes at your source forward into your repo,
 and `/spinoff` pushes a new sibling repo out of it. Adopting the first is what
 makes every later change at the source reachable; skipping it leaves you with a
 snapshot.
 
-**`/sync-muthur` ships unhydrated**, this repo having no source of its own
+**`/update-muthur` ships unhydrated**, this repo having no source of its own
 to sync from. Hydrating it is filling in the watermark, not writing a procedure:
 every step of the skill is usable as written. The [G6 hydrate-now-or-delete
 rule](#g6--stack-stubs) applies here too, and `scripts/check-skill-catalog.sh`
@@ -84,16 +84,16 @@ enforces it the same way.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/sync-muthur` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tend-prose` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
-| `.claude/skills/sync-muthur/watermark.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
-| `/spinoff` | Seed a new sibling repo out of the adopter you are standing in: triage what travels, write the target's watermark, seed its `main` and a session branch, and hand over a session in it. Ships hydrated. | `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner; a caller that adopted this infrastructure rather than being it | `/sync-muthur` (this group); `/pr` (G2) | adopt |
+| `/update-muthur` | Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. | `gh`, `$GH_TOKEN`, git transport to the source repo; hydration (the watermark) | `/dry`, `/tend-prose` (G1); `/pr`, `/squash-message` (G2); `/override-gh` (G4) | adopt |
+| `.claude/skills/update-muthur/watermark.json` | The watermark: which repo you sync from, the SHA you last synced to, what you adopted or declined, and the ancestry that led here. Ships pointed at this repo, with the rest as placeholders and an empty lineage — this tree is the root. | — | — | **rewrite** |
+| `/spinoff` | Seed a new sibling repo out of the adopter you are standing in: triage what travels, write the target's watermark, seed its `main` and a session branch, and hand over a session in it. Ships hydrated. | `gh`, `$GH_TOKEN`, repo-creation rights on the target's owner; a caller that adopted this infrastructure rather than being it | `/update-muthur` (this group); `/pr` (G2) | adopt |
 
 **Both skills are inert in this repo, for one structural reason: this tree is the
 root.** There is no source above it to sync from, and it is not an adopter, so
 there is nothing to spin off out of either — `/spinoff` refuses the moment it
 finds this catalog. Downstream both work.
 
-`/sync-muthur`'s Step 8 hands off to `/dry`, `/tend-prose` and `/pr`, and
+`/update-muthur`'s Step 8 hands off to `/dry`, `/tend-prose` and `/pr`, and
 cites `/squash-message` for how the sync's own squash record is titled; the first
 two come with G1, which you are adopting anyway. `/spinoff` reaches `/pr` as
 well, at its Step 4, to open the seed PR in the new repo. **G2 is the escape**:
@@ -226,7 +226,7 @@ a real decision rather than a mechanical rewrite:
 All three come back with the shim installed; they are the price of declining G4,
 not standing defects.
 
-**`/override-gh` travels beyond G4.** `/sync-muthur` (G0) and
+**`/override-gh` travels beyond G4.** `/update-muthur` (G0) and
 `/audit-github-backlog` (G3) `@`-reference it, so **a repo that declines G4
 entirely still needs this one file** if it takes either of those — otherwise the
 reference dangles. Concretely: copy `.claude/skills/override-gh/` even when you
@@ -306,8 +306,8 @@ means you are looking at working state, not the product.
 | `README.md` | What this repo is, and the two ways to acquire it. Yours already exists. | — | — | never |
 | `ADOPTING.md` | The acquisition procedure. Read once, over the network, from the clone. | — | — | never |
 | `docs/img/` | `ADOPTING.md`'s only asset — the screenshot locating the environment setup script. Goes when that file does, or it is left an orphan. | — | — | never |
-| `.claude/skills/sync-muthur/catalog.md` | This file. Read from a fresh clone on every sync, so it cannot go stale downstream. Sits inside a tree the copy steps take wholesale, so both of them name it as a carve-out. | — | — | never |
-| `/detemplate` | Turn a fresh template fork into a project: prune the `never` rows and unused groups, hydrate what stays, hand back the setup script. Routes through `/plan` and deletes itself last. | `gh`, `$GH_TOKEN`; a whole-tree fork, not a subset copy | `/plan` (G2); `/spinoff`, `/sync-muthur` (G0) | never |
+| `.claude/skills/update-muthur/catalog.md` | This file. Read from a fresh clone on every sync, so it cannot go stale downstream. Sits inside a tree the copy steps take wholesale, so both of them name it as a carve-out. | — | — | never |
+| `/detemplate` | Turn a fresh template fork into a project: prune the `never` rows and unused groups, hydrate what stays, hand back the setup script. Routes through `/plan` and deletes itself last. | `gh`, `$GH_TOKEN`; a whole-tree fork, not a subset copy | `/plan` (G2); `/spinoff`, `/update-muthur` (G0) | never |
 | `scripts/check-repo-identity.sh` | Assert that this repo's own `owner/repo` appears only where a human copies it by hand, and nowhere under a stale name — everything else compares `origin` against the watermark's `repo` field instead. Keyed on this catalog's presence, so it exits 0 the moment it is downstream. | `bash`, `jq`, `git` | — | never |
 | `docs/plans/*` | Working artifacts: file-based plans mid-flight. `/finalize` sweeps them before they reach a trunk. | — | — | never |
 | `docs/remove-before-merging/*` | Working artifacts: the tracked squash-message draft. Swept at finalize. | — | — | never |
@@ -337,7 +337,7 @@ Four closure facts are counter-intuitive enough to state outright:
   its
   **rewrite** disposition rather than a choice: there is no version of G2 that
   does not run your checks. (Three more skills *name* it — `/go` to say vetting is
-  not its job, `/sync-muthur` and `/test-on-gh` as an example — so a grep
+  not its job, `/update-muthur` and `/test-on-gh` as an example — so a grep
   overcounts the dependency.) Its three lines calling
   `scripts/check-skill-catalog.sh`, `scripts/check-squash-message.sh` and
   `scripts/check-repo-identity.sh` are the part a rewrite decides separately;
@@ -387,7 +387,7 @@ silently, in prose, forever.
   bare-name prose about it that must be left alone — `/sync-branch`,
   `/watch-ci`, `/qa-checklist`, `/pr`, `/finalize` (twice) and `/from-branch`.
   "`/test-on-gh`, if the project has hydrated it" reads correctly when the answer
-  is "it hasn't", and editing it makes every future `/sync-muthur` diff
+  is "it hasn't", and editing it makes every future `/update-muthur` diff
   noisier for no behavioral gain. `CLAUDE.md`'s stub list names it too, and that
   one *is* rewritten — not for closure, but because the list stops being true
   when the stubs go.
