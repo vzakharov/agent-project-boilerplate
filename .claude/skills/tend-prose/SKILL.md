@@ -1,32 +1,44 @@
 ---
 description: >-
   Review the prose you added in recent work — code comments, docstrings, and
-  Markdown — against three equal defects: it should not exist at all (a
+  Markdown — against four equal defects: it should not exist at all (a
   description of how the code works, recoverable by reading it, or written
   somewhere nothing reaches), it narrates the change instead of stating the
   code's lasting contract ("no longer parsed", "now also sets X", "migrated from
-  Y"), and it spends more words than it informs — restating what the name,
-  signature, and types already say, or stretching a real point over four lines.
-  Rewrites, moves and cuts in place. Invoke as: /tighten-docs [existence |
-  durability | tightness] [optional focus guidance] — naming one lens runs only
-  that lens.
+  Y"), it spends more words than it informs — restating what the name,
+  signature, and types already say, or stretching a real point over four lines —
+  and it denies a thing the change removed, so the mention survives as its own
+  denial ("copy is not a catalogue"). That last one is the **polar bear**: a bare
+  "polar bear here" on a PR comment asks for this pass. Rewrites, moves and cuts
+  in place. Invoke as: /tend-prose [existence | durability | tightness |
+  negation] [optional focus guidance] — naming one lens runs only that lens.
 ---
 
 You are reviewing prose _you_ recently added — code comments, docstrings, and
-Markdown (skill bodies, `docs/`, READMEs) — for three defects that carry
+Markdown (skill bodies, `docs/`, READMEs) — for four defects that carry
 **equal weight**:
 
-- **Existence** — text that should not have been written: a description of how
+- **T**ightness — text that spends more words than it informs: it
+  restates what the function name, signature, and types already convey, or
+  stretches a real point past the length it needs. CLAUDE.md's docstring rule:
+  document only the non-obvious contract (side effects, runtime constraints,
+  cross-boundary coupling, don't-change-this traps).
+- **E**xistence — text that should not have been written: a description of how
   the code works rather than a constraint on it, something a reader recovers from
   the code itself, or a real constraint filed where nothing will load it.
-- **Narration** — text that describes the change relative to the previous
-  intra-PR step rather than the code's durable behaviour. CLAUDE.md: "Comments
-  describe the code's lasting contract, not the change that produced it."
-- **Bloat** — text that spends more words than it informs: it restates what the
-  function name, signature, and types already convey, or stretches a real point
-  past the length it needs. CLAUDE.md's docstring rule: document only the
-  non-obvious contract (side effects, runtime constraints, cross-boundary
-  coupling, don't-change-this traps).
+- **N**egation — text whose subject is a thing the change
+  removed, surviving as its own denial: "copy is not a catalogue", "the mark is
+  not generated". It is written in clean present tense, so it reads as a
+  constraint and no change verb fires. The idiom is *don't think about the polar
+  bear*.
+- **D**urability — text that describes the change relative to
+  the previous intra-PR step rather than the code's durable behaviour. CLAUDE.md:
+  "Comments describe the code's lasting contract, not the change that produced
+  it."
+
+They are listed in the order that spells **TEND**, which is a memory aid and
+nothing more. It is not the order they run in: Step 2 walks them A–D and Step 3
+resolves them existence-first.
 
 The output is **edits, not a report**. Fix the clear cases in place; only ask
 about genuinely ambiguous ones.
@@ -36,19 +48,35 @@ home for these rules.
 
 ## Single-lens mode
 
-The argument may **name one lens** — `existence`, `durability` (alias
-`narration`), or `tightness` (alias `bloat`) — optionally followed by focus
-guidance: `/tighten-docs durability`, `/tighten-docs tightness src/db`.
-Then run **only** that lens: skip the other two in Step 2, apply only its fixes
-in Step 3, and report only its group in Step 5. This is the mode for "I just saw
-archaeological narration in there" — a targeted pass, not the full sweep.
+The argument may **name one lens**, optionally followed by focus guidance:
+`/tend-prose durability`, `/tend-prose tightness src/db`, `/tend-prose polar
+bear`.
 
-With no lens named, all three run.
+| Lens | Primary      | Alias         |
+| ---- | ------------ | ------------- |
+| A    | `existence`  | —             |
+| B    | `durability` | `narration`   |
+| C    | `tightness`  | `bloat`       |
+| D    | `negation`   | `polar bear`  |
+
+`negation` and `narration` are three characters apart and name **different**
+lenses. When you mean D and B is in the room, say `polar bear` — which is also
+how the request arrives from a PR comment.
+
+Then run **only** that lens: skip the other three in Step 2, apply only its fixes
+in Step 3, and report only its group in Step 5. This is the mode for "I just saw
+archaeological narration in there", and for a bare `polar bear here` on a PR
+comment — a targeted pass, not the full sweep.
+
+With no lens named, all four run.
 
 ## When to use
 
 - After an autonomous run (several commits since the operator last engaged),
-  before handing back — all three defects accumulate step-to-step.
+  before handing back — all four defects accumulate step-to-step.
+- When the scoped work **removed** a module, file, field or concept that prose
+  described. That is the condition Lens D exists for, and the only one that puts
+  a defect in prose nobody rewrote.
 - Any time you notice a comment reads like a diff note, or a docstring restates
   its own signature. If that is the whole complaint, name the lens.
 - Skip if recent work added no prose (pure logic/test edits with no new comments).
@@ -61,14 +89,28 @@ In order:
 2. **Commits since upstream / since the operator's last turn**: `git log --oneline @{u}..HEAD`, or the SHA range the session summary names. `git diff <range>` is the scope.
 3. **Nothing matches** → tell the user there's nothing to review and stop.
 
-Only the **added/changed** prose lines are in scope — don't rewrite pre-existing
-comments you didn't touch.
+Only the **added/changed** prose lines are in scope for Lenses A–C — don't
+rewrite pre-existing comments you didn't touch. Lens D is the exception, and
+reads the other side of the same diff:
 
-## Step 2: Read each added prose line and ask all three questions
+**Collect the removed nouns** once the range is fixed. From the removed lines
+(`git diff <range>`) and the deleted files (`git diff --diff-filter=D
+--name-only <range>`), list what the change took away: identifiers, file paths,
+field and type names, and named concepts. Grep each against the post-change
+tree. **A name that survives only inside prose is a Lens D candidate** — the
+code no longer has it, so any sentence still about it is about nothing.
 
-A line can fail any of the three, or several. Work through the diff **once**,
-applying all three lenses to each comment — not one traversal per lens. (In
-single-lens mode, only the named one.)
+**Skip this sub-step when the diff removes nothing**, which is most additive
+work: no removals, no candidates, and the ordinary pass pays nothing for the
+lens.
+
+## Step 2: Read each added prose line and ask all four questions
+
+A line can fail any of the four, or several. Work through the diff **once**,
+applying all four lenses to each comment — not one traversal per lens. (In
+single-lens mode, only the named one.) Lens D also ranges over prose the diff
+did not touch, since a sentence that survived a removal is exactly the one
+nobody rewrote.
 
 ### Lens A — should it exist at all?
 
@@ -169,6 +211,41 @@ but buried in twice the prose it needs. Tells:
 - **Markdown**: an added paragraph that re-explains what the adjacent bullet or code
   block already shows; a "Note:" restating the rule directly above it.
 
+### Lens D — is it about a thing that isn't there?
+
+When a change removes something the prose described, the reflex is to **negate
+the sentence in place** rather than delete it. The mention survives as its own
+denial, and every later reader pays for a thing that is not there. Tells:
+
+- **A subject from Step 1's removed-noun list.** The name survives only inside
+  prose; grep says the tree no longer has it. This is the tell that does the
+  work — the other two only confirm it.
+- **A negated predicate in clean present tense** — "X is not a Y", "nothing
+  generates X", "X is not a segment". No change verb, which is exactly why Lens
+  B waves it through.
+- **It answers a question nobody asked.** The sentence pre-empts an expectation
+  the reader never formed.
+
+The test: **would a reader who had never seen the previous version need this
+sentence?**
+
+**The discriminator — constraint or residue.** This is where the lens
+over-deletes if you run it on the tells alone, because a codebase's prose is
+properly full of negative rules. The question is whether the temptation exists
+**independently of the removal**:
+
+- *"Dev artifacts go under gitignored `tmp/`, not as new `.gitignore` entries."*
+  — a **constraint**. The next editor reaches for a `.gitignore` line whether or
+  not anything was ever removed. Keep it.
+- *"Copy is not a segment — every string sits in the module that renders it."* —
+  **residue**, if the copy catalogue was just deleted. Nobody reading the current
+  tree would propose a catalogue; the sentence exists to answer the draft that
+  had one. Cut it.
+
+Same grammar, opposite verdicts. A negative sentence is a constraint when it
+guards against something a reader might do next, and residue when it guards
+against something a previous draft did.
+
 ## Step 3: Fix
 
 **Existence:**
@@ -206,9 +283,24 @@ but buried in twice the prose it needs. Tells:
 - If you can't say it in ~2 lines, question whether the **code** should be clearer
   rather than the comment longer.
 
-**Resolve the lenses in order** — deciding a line shouldn't exist saves you
-rewording it, and deciding what it should say saves you shortening the wrong
-sentence.
+**Negation:**
+
+- **Delete.** This is the default and the point of the lens — the fix is a cut,
+  not a rewrite. A sentence whose whole content is that something is absent has
+  nothing to restate positively.
+- **Keep the fact, drop the denial** where the mention carries a live fact
+  alongside it. Rephrase as what *is* there: "The mark is not generated —
+  `public/aeapp-mark.svg` is committed" → "**One committed
+  `public/aeapp-mark.svg` serves every consumer**", the page, the favicon and the
+  Open Graph card alike.
+- **Keep** a negative sentence that passes the constraint-vs-residue
+  discriminator. A rule against a temptation the reader has anyway is a
+  constraint, and cutting it is the false positive this lens must not produce.
+
+**Resolve the lenses existence-first** — A, then D, then B, then C. Deciding a
+line shouldn't exist saves you rewording it; deciding it describes nothing that
+exists saves you shortening a sentence you are about to delete. (This is the run
+order; TEND is only the mnemonic.)
 
 ## Step 4: Do NOT touch
 
@@ -226,13 +318,16 @@ sentence.
 
 ## Step 5: Report + commit
 
-Report the three classes **separately, each with a count**, one bullet per fix
+Report the four classes **separately, each with a count**, one bullet per fix
 (`file:line` + before → after in a few words):
 
 ```
 Existence (2)
 - src/foo.ts:22 — deleted (describes what the next three lines do)
 - .claude/rules/bar.md:40 — moved to src/bar/README.md (orientation, not an obligation)
+
+Negation (1)
+- src/copy/README.md:3 — deleted ("copy is not a catalogue"; the catalogue went with this change)
 
 Durability (2)
 - src/foo.ts:14 — "no longer parsed" → "Nothing parses the emoji."
@@ -244,9 +339,10 @@ Tightness (3)
 - …
 ```
 
-All three groups always appear; **an empty one gets a sentence saying why** rather
-than silence ("nothing added was over-documented" is a real outcome). In
-single-lens mode, only that lens's group is reported.
+All four groups always appear; **an empty one gets a sentence saying why** rather
+than silence ("nothing added was over-documented" is a real outcome, and so is
+"the diff removed nothing, so Lens D had no candidates"). In single-lens mode,
+only that lens's group is reported.
 
 Then commit the edits (on a feature branch, just commit — the vet run happens at
 milestones via `/finalize`, not per commit).
