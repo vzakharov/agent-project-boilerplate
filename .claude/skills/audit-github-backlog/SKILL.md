@@ -139,8 +139,8 @@ work.
    re-check list, not a one-off.
 
 **Feed findings back down.** When a sweep turns up evidence a running analyst
-needs, `SendMessage` it to that agent rather than letting it rediscover the fact
-or miss it.
+needs, `SendMessage` it to that agent rather than letting them rediscover the
+fact or miss it.
 
 ## Step 4 — Aggregate, and assert coverage
 

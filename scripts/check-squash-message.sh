@@ -2,7 +2,7 @@
 # Hold the squash proposal's copy-pasteable text to the rules
 # `@.claude/skills/squash-message/SKILL.md` states as prose — size caps, and no
 # session link in the body — and fail when one breaks. The skill's Step 3 is an
-# agent reading its own output; this is the part of that target a machine can
+# agent reading their own output; this is the part of that target a machine can
 # settle.
 #
 # There is deliberately no env override: a hatch in the boilerplate teaches

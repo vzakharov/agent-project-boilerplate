@@ -22,8 +22,8 @@
 #   check-skill-catalog.sh — asserts that every `@`-reference into
 #     `.claude/skills/` resolves, and that no unhydrated stub stowed away. A
 #     dangling reference fails silently: the agent follows the surviving prose
-#     past the step it could not load. Dropping this line puts the check back on
-#     the agent's memory, which is where it was when it went unrun.
+#     past the step they could not load. Dropping this line puts the check back
+#     on the agent's memory, which is where it was when it went unrun.
 #   check-squash-message.sh — holds the squash proposal to the rules
 #     `/squash-message` states, passing quietly when a branch has no proposal.
 #     Dropping it leaves nothing catching a proposal edited by hand or outgrown

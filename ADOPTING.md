@@ -111,7 +111,7 @@ text names its own workaround.
 > **Never use `gh auth status` to decide whether `gh` works.** In a session where
 > `gh api` works fine it reports *"Failed to log in to github.com using token
 > (GH_TOKEN) … The token in GH_TOKEN is invalid"* alongside *"Active account:
-> true"*. An agent trusting that would conclude it has no GitHub access and
+> true"*. An agent trusting that would conclude they have no GitHub access and
 > abandon or downgrade the adoption for no reason. The honest probe is
 > `gh api repos/{owner}/{repo} --jq .visibility` — if it prints a visibility,
 > `gh` works.

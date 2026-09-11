@@ -4,7 +4,7 @@
 #   1. Every `@.claude/skills/<name>/SKILL.md` reference resolves to a file that
 #      exists. This is the check that makes subset-copying safe: a skill copied
 #      without its closure leaves a pointer that fails *silently* — the agent
-#      follows the surviving prose and skips the step it could not load.
+#      follows the surviving prose and skips the step they could not load.
 #   2. Every `.claude/skills/*/` directory has exactly one row in
 #      `.claude/skills/sync-agent-infra/catalog.md`.
 #   3. Every path named in a catalog row's first column exists — for a row
