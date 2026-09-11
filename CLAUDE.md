@@ -153,6 +153,33 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
+## Language
+
+> _Replace this stub with the language your team reads — one line. "English" is
+> an answer, not a step you skipped._
+
+Human-facing prose is the one language decision a project makes. The other two
+groups have answers that do not vary by project, so a session settles them by
+reading this rather than by asking:
+
+- **Human-facing — the answer above.** `README.md` and anything else a person
+  reads to decide something, commit subjects and bodies, PR titles and bodies,
+  and the plans and issue exports published for review. It goes in the language
+  **the team** reads, which is not automatically the one a given session runs in.
+- **Agent-facing — English.** `CLAUDE.md`, `.claude/skills/**`, `.claude/rules/**`,
+  and code: comments, docstrings, identifiers. The reader here is the agent:
+  they follow English instructions most reliably, and other scripts spend
+  several times the tokens saying the same thing — a cost every session pays on
+  every load.
+- **Conversation — the language it was asked in.** Session replies, issue and PR
+  comments, review replies. No standing artifact, so each reply matches the
+  message it answers: the same person writes in one language here and another
+  there, and expects each answer back in kind.
+
+The last two are still this project's to override — a team that wants its skills
+in its own language writes that here — but an override is a decision someone
+makes, not a blank left open.
+
 ## Working with skills
 
 This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
