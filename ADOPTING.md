@@ -249,6 +249,13 @@ Replace the remaining stubs — repository layout, testing — as those conventi
 stabilize, and add `.claude/rules/` files as area-specific conventions emerge
 (the mechanism ships with a README and no rules).
 
+### Settle the language decision
+
+[`CLAUDE.md` § "Language"](CLAUDE.md#language) asks you for one line: the language
+your team reads. The rest of that section is stated rather than asked and holds
+whatever you answer, which is why it stays in your tree even when the answer is
+"English".
+
 ### Implement `scripts/vet.sh`
 
 Point it at lint/type-check/test commands your repo already has:

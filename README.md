@@ -1,7 +1,7 @@
 # agent-project-boilerplate
 
 Boilerplate for projects where Claude Code is a first-class collaborator.
-Language- and framework-agnostic.
+Stack-agnostic.
 
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
 stack, **30 skills** (22 working out of the box, 8 stubs awaiting hydration) that
