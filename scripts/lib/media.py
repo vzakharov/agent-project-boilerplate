@@ -16,9 +16,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-# Content types first, magic bytes second: a declared type is what the producer
-# meant, and the sniff covers a missing or generic one (base64 blobs and
-# octet-stream downloads both arrive that way).
+# Declared type first, sniff second — the sniff is the fallback for a missing or
+# generic one, which is how octet-stream downloads arrive.
 _TYPE_TO_EXTENSION = {
     "image/png": ".png",
     "image/jpeg": ".jpg",

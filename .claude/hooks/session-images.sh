@@ -6,26 +6,20 @@
 # so it dies with the session. Extraction is a hook rather than an instruction
 # because the agent forgetting is the failure it exists to remove.
 #
-# Both events, for different halves of the job. UserPromptSubmit is what makes
-# the image referenceable in the turn it arrived in; Stop is what guarantees a
-# turn that ends without a commit — a bare question, the common case — still
-# leaves the file behind.
-#
-# TIMING, measured rather than assumed: when UserPromptSubmit fires, the prompt
-# being submitted is NOT in the transcript yet — the last record is the
-# `queue-operation` that carries its text and never its image data. So an image
-# lands on disk at the Stop that ends the turn it arrived in, and the context
-# below names it at the start of the next turn.
+# The two events split the job, and measurement rather than assumption puts the
+# split where it is: when UserPromptSubmit fires the prompt being submitted is
+# not in the transcript yet — the last record is the `queue-operation` carrying
+# its text and never its image data. So Stop is what persists an image, at the
+# end of the turn it arrived in, and UserPromptSubmit is what names the ones
+# already on disk at the start of the next.
 #
 # The commit is remote-only, matching CLAUDE.md § "Git conventions", which scopes
 # proactive committing to the sessions where the operator reviews from another
 # machine. Locally they are looking at the tree itself, so the file in
 # `git status` is the whole signal. It never pushes: a push publishes whatever
-# else the branch has committed, at a moment nobody chose.
-#
-# It carries no session trailer. The hook's payload names the transcript's own
-# session uuid, not the `session_01…` id the attribution link is built from, and
-# a fabricated link is worse than none.
+# else the branch has committed, at a moment nobody chose. And it carries no
+# session trailer — the payload names the transcript's session uuid, not the
+# `session_01…` id the attribution link needs, and a fabricated link is worse.
 #
 # Never fails the turn: a hook that breaks a session over a screenshot is worse
 # than a lost screenshot, so every failure path is stderr plus exit 0.

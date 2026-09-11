@@ -4,12 +4,11 @@
 Usage:
   python3 scripts/extract-session-images.py <transcript.jsonl> [--out DIR] [--verbose]
 
-An image the operator attaches to a session exists only as base64 inside the
-transcript on the session's machine, so it dies with the session. This copies
-each one into `docs/remove-before-merging/session-images/` (overridable with
-`--out`) and appends a row to `index.md` there carrying the prompt it arrived
+Each image goes to `docs/remove-before-merging/session-images/` (overridable
+with `--out`), and a row to `index.md` there carrying the prompt it arrived
 with — the text is what makes the image legible to a session that was not
-present for it.
+present for it. `.claude/hooks/session-images.sh` is the caller, and carries why
+this runs without being invoked.
 
 Idempotent: filenames derive from the record's own timestamp and uuid, and the
 manifest's SHA-256 column is the dedupe state, so a re-run over the same
@@ -58,15 +57,12 @@ keeping is `git mv`'d to a permanent home before then.
 | --- | --- | --- | --- | --- | --- |
 """
 
-# The manifest is also the dedupe state, so the hash column is parsed back out of
-# it. Anchored at the row's end, which is what keeps a pipe inside the prompt
-# excerpt from being read as a column boundary.
+# Anchored at the row's end, which is what keeps a pipe inside the prompt excerpt
+# from being read as a column boundary.
 SHA_CELL_RE = re.compile(r"`([0-9a-f]{64})`\s*\|\s*$")
 
 
 class Attachment(NamedTuple):
-    """One image block, with the record fields that name and explain it."""
-
     data: bytes
     media_type: Optional[str]
     timestamp: str
