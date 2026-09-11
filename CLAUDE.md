@@ -156,6 +156,8 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
+**An image the operator attached is already on the branch — decide whether it stays.** `.claude/hooks/session-images.sh` writes every attachment into `docs/remove-before-merging/session-images/` with a manifest row carrying the prompt it arrived with, so nothing is lost by the session ending and nothing is kept by default: that tree goes at `/finalize` like the rest of it. An image the repo has a lasting use for — a screenshot a doc points at, a diagram worth citing — is `git mv`'d to a permanent home and referenced from the prose that needs it, in the same commit, because a reference into the swept tree ships broken. Everything else is left where it is.
+
 ## Language
 
 > _Replace this stub with the language your team reads — one line. "English" is
