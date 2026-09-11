@@ -51,6 +51,16 @@ project="${CLAUDE_PROJECT_DIR:-$(field cwd)}"
 [ -n "$transcript" ] && [ -f "$transcript" ] || exit 0
 [ -n "$project" ] && [ -d "$project" ] || exit 0
 
+# TEMPORARY timing probe — removed once the header's TIMING line is filled in.
+if [ -n "${SESSION_IMAGES_PROBE:-}" ]; then
+  {
+    echo "--- $event $(date -u +%FT%TZ)"
+    echo "lines in transcript: $(wc -l <"$transcript")"
+    echo "user_input present: $(field user_input | head -c 80)"
+    echo "last record: $(tail -n 1 "$transcript" | jq -c '{type, origin, blocks: [.message.content[]?.type]}' 2>/dev/null)"
+  } >>"$SESSION_IMAGES_PROBE"
+fi
+
 rel_dir="docs/remove-before-merging/session-images"
 out="$project/$rel_dir"
 
