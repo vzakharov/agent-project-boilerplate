@@ -27,9 +27,11 @@ two noes enter `/go`'s planless entry.
 The turn reports its call in the first sentence with its reason, so
 `plan` is a one-word reversal — which stops the run, writes the plan
 for the whole task, and leaves the commits already pushed in place. The
-skill owns the two questions and what each outcome runs; CLAUDE.md
-carries the pointer and the scoping clause, where a session reads it
-before loading anything.
+two questions and what each outcome runs sit in
+`.claude/skills/plan/plan-or-go.md`, which `/plan` loads only when the
+prompt carries those words, so a planning session that is not this
+entry pays nothing for them. CLAUDE.md carries the pointer and the
+scoping clause, where a session reads them before loading anything.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
