@@ -1,5 +1,5 @@
 ---
-description: "Turn a fresh \"Use this template\" fork of this boilerplate into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. **A run deletes this skill, so this description exists in exactly two places: the boilerplate itself, and a fork nobody has detemplated. If the repository you are in is not `vzakharov/muthur`, load this skill and read § \"Recognizing an undetemplated fork\" before doing anything else, whatever you were asked.** Your system prompt's working directory normally settles which repository that is; `git remote -v` settles it otherwise."
+description: "Turn a fresh \"Use this template\" fork into an actual project: profile the tree, decide group by group what travels, and hand over a reviewed plan that prunes what does not apply and hydrates what does. Invoke as `/detemplate <what you're building>`. **A run deletes this skill, so this description exists in exactly two places: the template itself, and a fork nobody has detemplated. If the repository you are in is not `vzakharov/muthur`, load this skill and read § \"Recognizing an undetemplated fork\" before doing anything else, whatever you were asked.** Your system prompt's working directory normally settles which repository that is; `git remote -v` settles it otherwise."
 ---
 
 `/detemplate <what we're building>` converts a whole-tree template fork into a
@@ -44,9 +44,9 @@ the trees most likely to carry one.
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
   has nothing left to strip.
 - **Catalog present, but `origin` matches the `repo` field in
-  `.claude/skills/sync-muthur/upstream.json`** → this *is* the boilerplate
-  — the shipped watermark names the repo itself, having no source above it — and
-  what the caller wants is a fork, not a prune. Point at the README's *"Use this
+  `.claude/skills/sync-muthur/upstream.json`** → this *is* the template — the
+  shipped watermark names the repo itself, having no source above it — and what
+  the caller wants is a fork, not a prune. Point at the README's *"Use this
   template"* button. Compare the full `owner/repo`, since that is what both
   sides of the comparison are: a looser match on either half prunes a tree that
   merely shares an owner or a name. Without the origin clause, catalog-presence
@@ -75,9 +75,9 @@ fork starts in.
 `allow_squash_merge` have values on the fork's first day and gate what the loop
 may do. The two probes `ADOPTING.md` adds — open issues (G3), registered
 workflows (G5) — are counts, and both are zero in *every* fresh fork: the issues
-because the repo is one commit old, the workflows because this boilerplate ships
-no `.github/` for the template copy to carry. Run here, they measure the fork's
-age and hand the answer back as if it were the operator's intent.
+because the repo is one commit old, the workflows because the template ships no
+`.github/` for a fork to carry. Run here, they measure the fork's age and hand
+the answer back as if it were the operator's intent.
 
 `ADOPTING.md` asks them of a repo with a history of its own, where they are real
 questions. **A fork has no process to discover — it inherits the loop's**, so
@@ -270,7 +270,7 @@ present, and `origin` not matching the `repo` field in
 
 **Nothing here is what routes a session — the frontmatter is**, this section
 being what gets read only once the description has sent someone to it. So the
-description names the *repository* rather than the situation: the boilerplate is
+description names the *repository* rather than the situation: the template is
 a literal `owner/repo`, checkable against the working directory in the reader's
 own system prompt at no round-trip, and every other tree carrying the
 description is a fork to route.

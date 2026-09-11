@@ -5,7 +5,7 @@ description: "STUB — not yet hydrated for this project. Pull the agent infrast
 > ⚠️ **STUB.** This skill has no watermark to run on. Before it can be invoked,
 > fill in `.claude/skills/sync-muthur/upstream.json`: `lastSyncedSha` (the
 > source's HEAD when you cloned it), `lastSyncedAt`, and the real
-> `adopted`/`declined` sets for your repo. `repo` already names the boilerplate,
+> `adopted`/`declined` sets for your repo. `repo` already names the template,
 > and needs changing only if you adopted from a repo that itself adopted from it.
 > Delete this banner once you have, and drop `STUB` from the description above.
 > If you took a one-time snapshot and do not intend to re-sync, delete the skill
@@ -286,7 +286,7 @@ normally lands changes — the triage table still belongs wherever that record g
 **The squash record names the change, not the sync.** The `<essence>`
 `@.claude/skills/squash-message/SKILL.md` asks a title for is what landed in
 *this* tree — `chore: one job per loop skill, and a size cap on squash bodies`,
-not `chore: sync the boilerplate forward to <source sha>`. A source SHA is a
+not `chore: sync the template forward to <source sha>`. A source SHA is a
 commit in another repository, unresolvable from the log it sits in, and "sync
 forward" names the transport: the second title sends every reader to the diff.
 

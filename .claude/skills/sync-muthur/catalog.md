@@ -1,5 +1,5 @@
 > ⛔ **This file describes the source repo, and is never vendored.** Its presence
-> is what marks a tree as the boilerplate rather than a repo that adopted it —
+> is what marks a tree as the template rather than a repo that adopted it —
 > `scripts/check-skill-catalog.sh` and `/spinoff` both key on that. If you are
 > reading this in a repo that *adopted* this infrastructure, it rode along with
 > `.claude/skills/**` by mistake: **delete the file.** Do not prune its rows to
@@ -339,7 +339,7 @@ Four closure facts are counter-intuitive enough to state outright:
 Two G2 rows are adopter choices rather than defaults:
 
 - **`/go` is a local name, not a contract.** It reads ambiguously in a Go
-  project, and this is a stack-agnostic boilerplate. Rename it to whatever your
+  project, and this is a stack-agnostic template. Rename it to whatever your
   language or framework leaves unambiguous; `scripts/check-skill-catalog.sh`
   verifies the pointers once you have.
 - **The `/implement` redirect is worth taking only where `/implement` was already

@@ -4,7 +4,7 @@
 
 > _Replace this stub with a short description of what this codebase is and why it exists._
 
-> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` matches the `repo` field in `.claude/skills/sync-muthur/upstream.json`: that tree is its own source — the boilerplate itself — where this stub is the shipped state.
+> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` matches the `repo` field in `.claude/skills/sync-muthur/upstream.json`: that tree is its own source — the template itself — where this stub is the shipped state.
 
 ## About this file
 
@@ -33,7 +33,7 @@ The checks may also be fanned out with `scripts/run-parallel.sh lint='…' typec
 
 **This section is the exit rule's home.** `scripts/vet.sh`, `ADOPTING.md` and the catalog each point here rather than restating it, because the rule has a clause that is easy to drop and expensive to get wrong:
 
-- **No stack yet → `exit 0` is correct**, and stays correct. The two built-in checks are the whole run and they genuinely pass, so there is nothing to refuse to certify. This is the normal state of a repo taken to *start* a project, not a boilerplate-only special case — and a repo that sets `exit 1` here fails step 1 of `/finalize` on every prose-only PR, which teaches the loop to route around the vet run.
+- **No stack yet → `exit 0` is correct**, and stays correct. The two built-in checks are the whole run and they genuinely pass, so there is nothing to refuse to certify. This is the normal state of a repo taken to *start* a project, not a template-only special case — and a repo that sets `exit 1` here fails step 1 of `/finalize` on every prose-only PR, which teaches the loop to route around the vet run.
 - **A stack present and unchecked → `exit 1`**, until this file runs that project's real commands. An exit-0 stub over an unchecked stack is worse than no script at all, because `/finalize` passes step 1 and attests to a run that verified nothing.
 
 So wiring `scripts/vet.sh` is what you do **when a stack lands**, alongside `.claude/hooks/session-start.sh`'s dependency install — the paired site nothing else names.

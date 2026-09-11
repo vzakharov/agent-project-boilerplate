@@ -45,7 +45,7 @@ through a skill rather than by reading on — see that section below.
 
 ```bash
 git clone --depth 1 https://github.com/vzakharov/muthur \
-  <scratchpad>/boilerplate
+  <scratchpad>/muthur
 ```
 
 Into your session's scratchpad or `tmp/` — **not** anywhere that will be
@@ -241,7 +241,7 @@ and run that command.
 
 ### Reconcile `CLAUDE.md` rather than overwrite it
 
-Your repo already has conventions, or will. Take the boilerplate's sections,
+Your repo already has conventions, or will. Take the template's sections,
 merge them into yours, and keep your stack-specific content — it is a
 [donor, not a replacement](.claude/skills/sync-muthur/catalog.md#g1--prose--principles).
 
@@ -323,7 +323,7 @@ delete the skill rather than carrying it unhydrated.
 ```
 
 - `repo` is where you took this from — this repo, for a first-generation adopter.
-- `lastSyncedSha` is the HEAD you cloned (`git -C <scratchpad>/boilerplate rev-parse HEAD`).
+- `lastSyncedSha` is the HEAD you cloned (`git -C <scratchpad>/muthur rev-parse HEAD`).
   Recording it now is what makes the *next* sync a small diff instead of a
   re-triage of everything.
 - `lineage` is where your repo *started*, and it is the field a hand-filled

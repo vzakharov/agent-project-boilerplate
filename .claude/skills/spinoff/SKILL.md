@@ -1,17 +1,17 @@
 ---
-description: "Seed a new sibling repository out of the project you are standing in: triage what travels, write the new repo's sync watermark, seed `main` plus a session branch, and hand over a session rooted in it. Runs from a repo that *adopted* this agent infrastructure, and refuses from the boilerplate itself or an unpruned fork of it. Invoke as `/spinoff <owner/name>`. Use when the operator says \"spin off\", \"a new repo like this one\", \"start a sibling project\", or \"/spinoff\"."
+description: "Seed a new sibling repository out of the project you are standing in: triage what travels, write the new repo's sync watermark, seed `main` plus a session branch, and hand over a session rooted in it. Runs from a repo that *adopted* this agent infrastructure, and refuses from the template itself or an unpruned fork of it. Invoke as `/spinoff <owner/name>`. Use when the operator says \"spin off\", \"a new repo like this one\", \"start a sibling project\", or \"/spinoff\"."
 ---
 
 `/spinoff <owner/name>` creates `<owner/name>`, seeds it out of the repo you are
 invoked in, and hands back a command that opens the next session there.
 
-The caller is an **adopter**: a working project whose tree is the boilerplate's
+The caller is an **adopter**: a working project whose tree is the template's
 agent infrastructure plus a stack, plus its own conventions, plus a product. What
 travels is the caller's **foundation** — how code there is organized: its layer
 boundaries, its lint discipline, its build and deploy shape, and the agent loop
 that keeps all of it maintainable. The product stays behind. The new repo wants
 to be a sibling of *that* — its stack, its adaptations, its real `vet.sh` —
-rather than of the boilerplate, and no adopter keeps an inventory saying which of
+rather than of the template, and no adopter keeps an inventory saying which of
 its files are which. So Step 2's triage is derived per run, and that per-path
 judgment is what makes this a skill rather than a script.
 
@@ -28,7 +28,7 @@ copyable command that opens the next session in the new repo.
 
 ## Two invariants
 
-**Not from the boilerplate, and not from an unpruned fork of it.** If the caller
+**Not from the template, and not from an unpruned fork of it.** If the caller
 has a catalog — glob `.claude/skills/*/catalog.md`, don't test the canonical
 `.claude/skills/sync-muthur/catalog.md`, since an adopter renames that
 directory after *its* own source — **stop**. A spinoff is the wrong operation
@@ -36,7 +36,7 @@ either way, but the two cases want different answers, so read `origin` before
 replying:
 
 - **`origin` matches the `repo` field in
-  `.claude/skills/sync-muthur/upstream.json`** → this *is* the boilerplate:
+  `.claude/skills/sync-muthur/upstream.json`** → this *is* the template:
   the shipped watermark names the repo itself, having no source above it. Point
   at its `README.md` § "Create a new project from this template": what the
   caller wants is a fork, not a sibling. Compare the full `owner/repo`, since
@@ -70,15 +70,16 @@ use `git -C <clone>`, in every command meant to run in the target.
 ## Step 1 — Read the caller
 
 Read the caller at HEAD, starting with the refusal: **any
-`.claude/skills/*/catalog.md` present → stop**, per § "Not from the boilerplate,
+`.claude/skills/*/catalog.md` present → stop**, per § "Not from the template,
 and not from an unpruned fork of it" above — reading `origin` too, since it picks
 which of the two answers to give. Otherwise two things come out of the tree:
 
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by its watermark
-  file, not by its name.** `@.claude/skills/sync-muthur/SKILL.md` prescribes
-  that an adopter renames the skill after *its* source, so a real adopter's copy
-  is plausibly `.claude/skills/sync-agent-boilerplate/source.json`; hunting for
+  file, not by its name.** The skill has been renamed at the source before, and
+  nothing pushes that rename onto a caller who already has it — one that adopted
+  early still carries `.claude/skills/sync-agent-infra/upstream.json`, and a
+  caller free to rename any skill may have picked its own. Hunting for
   `sync-muthur/upstream.json` finds nothing and silently seeds an unlinked
   repo. Glob `.claude/skills/*/*.json` and take the one whose object carries
   `repo` and `lastSyncedSha`.
@@ -188,7 +189,7 @@ Honored when named in the invocation, not asked on every run.
 
 ## Step 3 — The watermark points at the root
 
-**The new repo's watermark points at the root boilerplate — never at the
+**The new repo's watermark points at the root template — never at the
 caller.** There is no fork to surface here. Chains compose: a sibling of a
 sibling of a sibling would make a sync walk the whole ancestry to reach the root,
 and every link multiplies the triage. And a spun-off repo need not share the
@@ -246,7 +247,7 @@ already sorted every travelling path into a copy or a rewrite:
   `main` would land the least-reviewed content through the one path that has no
   review.
 
-So `main` is the caller's tree reduced to **what the boilerplate itself would
+So `main` is the caller's tree reduced to **what the template itself would
 ship** — the loop, plus stubs where the caller had hydration — and PR #1 is the
 hydration. That is the argument the split is right: the new repo passes through
 the same state every adopter does and reaches its stack by the same reviewed
