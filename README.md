@@ -10,7 +10,13 @@ Fork it into any project, change it to fit that project, and keep pulling
 later improvements forward — the part a copied skill directory can't do.
 Stack-agnostic.
 
-That last part runs on
+What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
+stack, **31 skills** (23 working out of the box, 8 stubs awaiting hydration) that
+compose into a plan → implement → PR → land loop, the path-scoped `.claude/rules/`
+mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
+scripts behind it all.
+
+The "keep pulling" part runs on
 [`watermark.json`](.claude/skills/sync-muthur/watermark.json), which records
 where your copy came from, the commit you last synced to, and what you adopted
 or declined.
@@ -18,12 +24,6 @@ or declined.
 time against the copy you have since edited — so a skill you rewrote stays
 rewritten, a fix to one you left alone lands, and something you turned down is
 remembered rather than offered again.
-
-What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
-stack, **31 skills** (23 working out of the box, 8 stubs awaiting hydration) that
-compose into a plan → implement → PR → land loop, the path-scoped `.claude/rules/`
-mechanism, a SessionStart hook that makes `gh` work in remote sessions, and the
-scripts behind it all.
 
 Per-item descriptions live in
 **[`.claude/skills/sync-muthur/catalog.md`](.claude/skills/sync-muthur/catalog.md)** — one row
