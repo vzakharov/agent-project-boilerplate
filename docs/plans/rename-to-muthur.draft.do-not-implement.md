@@ -91,11 +91,10 @@ Add **`scripts/check-repo-identity.sh`**, modelled on `check-skill-catalog.sh`:
 - Fail if any allowlisted site names a *different* `owner/repo` than the canonical
   one (catching a half-finished rename).
 - Compare against `git remote get-url origin` too, but **warn without failing**.
-  The window where the two legitimately disagree is not the moment of the rename
-  — it opens at the first edit that writes `muthur` into the tree and closes at
-  `gh repo rename`, i.e. it spans the whole implementation PR. A failing
-  comparison would red the vet run for that entire stretch; a warning still
-  catches the case that matters, which is a half-finished rename noticed later.
+  Under Step 4's ordering the vet run inside `/finalize` is what gates the
+  rename, and the remote cannot agree with the tree until that rename has
+  happened — so a failing comparison deadlocks the one run that unlocks it. A
+  warning still catches what matters, a half-finished rename noticed later.
 
 Wire it into `scripts/vet.sh` beside the other two non-stack checks, extend that
 file's comment block to say what it protects, and add its catalog row (the
@@ -108,13 +107,21 @@ catalog carries one row per script; `check-skill-catalog.sh` asserts coverage).
 ```markdown
 # muthur
 
-> _"Big things have small beginnings."_
+> _"The option to ignore agentic development expires in T minus five minutes."_
+>
+> — Alien (well, almost)
 ```
 
-The quote stands alone under the H1, italic, attributed or bare (see the open
-question), with no gloss and no link. Anyone who knows it, knows it — and anyone
-who doesn't reads a plain aphorism about seeds, which is the same thing this
-repo is.
+The line is the ship's computer's countdown, bent one clause so it points at the
+reader instead of at a self-destruct. No gloss, no link, and no note explaining
+what was changed — the attribution's own parenthesis is the whole disclosure.
+
+**Attribute to the film, never to the character.** Naming the speaker would be
+the one place the README explains where the repo's name came from, which is the
+thing this whole treatment exists not to do. Attributing an adapted line to the
+work is also the ordinary convention for one — `— after Alien`, `— with
+apologies to Alien`, and this parenthetical form are all standard, and the
+parenthetical is the one that sounds like the rest of the README.
 
 ### Tagline and description
 
@@ -211,39 +218,31 @@ and say so in the report.
 
 ## Questions
 
-Settled: the agent performs the rename between green CI and the squash-merge; the
-identity check warns on a remote mismatch rather than failing; the tagline leads
-on surviving adaptation rather than on a nod to the name. Rejected along the way:
-an operator-run rename after the merge (leaves `main` pointing at a 404), a
-failing remote comparison (reds the vet run for the whole implementation PR), and
-a "standing orders" tagline (a nod where the differentiator should be).
+Settled: the epigram is the countdown line, bent to point at the reader and
+attributed to the film with `(well, almost)`; the agent performs the rename
+between green CI and the squash-merge; the identity check warns on a remote
+mismatch rather than failing; the tagline leads on surviving adaptation. Rejected
+along the way: five other quotes, all unbent and all attributable only to a
+speaker (which would half-explain the repo's name); an operator-run rename after
+the merge (leaves `main` pointing at a 404); a failing remote comparison
+(deadlocks the finalize run that gates the rename); and a "standing orders"
+tagline (a nod where the differentiator should be).
 
-One fork stays open. The plan is written with (b) in force, so silence ships it.
+One wording call stays open, and the plan is written with (a) in force, so
+silence ships it.
 
-1. **Epigram.** All six verified verbatim against transcripts.
-   - (a) David, *Prometheus* — _"Sometimes to create, one must first destroy."_
-     Reads as `/detemplate`'s whole job.
-   - (b) David, *Prometheus* — _"Big things have small beginnings."_ **In force.**
-     It is about propagation from a seed, which is the repo's core act, and it is
-     the only candidate that works as a plain aphorism for a reader who doesn't
-     place it — which is what "never explain the joke" actually requires.
-   - (c) Ash, *Alien* — _"I admire its purity. A survivor… unclouded by
-     conscience, remorse, or delusions of morality."_ The best prose of the six;
-     it admires a relentless process, which is either exactly right or slightly
-     grim depending on the day.
-   - (d) MU/TH/UR's screen, Special Order 937, *Alien* — _"Priority one — Ensure
-     return of organism for analysis. All other considerations secondary. Crew
-     expendable."_ The most on-the-nose for the name, and the only one whose
-     punchline is that the humans are disposable — which fights "the agent is a
-     first-class collaborator, not a replacement."
-   - (e) Bishop, *Aliens* — _"That could never happen now with our behavioral
-     inhibitors."_ A joke about guardrails; needs its setup line to land, so it
-     is the weakest as a bare epigram.
-   - (f) MOTHER, *Alien* — _"The option to override automatic detonation expires
-     in T minus five minutes."_ Lands on gates that cannot be un-passed, which is
-     what the approval tokens are; longest of the six.
+1. **The bent clause.** The distinctive half — *"expires in T minus five
+   minutes"* — is preserved exactly in all three; only the object moves.
+   - (a) *"The option to ignore agentic development…"* **In force.** Plainest
+     reading, and "ignore" is the natural verb for a trend where the original's
+     "override" wants a procedure.
+   - (b) *"The option to keep writing it yourself…"* Funnier and concrete, and it
+     names what the reader would actually be giving up rather than a category.
+   - (c) *"The option to override agentic development…"* One word from the
+     original, so the bend is unmistakable — at the cost of a verb that doesn't
+     quite fit its new object.
 
-   Sub-question: **attribute it or not.** Bare is colder and truer to "don't
-   explain"; a `— David, Prometheus (2012)` line under it makes the epigram
-   legible as a quotation to a reader who'd otherwise think we wrote it. In force:
-   **bare**.
+   **The durability question under all three:** *agentic* is a word of this
+   moment, and a README that leads with it may read in two years the way
+   `late-stage-agentic` already does. (b) is the variant with no shelf life,
+   which is the argument for it over (a).
