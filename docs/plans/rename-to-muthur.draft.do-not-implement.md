@@ -90,10 +90,12 @@ Add **`scripts/check-repo-identity.sh`**, modelled on `check-skill-catalog.sh`:
 - Fail if that literal appears anywhere outside the allowlist above.
 - Fail if any allowlisted site names a *different* `owner/repo` than the canonical
   one (catching a half-finished rename).
-- Deliberately **not** compared against `git remote get-url origin`: the check's
-  job is that the tree is internally consistent, and coupling it to the live
-  remote would make every commit fail during the window between the tree change
-  and the GitHub rename.
+- Compare against `git remote get-url origin` too, but **warn without failing**.
+  The window where the two legitimately disagree is not the moment of the rename
+  — it opens at the first edit that writes `muthur` into the tree and closes at
+  `gh repo rename`, i.e. it spans the whole implementation PR. A failing
+  comparison would red the vet run for that entire stretch; a warning still
+  catches the case that matters, which is a half-finished rename noticed later.
 
 Wire it into `scripts/vet.sh` beside the other two non-stack checks, extend that
 file's comment block to say what it protects, and add its catalog row (the
@@ -106,30 +108,32 @@ catalog carries one row per script; `check-skill-catalog.sh` asserts coverage).
 ```markdown
 # muthur
 
-> _"The option to override automatic detonation expires in T minus five minutes."_
+> _"Big things have small beginnings."_
 ```
 
-The quote stands alone under the H1, italic, with no gloss and no link. Anyone
-who knows it, knows it.
+The quote stands alone under the H1, italic, attributed or bare (see the open
+question), with no gloss and no link. Anyone who knows it, knows it — and anyone
+who doesn't reads a plain aphorism about seeds, which is the same thing this
+repo is.
 
 ### Tagline and description
 
-The angle to play — indirectly, never naming it — is **standing orders**: a set
-of directives every session runs under, which outlive any one session and travel
-between ships. That phrase does the work, because it is also literally true of
-what this repo is (`CLAUDE.md` plus the skills).
-
+The two things the opener has to carry are **the agent as a first-class
+collaborator** and **infrastructure that keeps syncing after you've changed it**.
 Replace the current two-line opener with:
 
 ```markdown
-Standing orders for repos where the agent does the work. Stack-agnostic.
+Agent-first infrastructure that survives being adapted.
 
-Fork them into any project, adapt them to it, and keep pulling later
-improvements forward — the part a copied skill directory can't do.
+Fork it into any project, change it to fit that project, and keep pulling
+later improvements forward — the part a copied skill directory can't do.
+Stack-agnostic.
 ```
 
-The second sentence is the differentiator stated up front, since "another pile of
-agent skills" is the wrong first read and the one the name alone invites.
+"Survives being adapted" is the whole differentiator in four words: everyone
+ships skills, nobody keeps them mergeable once you've made them yours. The
+second sentence spells out the mechanism, because "another pile of agent skills"
+is the wrong first read and the one the name alone invites.
 
 The rest of the README is unchanged apart from the name substitutions in Step 1c
 and the § "Getting it" heading text, which keeps working verbatim.
@@ -139,7 +143,7 @@ and the § "Getting it" heading text, which keeps working verbatim.
 Set the repository description to match the tagline (it is what renders in search
 results, in the sidebar of every fork, and on the template-picker):
 
-> Standing orders for repos where the agent does the work — a plan → go → land loop you fork into any project, adapt locally, and keep syncing. Stack-agnostic.
+> Agent-first infrastructure that survives being adapted — a plan → go → land loop you fork into any project, change to fit, and keep syncing. Stack-agnostic.
 
 Leave topics as they are unless they name the old slug.
 
@@ -164,16 +168,15 @@ gh repo rename muthur                    # from the repo, requires admin
 git remote set-url origin https://github.com/vzakharov/muthur
 ```
 
-**Ordering matters, and the recommended order is:** land everything above on this
-PR → rename on GitHub → squash-merge. Rationale: a stale-but-working README on
-`main` for a few minutes beats a correct README whose clone lines 404. Renaming
-after the merge inverts that.
+**The order is:** land everything above on this PR → rename on GitHub → squash-merge.
+A stale-but-working README on `main` for a few minutes beats a correct README
+whose clone lines 404, which is what renaming after the merge would produce.
 
-**Known risk in that window:** this session's GitHub scope names the old slug, so
-MCP GitHub tools may stop resolving the repo once it is renamed. The API
-redirects, so it will likely be fine — but if the merge step fails afterwards,
-finish it in the GitHub UI rather than fighting the tooling. This is the argument
-for option (b) in the questions below.
+**Known risk between the rename and the merge:** this session's GitHub scope
+names the old slug, so MCP GitHub tools may stop resolving the repo once it is
+renamed. The API redirects, so it will likely be fine — but if the merge step
+fails afterwards, finish it in the GitHub UI rather than fighting the tooling,
+and say so in the report.
 
 ## DRY notes
 
@@ -208,22 +211,39 @@ for option (b) in the questions below.
 
 ## Questions
 
-Recorded here in the state the plan is written to: each recommendation is already
-in force above, so silence implements the recommended option.
+Settled: the agent performs the rename between green CI and the squash-merge; the
+identity check warns on a remote mismatch rather than failing; the tagline leads
+on surviving adaptation rather than on a nod to the name. Rejected along the way:
+an operator-run rename after the merge (leaves `main` pointing at a 404), a
+failing remote comparison (reds the vet run for the whole implementation PR), and
+a "standing orders" tagline (a nod where the differentiator should be).
 
-1. **Epigram.** (a) MOTHER's countdown line, as written above — recommended: it is
-   the machine herself speaking, and it lands on gates that cannot be un-passed,
-   which is what this repo's approval tokens are. (b) Bishop: _"I may be
-   synthetic, but I'm not stupid."_ — warmer, and it is the agent speaking rather
-   than the system. (c) Ash: _"I can't lie to you about your chances, but… you
-   have my sympathies."_ — funniest, darkest, least on-theme.
-2. **Rename timing.** (a) Agent renames on GitHub after the branch is green and
-   before the squash-merge — recommended. (b) Operator renames in the GitHub UI
-   after the merge, side-stepping the session-scope risk entirely at the cost of a
-   short window where `main`'s README points at a 404.
-3. **Tagline.** (a) "Standing orders for repos where the agent does the work" —
-   recommended. (b) "The standing orders your sessions run under." (c) Something
-   with no nod at all, stating only the loop and the sync.
-4. **Does the check compare against the live remote?** (a) No, `upstream.json`
-   only — recommended, for the reason in 1c. (b) Yes, as a warning that does not
-   fail the run.
+One fork stays open. The plan is written with (b) in force, so silence ships it.
+
+1. **Epigram.** All six verified verbatim against transcripts.
+   - (a) David, *Prometheus* — _"Sometimes to create, one must first destroy."_
+     Reads as `/detemplate`'s whole job.
+   - (b) David, *Prometheus* — _"Big things have small beginnings."_ **In force.**
+     It is about propagation from a seed, which is the repo's core act, and it is
+     the only candidate that works as a plain aphorism for a reader who doesn't
+     place it — which is what "never explain the joke" actually requires.
+   - (c) Ash, *Alien* — _"I admire its purity. A survivor… unclouded by
+     conscience, remorse, or delusions of morality."_ The best prose of the six;
+     it admires a relentless process, which is either exactly right or slightly
+     grim depending on the day.
+   - (d) MU/TH/UR's screen, Special Order 937, *Alien* — _"Priority one — Ensure
+     return of organism for analysis. All other considerations secondary. Crew
+     expendable."_ The most on-the-nose for the name, and the only one whose
+     punchline is that the humans are disposable — which fights "the agent is a
+     first-class collaborator, not a replacement."
+   - (e) Bishop, *Aliens* — _"That could never happen now with our behavioral
+     inhibitors."_ A joke about guardrails; needs its setup line to land, so it
+     is the weakest as a bare epigram.
+   - (f) MOTHER, *Alien* — _"The option to override automatic detonation expires
+     in T minus five minutes."_ Lands on gates that cannot be un-passed, which is
+     what the approval tokens are; longest of the six.
+
+   Sub-question: **attribute it or not.** Bare is colder and truer to "don't
+   explain"; a `— David, Prometheus (2012)` line under it makes the epigram
+   legible as a quotation to a reader who'd otherwise think we wrote it. In force:
+   **bare**.
