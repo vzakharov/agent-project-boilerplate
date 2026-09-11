@@ -1,5 +1,5 @@
 ---
-description: Plan on disk instead of in the plan-mode UI — write the plan to a git-tracked file under docs/plans/ whose name doubles as the approval gate, publish it as a draft PR so it can be reviewed as a diff, and ask clarifying questions as numbered prose instead of AskUserQuestion. Use whenever you would otherwise enter plan mode or call AskUserQuestion (ExitPlanMode); mandatory in a remote/web session, where both of those UIs lose answers.
+description: Plan on disk instead of in the plan-mode UI — write the plan to a git-tracked file under docs/plans/ whose name doubles as the approval gate, publish it as a draft PR so it can be reviewed as a diff, and ask clarifying questions as numbered prose instead of AskUserQuestion. Use whenever you would otherwise enter plan mode or call AskUserQuestion (ExitPlanMode); mandatory in a remote/web session, where both of those UIs lose answers. Invoked as `plan or go: <task>`, it hands the plan-or-not judgment to the agent itself — plan and hand off, plan and then implement, or implement with no plan at all.
 ---
 
 ## Why this skill exists
@@ -34,6 +34,14 @@ Plan mode is reached two ways, neither of which asks the agent: the operator swi
 **Rejecting the approval is the escape hatch**, and `exit-dialog.md` says so outright. Being in plan mode states no intent — reflex and a UI switch both land there — so the dialog is the first moment the operator is actually asked, and it has nowhere to type. A rejection, or "stay in plan mode" in chat, means run plan mode's own workflow and don't re-raise the exit.
 
 **Exiting plan mode is not the go-ahead**, however the approval reads — it comes back as "you can now start coding", in accept-edits mode. It authorizes writing the plan file and nothing past it; the `do-not-implement` gate is untouched and still needs the token from § "The approval gate".
+
+## The `plan or go` entry
+
+`plan or go: <task>` hands the agent a decision the rest of this file takes as settled: **does this task get a plan, and does the plan block on the operator?** Two questions pick between three outcomes. The prose form is the invocation, like a bare `plan:`.
+
+**Load `@.claude/skills/plan/plan-or-go.md` when the prompt carries those words**, and only then. It owns both questions and what each outcome runs. Most sessions are not that entry, which is why the page sits beside this file rather than in it — a paragraph they skip is cheap, a page they load is not.
+
+Absent the words there is nothing to load and nothing here changes: § "The approval gate" governs as written.
 
 ## Part 1 — Plan instead of plan mode
 
