@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-feat: rename the repo to muthur and single-source its identity (pr #65)
+feat: rename the repo to muthur — ADOPTERS, read the body (pr #65)
 ```
 
 ```
@@ -13,7 +13,7 @@ improvements forward. The README leads on that now, and the prose that
 called this repo "the boilerplate" calls it the template — the one of
 the two terms that names something the repo actually has.
 
-The repo's own name now lives in one place. `upstream.json`'s `repo`
+The repo's own name now lives in one place. `watermark.json`'s `repo`
 field is the source of truth, and the three guards that asked whether a
 tree is the source — `/detemplate`'s Step 0, `/spinoff`'s refusal, and
 CLAUDE.md's opening stub — compare `origin` against it instead of
@@ -22,14 +22,16 @@ and `gh api` recipes a human copies, is held to an allowlist by
 `scripts/check-repo-identity.sh`, which the vet run calls. A future
 rename is that one JSON field plus whatever the check flags.
 
-ADOPTERS, two things travel with this. `/sync-agent-infra` is now
-`/sync-muthur`; rename your copy's directory when you take this, or
-leave it, since nothing locates the skill by name. And your
-`upstream.json` still says `vzakharov/agent-project-boilerplate`, which
-goes on cloning fine — the rename leans on GitHub's permanent redirect
-rather than a pointer repo at the old name, that path only stopping
-redirecting if this account occupies it, and no one else can. So update
-`repo` whenever you next touch the file.
+ADOPTERS, three things travel with this, none of them urgent. The skill
+is `/sync-muthur` now, and its watermark is `watermark.json` rather than
+`upstream.json`. Rename both in your copy when you take this, or leave
+them: nothing locates either by its path, the watermark being found by
+the `repo` and `lastSyncedSha` it carries. And that `repo` still says
+`vzakharov/agent-project-boilerplate`, which goes on cloning fine — the
+rename leans on GitHub's permanent redirect rather than a pointer repo
+at the old name, that path only stopping redirecting if this account
+occupies it, and no one else can. So update it whenever you next open
+the file.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
