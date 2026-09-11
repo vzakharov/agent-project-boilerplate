@@ -193,16 +193,16 @@ loses answers there, so a session that lands in it is told where this repo's
 planning actually happens.
 
 `session-images.sh` is the one member that earns its keep on a laptop too: an
-attached image exists only inside the transcript wherever the session runs.
-Nothing it writes is committed — the file is left untracked for the agent to
-keep or ignore — so it needs no `git` and behaves the same everywhere.
+attached image exists only inside the transcript wherever the session runs. It
+writes into gitignored `tmp/` and commits nothing, so it needs no `git`, leaves
+the working tree clean, and behaves the same everywhere.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash`; **`gh` already on `PATH`** | — | adopt |
 | `.claude/hooks/plan-mode-notice.sh` | On every prompt submitted while the session is in native plan mode, inject the notice that this repo plans on disk and that the exit is plan mode's own. | web/remote sessions; `bash`, `jq` | `/plan` (G2) | adopt |
 | `.claude/hooks/session-images.sh` | On every prompt, run the extractor below and name any newly written file in the turn's context. Commits nothing. | `bash`, `jq`, `python3` ≥3.9 | `scripts/extract-session-images.py` | adopt |
-| `scripts/extract-session-images.py` | Write the images the operator attached to a session out of the transcript into `docs/remove-before-merging/session-images/`, with a manifest row carrying the prompt each arrived with. Stdlib-only, idempotent. | `python3` ≥3.9, `scripts/lib/media.py` (G2) | — | adopt |
+| `scripts/extract-session-images.py` | Write the images the operator attached to a session out of the transcript into gitignored `tmp/session-images/`, with a manifest row carrying the prompt each arrived with. Stdlib-only, idempotent. | `python3` ≥3.9, `scripts/lib/media.py` (G2) | — | adopt |
 | `.claude/settings.json` | Project settings wiring the SessionStart and UserPromptSubmit hooks. Merge into yours if you already have one. | — | — | adopt — merge if present |
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
@@ -318,7 +318,7 @@ means you are looking at working state, not the product.
 | `/detemplate` | Turn a fresh template fork into a project: prune the `never` rows and unused groups, hydrate what stays, hand back the setup script. Routes through `/plan` and deletes itself last. | `gh`, `$GH_TOKEN`; a whole-tree fork, not a subset copy | `/plan` (G2); `/spinoff`, `/update-muthur` (G0) | never |
 | `scripts/check-repo-identity.sh` | Assert that this repo's own `owner/repo` appears only where a human copies it by hand, and nowhere under a stale name — everything else compares `origin` against the watermark's `repo` field instead. Keyed on this catalog's presence, so it exits 0 the moment it is downstream. | `bash`, `jq`, `git` | — | never |
 | `docs/plans/*` | Working artifacts: file-based plans mid-flight. `/finalize` sweeps them before they reach a trunk. | — | — | never |
-| `docs/remove-before-merging/*` | Working artifacts: the tracked squash-message draft, and the session images G4's hook extracts. Swept at finalize. | — | — | never |
+| `docs/remove-before-merging/*` | Working artifacts: the tracked squash-message draft. Swept at finalize. | — | — | never |
 
 ## Closure is not optional
 

@@ -4,11 +4,12 @@
 Usage:
   python3 scripts/extract-session-images.py <transcript.jsonl> [--out DIR] [--verbose]
 
-Each image goes to `docs/remove-before-merging/session-images/` (overridable
-with `--out`), and a row to `index.md` there carrying the prompt it arrived
-with — the text is what makes the image legible to a session that was not
-present for it. The files are left untracked; `.claude/hooks/session-images.sh`
-is the caller, and carries why this runs without being invoked.
+Each image goes to `tmp/session-images/` (overridable with `--out`), and a row
+to `index.md` there carrying the prompt it arrived with — the text is what makes
+the image legible to a session that was not present for it. `tmp/` is gitignored,
+so an image reaches the repo only when someone puts it there deliberately.
+`.claude/hooks/session-images.sh` is the caller, and carries why this runs
+without being invoked.
 
 Idempotent: filenames derive from the record's own timestamp and uuid, and the
 manifest's SHA-256 column is the dedupe state, so a re-run over the same
@@ -42,16 +43,16 @@ from typing import Iterator, List, NamedTuple, NoReturn, Optional
 
 from lib.media import extension_for_bytes
 
-DEFAULT_OUT = Path("docs") / "remove-before-merging" / "session-images"
+DEFAULT_OUT = Path("tmp") / "session-images"
 MANIFEST_NAME = "index.md"
 PROMPT_EXCERPT_CHARS = 200
 
 MANIFEST_HEADER = """# Session images
 
 Images the operator attached to a session, pulled out of the transcript by
-`scripts/extract-session-images.py`. Nothing here is committed for you, and this
-whole tree goes at `/finalize`, so an image worth keeping moves to a permanent
-home and is committed there.
+`scripts/extract-session-images.py`. This directory is gitignored scratch space
+that dies with the machine, so an image worth keeping moves into the repo proper
+and is committed there.
 
 | File | Captured (UTC) | Size | Branch | Prompt | SHA-256 |
 | --- | --- | --- | --- | --- | --- |

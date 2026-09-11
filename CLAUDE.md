@@ -157,7 +157,7 @@ The default is not to write it. Prose costs context on every session that loads 
 
 **Plans are the exception**, being transient by construction. Keep them current — when work deviates from the plan, update it to reflect actual progress and revised ordering — and keep their checklist items in forward-looking voice: how you'd phrase them _before_ doing the work, not as retrospective reports.
 
-**An image the operator attached is a file on disk — decide whether it stays.** `.claude/hooks/session-images.sh` writes every attachment into `docs/remove-before-merging/session-images/` with a manifest row carrying the prompt it arrived with, untracked: the transcript is the only other copy and it dies with the machine, so an image nobody commits is gone, and one committed where it lands goes at `/finalize` with the rest of that tree. An image the repo has a lasting use for — a screenshot a doc points at, a diagram worth citing — moves to a permanent home and is committed there together with the prose that references it, because a reference into the swept tree ships broken. Everything else is left where it is.
+**An image the operator attached is a file on disk — decide whether it stays.** `.claude/hooks/session-images.sh` writes every attachment into gitignored `tmp/session-images/` with a manifest row carrying the prompt it arrived with. The transcript is the only other copy and both die with the machine, so an image nobody moves into the repo is gone. An image the repo has a lasting use for — a screenshot a doc points at, a diagram worth citing — moves to a permanent home and is committed there together with the prose that references it. Everything else is left where it is.
 
 ## Language
 

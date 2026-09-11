@@ -6,12 +6,13 @@
 # so it dies with the session. Extraction is a hook rather than an instruction
 # because the agent forgetting is the failure it exists to remove.
 #
-# Nothing here commits, and the extracted file is untracked: an image worth
-# keeping rides the next commit the agent makes anyway, which is the decision
-# CLAUDE.md § "Writing things down" states. A hook that committed on its own
-# would commit to whatever branch HEAD happened to be on, and would restore the
-# tree `/finalize` had just swept — the manifest it dedupes against is inside
-# that tree, so a sweep is indistinguishable from a first run.
+# The images land in gitignored `tmp/`, and nothing here commits: an image worth
+# keeping is moved into the repo deliberately, which is the decision CLAUDE.md
+# § "Writing things down" states. A hook that committed on its own would commit
+# to whatever branch HEAD happened to be on; one that wrote into the tree
+# `/finalize` sweeps would restore that tree right after the sweep, since the
+# manifest it dedupes against is inside it and a sweep then looks like a first
+# run.
 #
 # One event carries this, and measurement rather than assumption says which:
 # when UserPromptSubmit fires the prompt being submitted is not in the
@@ -46,7 +47,7 @@ project="${CLAUDE_PROJECT_DIR:-$(field cwd)}"
 [ -n "$transcript" ] && [ -f "$transcript" ] || exit 0
 [ -n "$project" ] && [ -d "$project" ] || exit 0
 
-rel_dir="docs/remove-before-merging/session-images"
+rel_dir="tmp/session-images"
 out="$project/$rel_dir"
 
 if ! written="$(python3 "$project/scripts/extract-session-images.py" "$transcript" --out "$out")"; then
@@ -60,6 +61,6 @@ names="$(sed "s|^$out/|$rel_dir/|" <<<"$written")"
 jq -n --arg names "$names" '{
   hookSpecificOutput: {
     hookEventName: "UserPromptSubmit",
-    additionalContext: ("Images the operator attached earlier in this session are on disk as untracked files:\n" + $names + "\nThey sit under a tree `/finalize` sweeps, so one worth keeping moves to a permanent home with `git mv` and is committed with the work that references it. Leave the rest where they are.")
+    additionalContext: ("Images the operator attached earlier in this session are on disk under gitignored `tmp/`:\n" + $names + "\nThey die with the machine. One the repo has a lasting use for moves into the repo proper and is committed with the prose that references it; leave the rest where they are.")
   }
 }'

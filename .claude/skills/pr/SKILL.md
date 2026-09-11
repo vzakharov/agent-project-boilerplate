@@ -34,7 +34,7 @@ This remote execution environment has **both** the `gh` CLI **and** a populated 
 
 If the invocation carries arguments, they are not this skill's to act on: route a task to `/plan` (or `/go`, when the operator says no plan is needed) and start over from there.
 
-- `git status --porcelain` must be empty. If there are unstaged or staged-but-uncommitted changes, **stop and ask the user** — this skill draws the PR from what's already committed, it does not auto-commit. Untracked files under `docs/remove-before-merging/session-images/` are the exception: `.claude/hooks/session-images.sh` writes them and commits nothing, so they are the operator's attachments waiting on a decision rather than work in progress. Leave them and continue.
+- `git status --porcelain` must be empty. If there are unstaged or staged-but-uncommitted changes, **stop and ask the user** — this skill draws the PR from what's already committed, it does not auto-commit.
 - `git rev-list --count origin/<base>..HEAD` must be ≥ 1. If 0, the branch has no commits to PR — stop and report. (In plan-open mode the plan commit is that one commit.)
 - `gh pr view --json number,url,baseRefName 2>/dev/null` — a PR already on this branch selects **refresh** mode rather than stopping: read `baseRefName` off it as `<base>` and continue. This is the expected state on any branch `/plan` published. Say so in the Step 7 report, including for the operator who meant `/finalize` and typed `/pr`.
 
