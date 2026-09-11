@@ -179,7 +179,11 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    with it — and delete § "Git conventions"'s adopter-inverts rule, which
    instructs adopters to delete it. **§ "Language"'s stub is replaced in the same
    pass** with the Step 1 answer, one line; the rest of that section holds as
-   shipped.
+   shipped. **Replace `.claude/skills/plainly/operators.md`'s shipped entry**
+   with one for whoever ran the detemplate if they stated a standing preference
+   about how you talk to them during the run, and otherwise leave the template
+   alone — the rule is complete with no entries, and inventing one for a person
+   who never asked is worse than an empty file.
 5. **File the project's first issue** through `/propose-issue`, carrying the
    brief, any spec the operator attached, and any answer they gave for the
    prune's sake that also describes the product. A scarce brief makes a scarce

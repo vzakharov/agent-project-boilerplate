@@ -183,6 +183,25 @@ The last two are still this project's to override — a team that wants its skil
 in its own language writes that here — but an override is a decision someone
 makes, not a blank left open.
 
+## Explaining things to people
+
+How to write for a person is a large enough topic to live with the skill that
+expands it, so it is imported from there rather than stated here. That skill is
+`/plainly`: bare, it re-explains an answer that did not land; with a question, it
+answers under the rule from the start. Invoking it is optional — the rule itself
+governs every reply regardless.
+
+<!-- Both lines are real imports, not pointers, so they are unbackticked: the
+     import parser skips code spans, and backticking either would silently stop
+     it loading. Every other @-reference in this file is backticked because it
+     is a pointer the agent opens on demand. Both files are imported here
+     rather than the second from the first: an import inside an imported file
+     does not load, whatever the nesting depth the docs give. -->
+
+@.claude/skills/plainly/voice.md
+
+@.claude/skills/plainly/operators.md
+
 ## Working with skills
 
 This project ships a set of Claude Code skills under `.claude/skills/`. Invoke them as `/<name>` in a session.
@@ -210,7 +229,6 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/dry`** — review the session's diff for DRY opportunities; applies obvious wins, surfaces ambiguous ones.
 - **`/tend-prose`** — cut prose that shouldn't exist, rewrite what narrates the change into present-tense contracts, trim what the names and types already say, and delete what only denies a thing the change removed. Naming one lens (`existence`, `durability`, `tightness`, `negation`) runs only that one.
-
 **Mechanical pieces**, individually invocable and composed by the loop above:
 
 - **`/pr`** — own the PR object: rename the auto-branch, push, then open the draft PR or refresh the one that exists.
