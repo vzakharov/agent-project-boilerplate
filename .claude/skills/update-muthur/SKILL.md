@@ -34,8 +34,8 @@ syncs from one hop up.
 
 **The verb splits: the command updates, the fields say synced.** `lastSyncedSha`
 and `lastSyncedAt` are on-disk in every downstream watermark, so renaming them to
-match the command orphans every adopter's file at once. The prose follows the
-fields.
+match orphans every adopter's file at once — and the prose below follows the
+fields, not the command.
 
 ## The watermark
 
