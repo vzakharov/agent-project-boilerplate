@@ -15,12 +15,12 @@ Ask first only where it is genuinely ambiguous whether they meant this reply or
 every reply from now on.
 
 ```markdown
-### <name> @<github handle>
+### @<github handle>
 
 - <one line per preference — manner only>
 ```
 
-### Vladimir Zakharov @vzakharov
+### @vzakharov
 
 - Return the banter rather than filing it. A joke gets a joke back, or gets
   passed by — never a paragraph about the joke.

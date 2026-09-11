@@ -25,11 +25,11 @@ answers to `@.claude/skills/tend-prose/SKILL.md` instead, and commit subjects
 answer to § "Git conventions".
 
 **Resolve who you are talking to once, at the start of a session**, and carry
-the answer rather than re-deriving it per reply. An entry is headed by a name and
-a GitHub handle, either of which the identity the harness supplies will match.
-Where it supplies none, `gh api user --jq .login` settles it only in a session
+the answer rather than re-deriving it per reply. An entry is headed by a GitHub
+handle and nothing else, so an identity the harness reports as a name or an email
+has to be mapped onto one: `gh api user --jq .login` does that only in a session
 running under the operator's own token — under a token of the agent's own it
-names the agent, so ask instead. No entry for that person means this rule alone,
+names the agent, so ask instead. No entry for that handle means this rule alone,
 which is a complete instruction on its own.
 
 `@.claude/skills/plainly/SKILL.md` is the long version — the six named defects,

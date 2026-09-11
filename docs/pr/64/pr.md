@@ -7,7 +7,7 @@
 - **Draft:** yes
 - **Merged:** _not merged_
 - **Created:** 2026-09-11T09:05:59Z
-- **Updated:** 2026-09-11T10:52:00Z
+- **Updated:** 2026-09-11T11:23:09Z
 - **Closed:** _not closed_
 - **Labels:** _none_
 
@@ -19,9 +19,9 @@
 
 - Adds a house rule for how an agent explains things to a person, stated as a **shape** rather than a mood: the cause first, in the reader's nouns, each step saying why the next followed — and an unknown cause treated as unfinished investigation rather than a register problem. A frustration marker (repeated punctuation, caps, a re-asked question) is read as a report that the last answer did not land, and the wrong response to it is more detail.
 - The rule lives in `.claude/skills/plainly/voice.md` and reaches every session through a `CLAUDE.md` import, so it applies to replies nobody invoked a skill for. It governs chat and the GitHub prose a person reads to decide something — PR bodies, issue comments, review replies.
-- `/plainly` holds the long version: two invocations (bare at an answer that did not land, or with a question), the pass, and six named defects — symptom-as-finding, buried lede, untranslated nouns, broken chain, fog, receipt — so a bad report can be called out in one word. `example.md` carries a worked pair of answers in an invented domain.
+- `/plainly` holds the long version: two invocations (bare at an answer that did not land, or with a question), the pass, and six named defects — symptom-as-finding, buried lede, untranslated nouns, broken chain, fog, receipt — so a bad report can be called out in one word. Each defect is a tell to look again, not a verdict: a literal answer to a literal question can still be the wrong one, and which reading was owed is not always decidable.
 - **Receipt** is the one investigation cannot fix: a reply *about* what the person said, where the thing they said wanted an answer. It is where the two halves meet — whether to return a joke is a per-operator entry, but acknowledging one instead of answering it is a defect for everyone.
-- Per-operator entries live in `operators.md`, imported alongside the rule, with the guardrail that an entry tunes **manner only** and can never lower a bar, drop a cause, or silence a failure. Identity is resolved once per session, from the harness where it supplies one.
+- Per-operator entries live in `operators.md`, imported alongside the rule, keyed by GitHub handle, with the guardrail that an entry tunes **manner only** and can never lower a bar, drop a cause, or silence a failure. A stated preference is written down by default rather than offered. Identity is resolved once per session, from the harness where it supplies one — `gh api user` is the fallback, and only where the session runs under the operator's own token.
 - **Two imports, not one nested inside the other.** An `@`-reference inside an imported file loads nothing, so both files are imported from `CLAUDE.md` directly; both are unbackticked, because the import parser skips code spans and a backticked reference would fail silently. Both sites carry a comment saying so.
 - Registration: three G1 catalog rows (the skill, `voice.md` as adopt, `operators.md` as **rewrite**), `README.md` counts 30 → 31, and an `ADOPTING.md` hydration step that cites the catalog rather than restating it. `/detemplate` seeds the entry from its run or leaves the template.
 
@@ -32,7 +32,7 @@
 - [ ] `backticks` — backtick either import in `CLAUDE.md` and confirm the rule stops reaching context, so the unbackticked style beside backticked neighbours reads as deliberate rather than a typo.
 - [ ] `shape` — read the six bullets in `voice.md` and check each would visibly fail a report that quotes an error string and stops there.
 - [ ] `defects` — read the defect table in `SKILL.md` and confirm each name is something you would actually type at a bad report.
-- [ ] `example` — read `example.md` and check the full answer is reachable from what the thin one had already seen, so it teaches investigation rather than omniscience.
+- [ ] `identity` — check the resolution instruction against your own harness: does it settle who you are talking to without a guess, and does it stop rather than guess where the token belongs to the agent?
 - [ ] `guardrail` — read the manner-only guardrail in `operators.md` and try to think of a personal preference that would slip past it and change substance.
 - [ ] `budget` — both imported files are resident on every session; read them as a context cost and cut anything that is reference material rather than rule.
 - [ ] `adopt` — read the G1 rows and the `ADOPTING.md` step as an adopter: is it clear that the section and both imports travel together, and that `operators.md` is rewritten?
@@ -44,7 +44,7 @@
 | `backticks` | automatable | manual | Same mechanism again — all three are one check with three inputs |
 | `shape` | manual-only | — | Whether a rule would have caught a past answer is editorial judgment |
 | `defects` | manual-only | — | Naming quality is a taste question |
-| `example` | manual-only | — | Reading a worked example for whether it teaches |
+| `identity` | manual-only | — | Depends on the harness the reader's sessions actually run under |
 | `guardrail` | manual-only | — | Adversarial reading of a policy boundary |
 | `budget` | manual-only | — | A length trade-off, not a threshold |
 | `adopt` | partially | `check-skill-catalog.sh` | The script asserts the rows exist and their paths resolve; whether the prose reads right to an adopter is manual |
@@ -70,10 +70,9 @@ feat: state how an agent explains things, and let operators tune it (pr #64)
 ```
 An agent that reports what a system printed has not finished the
 work. An incident report took three operator turns to reach its
-cause — the quoted error, then the same facts renumbered as steps,
-and only then the chain that explained them. Nothing in that third
-answer needed the first two: everything it rested on was readable
-from the start.
+cause: the quoted error, the same facts renumbered as steps, and
+only then the chain. Nothing in that third answer needed the
+first two — all of it was readable from the start.
 
 The rule states a shape rather than a mood, and lives in its own
 file beside the skill that expands it. CLAUDE.md imports that file
@@ -91,15 +90,18 @@ answer did not land, and the wrong reply to it is more detail.
 
 The long version lives in /plainly, the way /tend-prose is the
 long version of § "Writing things down": six named defects, so a
-bad report can be called out in a word, and a worked pair of
-answers that teaches what the table only labels. The last of the
-six is the only one investigation cannot fix — a reply about what
-someone said, where what they said wanted an answer.
+bad report can be called out in a word. Each is a tell to look
+again rather than a verdict — a literal answer to a literal
+question can still be the wrong one, and which reading was owed
+is not always decidable. The last of the six is the only one
+investigation cannot fix: a reply about what someone said, where
+what they said wanted an answer.
 
 Preferences that vary by person get their own file, one short
-entry each, resolved once against the session's operator rather
-than guessed at per reply. An entry tunes manner and never
-substance: it cannot drop a cause, skip a check, or quiet a
+entry each under a GitHub handle, resolved once against the
+session's operator rather than guessed at per reply and written
+down when stated rather than offered. An entry tunes manner and
+never substance: it cannot drop a cause, skip a check, or quiet a
 failure. Anything that would is a change to the house rule, where
 everyone can see it. The entry decides whether a joke comes back;
 handing over a receipt instead of a reply is ruled out either way.
@@ -1056,7 +1058,7 @@ Both folded in at 999229f and the section is gone: the skill is `/plainly` and n
 
 ---
 
-### `.claude/skills/plainly/operators.md`:14 — unresolved
+### `.claude/skills/plainly/operators.md`:14 — resolved
 
 ```diff
 @@ -0,0 +1,26 @@
@@ -1079,6 +1081,10 @@ Both folded in at 999229f and the section is gone: the skill is `/plainly` and n
 **@vzakharov (human)** — 2026-09-11T10:42:43Z
 
 why offer -- just write, by default, unless it is ambiguous whether they want it only now or always
+
+**@vzakharov (agent)** — 2026-09-11T10:57:47Z
+
+Agreed — writing it down is now the default, and the ask survives only for a genuinely ambiguous "this reply or every reply from now on". 87121f0
 
 ---
 
@@ -1115,17 +1121,29 @@ why offer -- just write, by default, unless it is ambiguous whether they want it
 
 nope, it should be github handle, not email
 
+**@vzakharov (agent)** — 2026-09-11T10:57:48Z
+
+Done — the template heading is `### <name> @<github handle>` and the entry is `### Vladimir Zakharov @vzakharov`. That moved the trap into resolution, so `voice.md` now names it: `gh api user` reports whoever holds the token, so it settles the operator only in a session running under the operator's own token — under a token of the agent's own it names the agent, and the instruction is to ask. 87121f0
+
+**@vzakharov (human)** — 2026-09-11T11:21:33Z
+
+just @vzakharov, no name-surname
+
 ---
 
-### `.claude/skills/plainly/example.md`:1 — unresolved
+### `.claude/skills/plainly/example.md`:1 — resolved
 
 **@vzakharov (human)** — 2026-09-11T10:43:35Z
 
 what's the purpose of this file again?
 
+**@vzakharov (agent)** — 2026-09-11T10:57:49Z
+
+It was the thing the table only labels — two answers to the same question, thin and full, plus what the full one had read. Your other comment retires it, so it is deleted rather than defended; see the reply there. 87121f0
+
 ---
 
-### `.claude/skills/plainly/SKILL.md`:5 — unresolved
+### `.claude/skills/plainly/SKILL.md`:5 — resolved
 
 ```diff
 @@ -0,0 +1,79 @@
@@ -1140,9 +1158,13 @@ what's the purpose of this file again?
 
 frustration mention? or do you think "answer that did not land" covers that?
 
+**@vzakharov (agent)** — 2026-09-11T10:58:05Z
+
+Named them. "An answer that did not land" is the state; the markers are what you actually see, and a description is what routes the invocation, so it now reads "a re-asked question, a \"just tell me\", punctuation doing the complaining". The identity mechanism went the other way — out of the description and back to `voice.md`, which is resident anyway. 87121f0
+
 ---
 
-### `.claude/skills/plainly/SKILL.md`:32 — unresolved
+### `.claude/skills/plainly/SKILL.md`:32 — resolved
 
 ```diff
 @@ -0,0 +1,79 @@
@@ -1184,9 +1206,13 @@ frustration mention? or do you think "answer that did not land" covers that?
 
 "for this to happen" pre-implies we're talking about a bug or at least some state-of-things. But "answering" is not only that.
 
+**@vzakharov (agent)** — 2026-09-11T10:58:06Z
+
+Right, and the step was written from the incident it came out of. It now asks what the answer rests on: a cause where something happened, a reason where something was chosen, a constraint where something could not be otherwise — the question decides which, and not every question is about a malfunction. 87121f0
+
 ---
 
-### `.claude/skills/plainly/SKILL.md`:40 — unresolved
+### `.claude/skills/plainly/SKILL.md`:40 — resolved
 
 ```diff
 @@ -0,0 +1,79 @@
@@ -1236,9 +1262,13 @@ frustration mention? or do you think "answer that did not land" covers that?
 
 what's a "draft"? we're not talking files in the codebase after all. Suggested: "Imitate" working with files in your thinking: "think" it down, then apply the lenses, then think it out again.
 
+**@vzakharov (agent)** — 2026-09-11T10:58:07Z
+
+Taken as suggested. Steps 2 and 3 now say to draft it in thinking, run the six tells over what you wrote, and think it out again — a tell you cannot see is one you never put down. 87121f0
+
 ---
 
-### `.claude/skills/plainly/SKILL.md`:54 — unresolved
+### `.claude/skills/plainly/SKILL.md`:54 — resolved
 
 ```diff
 @@ -0,0 +1,79 @@
@@ -1302,9 +1332,13 @@ what's a "draft"? we're not talking files in the codebase after all. Suggested: 
 
 "jargon"?
 
+**@vzakharov (agent)** — 2026-09-11T10:58:21Z
+
+Put it in the tell rather than the name: "Jargon the reader does not use, where their own word exists and is exact". Jargon alone is not the defect — two engineers sharing it are fine — but it is the word anyone reaches for first, so the row should be findable by it. 87121f0
+
 ---
 
-### `.claude/skills/plainly/SKILL.md`:52 — unresolved
+### `.claude/skills/plainly/SKILL.md`:56 — resolved
 
 ```diff
 @@ -0,0 +1,79 @@
@@ -1367,6 +1401,10 @@ what's a "draft"? we're not talking files in the codebase after all. Suggested: 
 note that this is not always straightforward. for example, in the example the operator both times asked along the lines of "What is happening here??" -- to which a description of "what is happening" is a legitimate answer. But the agent should have* seen what they were *actually* asking for a solution, not diagnosis, especially given the multiple question marks (frustration marker). 
 
 *"should have" is not obvious here either. One could say, that's what they asked -- that's what I answered. I don't have a clear answer for that and I don't think the skill should provide one.
+
+**@vzakharov (agent)** — 2026-09-11T10:58:22Z
+
+Added the observation without the rule you said should not exist: "A tell is a prompt to look again, not a verdict. Someone who asks \"what is happening here??\" has literally asked for a description, and a description answers them; the question marks say they wanted it fixed. Which of the two readings was owed is not always decidable, and nothing here decides it — what the tell buys you is noticing that there were two." 87121f0
 
 ---
 
@@ -1459,9 +1497,17 @@ note that this is not always straightforward. for example, in the example the op
 
 I think this hurts more than helps (polar bear + feeding an agent with "bad examples", one way or another making their logprobs lean this way -- smth smth learned helplessness but for llms lol <-- this is a joke btw ;-)
 
+**@vzakharov (agent)** — 2026-09-11T10:58:24Z
+
+Deleted. Few-shot learning to be mediocre is a real risk and I would rather not be my own eval set. The substance holds too: the thin answer is in context every time the file is read, and the table already names what is wrong with it, so the example was paying its cost twice for one lesson. 87121f0
+
+**@vzakharov (human)** — 2026-09-11T11:23:09Z
+
+Ironically, you didn't remote the joke ;-) in this repo, the existing operator.md applies
+
 ---
 
-### `CLAUDE.md`:229 — unresolved
+### `CLAUDE.md`:229 — resolved
 
 ```diff
 @@ -206,10 +222,11 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
@@ -1479,6 +1525,10 @@ I think this hurts more than helps (polar bear + feeding an agent with "bad exam
 **@vzakharov (human)** — 2026-09-11T10:51:52Z
 
 does this qualify as a "quality pass"? a quality pass over what?
+
+**@vzakharov (agent)** — 2026-09-11T10:58:25Z
+
+It is not one — it passes over a reply, not over a diff, and unlike the other two it is not mandatory inside `/go`. The bullet moved to § "Explaining things to people", where the rule it expands lives, and the group is back to "(both are mandatory inside `/go`)". 87121f0
 
 ---
 
