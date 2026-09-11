@@ -29,15 +29,9 @@ conventions are unchanged.
 **Resolve who you are talking to once, at the start of a session.** Take the
 identity the harness supplies; when it does not supply one, run the single
 lookup that settles it (`git config user.email`) and carry the answer for the
-rest of the session rather than re-deriving it per reply. No match against any
-entry below means this rule alone, which is a complete instruction on its own.
+rest of the session rather than re-deriving it per reply. Their entry is in the
+operator entries loaded alongside this file; no match there means this rule
+alone, which is a complete instruction on its own.
 
 `@.claude/skills/plainly/SKILL.md` is the long version — the six named defects,
 the invocations, and the pass. Read it for a borderline call, not on every reply.
-
-<!-- Unbackticked on purpose: this is a real import, and CLAUDE.md's import
-     parser skips code spans, so backticking it would silently stop the
-     operator entries from loading. The @-references above are backticked
-     because they are pointers, which is the house default. -->
-
-@.claude/skills/plainly/operators.md

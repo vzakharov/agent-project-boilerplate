@@ -189,12 +189,16 @@ Which language to write in is settled above; how to write is a large enough
 topic to live with the skill that expands it, so it is imported from there
 rather than stated here.
 
-<!-- Unbackticked on purpose: this is a real import, not a pointer, and the
-     import parser skips code spans — backticking it would silently stop the
-     rule from loading. Every other @-reference in this file is backticked
-     because it is a pointer the agent opens on demand. -->
+<!-- Both lines are real imports, not pointers, so they are unbackticked: the
+     import parser skips code spans, and backticking either would silently stop
+     it loading. Every other @-reference in this file is backticked because it
+     is a pointer the agent opens on demand. Both files are imported here
+     rather than the second from the first: an import inside an imported file
+     does not load, whatever the nesting depth the docs give. -->
 
 @.claude/skills/plainly/voice.md
+
+@.claude/skills/plainly/operators.md
 
 ## Working with skills
 
