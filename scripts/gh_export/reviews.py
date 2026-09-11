@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from gh_export.attachments import rewrite_attachment_refs
-from gh_export.markdown import login_of
+from gh_export.authorship import attribution, split_agent_footer
 
 
 def review_threads(comments: list[dict[str, Any]]) -> list[list[dict[str, Any]]]:
@@ -62,14 +62,15 @@ def review_section(
 
     for review in bodied:
         state = (review.get("state") or "COMMENTED").upper()
-        who = login_of(review.get("user"))
+        by_agent, body = split_agent_footer(review["body"])
         chunks.extend(
             [
-                f"### Review by @{who} — {state}",
+                f"### Review by {attribution(review.get('user'), by_agent)}"
+                f" — {state}",
                 "",
                 f"_{review.get('submitted_at', '')}_",
                 "",
-                rewrite_attachment_refs(review["body"], url_to_relative),
+                rewrite_attachment_refs(body or "_empty_", url_to_relative),
                 "",
             ]
         )
@@ -83,14 +84,13 @@ def review_section(
         if hunk:
             chunks.extend(["```diff", hunk, "```", ""])
         for comment in chain:
-            who = login_of(comment.get("user"))
+            by_agent, body = split_agent_footer(comment.get("body") or "")
             chunks.extend(
                 [
-                    f"**@{who}** — {comment.get('created_at', '')}",
+                    f"**{attribution(comment.get('user'), by_agent)}**"
+                    f" — {comment.get('created_at', '')}",
                     "",
-                    rewrite_attachment_refs(
-                        comment.get("body") or "_empty_", url_to_relative
-                    ),
+                    rewrite_attachment_refs(body or "_empty_", url_to_relative),
                     "",
                 ]
             )

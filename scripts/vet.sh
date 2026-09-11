@@ -15,7 +15,7 @@
 # Parallel, printing only what failed (worth it once the serial run is the wait):
 #   exec scripts/run-parallel.sh lint='pnpm lint' typecheck='pnpm typecheck' test='pnpm test:unit'
 #
-# The two lines below are not stack-specific. Replacing everything around them
+# The three lines below are not stack-specific. Replacing everything around them
 # is what this file is for, so decide each on its own rather than sweeping it
 # away with the stack:
 #
@@ -28,6 +28,11 @@
 #     `/squash-message` states, passing quietly when a branch has no proposal.
 #     Dropping it leaves nothing catching a proposal edited by hand or outgrown
 #     by a later base merge.
+#   test_authorship.py — the export's agent/human labelling, which `/handle`
+#     reads to tell its own replies from an operator's. Run by path, never
+#     through `unittest discover`: `scripts/` carries no `__init__.py`, and
+#     discovery over a namespace package reports `Ran 0 tests ... OK` and exits
+#     0, so the line would pass here without running a test.
 #
 # See CLAUDE.md → Vetting for the contract.
 
@@ -35,6 +40,7 @@ set -euo pipefail
 
 "$(dirname "$0")/check-skill-catalog.sh"
 "$(dirname "$0")/check-squash-message.sh"
+"$(dirname "$0")/test_authorship.py"
 
 echo "vet: no stack-specific checks are configured; the checks above are the run." >&2
 echo "vet: a repo whose stack is present and unchecked exits 1 here instead" >&2
