@@ -224,7 +224,10 @@ denial, and every later reader pays for a thing that is not there. Tells:
 
 The test: **with the sentence gone, would its subject have crossed the reader's
 mind at all?** If the sentence is the only reason they are thinking about the
-thing, the sentence is what put the bear there.
+thing, the sentence is what put the bear there — which is Dostoevsky's point in
+*Winter Notes on Summer Impressions*: set yourself the task of not thinking
+about a polar bear, and the cursed thing comes to mind every minute. Denying a
+removed thing sets the reader that task.
 
 **The discriminator — constraint or residue.** This is where the lens
 over-deletes if you run it on the tells alone, because a codebase's prose is
