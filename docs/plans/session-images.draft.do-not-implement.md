@@ -26,7 +26,8 @@ an extra step.
    `docs/remove-before-merging/session-images/`, and appends a row per image to
    `index.md` there. Idempotent: re-running writes nothing new.
 2. **`.claude/hooks/session-images.sh`** — runs that script on `UserPromptSubmit`
-   and on `Stop`, so extraction needs no agent discipline.
+   and on `Stop`, so extraction needs no agent discipline, and in a remote
+   session commits what it wrote.
 3. **A CLAUDE.md convention** saying what the extracted files are for and what
    the agent does with one worth keeping.
 4. **Catalog rows** so the mechanism reaches adopters intact.
@@ -93,10 +94,11 @@ separate state file to keep in sync.
    - Run the script. On `UserPromptSubmit`, when files were written, emit
      `hookSpecificOutput.additionalContext` naming them, so the agent can reference
      the path in the same turn.
-   - On `Stop`, also commit what the script wrote, restricted to the output
-     directory: `git add -- <dir> && git commit -- <dir>`. Guards: skip when `HEAD`
-     is detached, when a merge or rebase is in progress, or when the directory has
-     no changes.
+   - On `Stop`, **in a remote session only** (`$CLAUDE_CODE_REMOTE`), also commit
+     what the script wrote, restricted to the output directory:
+     `git add -- <dir> && git commit -- <dir>`. Guards: skip when `HEAD` is
+     detached, when a merge or rebase is in progress, or when the directory has no
+     changes.
    - Never fail the turn. A hook that breaks a session over a screenshot is worse
      than a lost screenshot, so every failure path is a message on stderr and
      `exit 0`.
@@ -116,64 +118,39 @@ separate state file to keep in sync.
    referenced from the prose that needs it; the rest go with the tree at
    `/finalize`.
 
-6. **Guard the dangling reference.** `/finalize` sweeps
-   `docs/remove-before-merging/` wholesale, so prose that lands while pointing into
-   `session-images/` ships a broken link. Add one clause to `/finalize` step 6,
-   before the sweep: grep the tree for references into the directory and promote or
-   repoint what is still needed.
-
-7. **Catalog rows** in `.claude/skills/sync-agent-infra/catalog.md`: the script and
+6. **Catalog rows** in `.claude/skills/sync-agent-infra/catalog.md`: the script and
    the hook into G4 (remote-session plumbing), `scripts/lib/media.py` into G2
    alongside `scripts/lib/github.py`, and the `docs/remove-before-merging/*` row
    under "Never" updated to name session images beside the squash-message draft.
    Update the `.claude/settings.json` row, which currently names only the
    SessionStart and UserPromptSubmit hooks.
 
-8. **Vet and finalize** — `./scripts/vet.sh` covers the catalog assertion, so a
+7. **Vet and finalize** — `./scripts/vet.sh` covers the catalog assertion, so a
    missing row fails there rather than downstream.
 
-## Open questions
+## Settled decisions
 
-Each carries a recommendation, and the plan above is written with the
-recommendation already in force — so silence is a valid answer and the work is
-implementable as written.
+**The `Stop` firing commits, and that is what makes the mechanism work.** The
+alternative — hooks extract, the agent commits in its normal flow — reintroduces
+exactly the discipline this exists to remove: a turn that makes no commit, a pure
+question being the common case, leaves the file to die with the VM. The hook does
+not push: a hook that pushes publishes whatever else the branch has committed, at
+a moment nobody chose. So the commit is local until the agent's next push, and the
+existing "commit and push proactively" convention closes that window.
 
-**1. What commits the extracted files?** They only survive the VM once they are
-committed and pushed.
+**Extraction runs everywhere; the commit is gated to remote sessions.** The loss
+is a property of the transcript, not of the agent proxy, so a laptop session needs
+the extraction as much as a web one — the cost there is one `jq` and one short file
+scan per prompt. The commit is a different question, and the answer is where the
+repo already commits: CLAUDE.md scopes proactive committing to remote sessions
+because that is where the operator watches from another machine. Locally they are
+looking at the tree itself, so the file in `git status` is the whole signal, and a
+commit appearing unbidden on whatever branch they happen to be standing on is not.
 
-- **(a) — recommended.** Extract on `UserPromptSubmit` (for the in-turn context)
-  and extract-plus-commit on `Stop`, the commit restricted to the output directory.
-  The turn cannot end with the image uncommitted. Residual: the commit is local
-  until the agent's next push, so a session that dies between the two still loses
-  it — narrow, and the existing "commit and push proactively" convention closes it
-  in practice.
-- **(b)** Hooks extract only; the agent commits as part of its normal flow. Simpler,
-  but it reintroduces the agent discipline this exists to remove — a turn that
-  makes no commit (a pure question, like the one that raised this) leaves the file
-  to die with the VM.
-- **(c)** The `Stop` hook commits *and* pushes. Closes the residual window, but a
-  hook that pushes publishes whatever else the branch has committed, at a moment
-  nobody chose. Recommend against.
-
-**2. Does this run on the local CLI too, or only in remote sessions?** The other
-two hooks no-op unless `$CLAUDE_CODE_REMOTE` is set.
-
-- **(a) — recommended.** Run everywhere. The loss is a property of the transcript,
-  not of the agent proxy, and a local session attaches images the same way. The
-  cost on a laptop is one `jq` and one short file scan per prompt.
-- **(b)** Gate it remote-only for consistency with the neighbours. Consistent, but
-  it withholds the feature from the sessions where the operator could most easily
-  have used it.
-
-**3. Should anything mechanical catch a reference into `session-images/` that
-outlives the sweep?**
-
-- **(a) — recommended.** Prose only: the `/finalize` clause in step 6, plus the
-  CLAUDE.md convention. The sweep already has a human-shaped step around it.
-- **(b)** A check in `scripts/vet.sh` that fails when a file outside
-  `docs/remove-before-merging/` references a path inside it. Catches it earlier, but
-  vet runs long before the sweep, when the reference is legitimate — it would fire
-  on every branch that is using the mechanism correctly.
+**Nothing mechanical guards a reference that outlives the `/finalize` sweep.**
+Prose that lands while pointing into `docs/remove-before-merging/` ships a broken
+link, but that is true of everything the tree holds, not of screenshots — so it is
+its own problem, handled separately rather than bolted onto this one.
 
 ## DRY notes
 

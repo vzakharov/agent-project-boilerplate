@@ -16,9 +16,10 @@ transcript into docs/remove-before-merging/session-images/, one file
 per image plus a manifest row carrying the prompt text it arrived
 with, which is what makes the image legible to a session that was not
 there. It fires on UserPromptSubmit and on Stop, so persistence does
-not depend on the agent remembering, and the Stop firing commits what
-it wrote. Filenames derive from the record's own timestamp and uuid,
-and dedupe reads the hashes already in the manifest, so a re-run
+not depend on the agent remembering; in a remote session, where the
+operator reviews from another machine, the Stop firing also commits
+what it wrote. Filenames derive from the record's own timestamp and
+uuid, and dedupe reads the hashes already in the manifest, so a re-run
 writes nothing new and no second state file can drift.
 
 The filter keys on a record's human origin and on top-level image
