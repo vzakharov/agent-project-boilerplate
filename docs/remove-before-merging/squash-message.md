@@ -23,7 +23,8 @@ label `chars`.
 `char_len` now deletes UTF-8 continuation bytes with `tr`, leaving one
 byte per character, and the five measuring sites use it. `tr` keeps the
 script's dependency floor where its own header states it, which `wc -m`
-would not.
+would not. `ADOPTING.md` loses the paragraph warning adopters off a
+non-Latin language, the gap it pointed at being this one.
 
 Fixes #53
 
