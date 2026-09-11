@@ -37,7 +37,7 @@ Plan mode is reached two ways, neither of which asks the agent: the operator swi
 
 ## The `plan or go` entry
 
-`plan or go: <task>` hands the agent one decision before any other: **does this task get a plan, and does the plan block on the operator?** Two questions, three outcomes. The prose form is the invocation, same as a bare `plan:` — `/plan` is a client-side command that never reaches the agent.
+`plan or go: <task>` hands the agent one decision before any other: **does this task get a plan, and does the plan block on the operator?** Two questions, three outcomes. The prose form is the invocation, like a bare `plan:`.
 
 **The prompt is a conditional go-ahead.** It authorizes implementation *on condition that* the agent judges the operator's gate unnecessary, scoped to the task in that message and to that message alone. Without those words § "The approval gate" holds unchanged: no agent clears it by deciding a plan would be overkill.
 
@@ -46,7 +46,7 @@ Plan mode is reached two ways, neither of which asks the agent: the operator swi
 Any one of these is a yes:
 
 - **The work costs far more to produce than to describe.** The plan is a page, the work is a day, and a wrong direction is caught for the price of the page.
-- **A fork carries no recommendation** — Part 2's exception. Half the work is wasted if you guess the branch wrong, and the plan is what makes the guess the operator's.
+- **A fork carries no recommendation** — Part 2's exception. Guess wrong and most of the work is wasted; the plan is what makes the choice the operator's.
 - **A review round comes too late.** The step is irreversible or outward-facing, or later work builds on it before the PR is read.
 - **The scope is itself the question** — you would be deciding *what* the task is, not just how to do it.
 
