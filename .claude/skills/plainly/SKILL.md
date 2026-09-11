@@ -5,9 +5,9 @@ description: >-
   invoked with a question, it answers that question under the house rule,
   investigation included. Names six defects — symptom-as-finding, buried lede,
   untranslated nouns, broken chain, fog, receipt — so one word calls out a bad
-  report. **Resolve who you are talking to once per session**: take the identity
-  the harness supplies, else `git config user.email`, and read that person's
-  entry in `.claude/skills/plainly/operators.md` before the first reply.
+  report. **Resolve who you are talking to once per session** — the identity the
+  harness supplies, else `git config user.email` — and apply that person's
+  operator entry from then on.
 ---
 
 The short version of this rule is `voice.md` beside this file, and `CLAUDE.md`
