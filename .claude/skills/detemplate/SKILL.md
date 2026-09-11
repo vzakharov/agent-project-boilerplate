@@ -36,7 +36,7 @@ the setup script from Step 6 before either.
 
 The guard refuses in **both** directions, on a catalog's presence plus `origin`.
 Glob `.claude/skills/*/catalog.md` rather than testing the canonical
-`.claude/skills/sync-agent-infra/catalog.md`: an adopter renames that directory
+`.claude/skills/sync-muthur/catalog.md`: an adopter renames that directory
 after *its* own source, so a fixed-path test misses a stray catalog in exactly
 the trees most likely to carry one.
 
@@ -44,7 +44,7 @@ the trees most likely to carry one.
   sibling wants `@.claude/skills/spinoff/SKILL.md`; a repo that already ran this
   has nothing left to strip.
 - **Catalog present, but `origin` matches the `repo` field in
-  `.claude/skills/sync-agent-infra/upstream.json`** → this *is* the boilerplate
+  `.claude/skills/sync-muthur/upstream.json`** → this *is* the boilerplate
   — the shipped watermark names the repo itself, having no source above it — and
   what the caller wants is a fork, not a prune. Point at the README's *"Use this
   template"* button. Compare the full `owner/repo`, since that is what both
@@ -140,7 +140,7 @@ watermark loses:
 "lineage": [{ "repo": "vzakharov/muthur", "atSha": "<the same sha>" }]
 ```
 
-Per `@.claude/skills/sync-agent-infra/SKILL.md` § "The watermark", the two fields
+Per `@.claude/skills/sync-muthur/SKILL.md` § "The watermark", the two fields
 start equal and diverge on the first sync — `lastSyncedSha` advances, and
 `lineage[0].atSha` never moves. That first sync is what overwrites the only other
 trace of the birth point, so a watermark written without `lineage` loses it
@@ -164,7 +164,7 @@ history, which a tree one commit old cannot have. And this skill goes (Step 5.8)
 
 Ordering is load-bearing at exactly one point, and it is the first step:
 
-1. **Delete `.claude/skills/sync-agent-infra/catalog.md` first.** It flips `scripts/check-skill-catalog.sh`
+1. **Delete `.claude/skills/sync-muthur/catalog.md` first.** It flips `scripts/check-skill-catalog.sh`
    assertion 4 from "the stubs are the shipped product, merely listed" to "a stub
    is a stowaway", and it un-refuses `/spinoff`, whose guard is literally the
    catalog's presence. Sweep it first and the G6 prune is enforced by the vet run
@@ -187,7 +187,7 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    `/issue` splits an over-broad one when the next session gets there. The only
    thing that cancels this is the operator declining G3 at plan review (Step 1),
    and then the `CLAUDE.md` brief is the whole record and the report says so.
-6. **Write the watermark** (Step 3) and clear both of `/sync-agent-infra`'s stub
+6. **Write the watermark** (Step 3) and clear both of `/sync-muthur`'s stub
    markers: the banner and the `STUB` in its frontmatter description. Assertion 4
    fails a half-cleared pair.
 7. **`scripts/vet.sh`**: leave the exit alone, which is the normal case — a fork
@@ -266,7 +266,7 @@ A session that opens in a fresh fork and is asked to build a feature should rout
 here first, rather than building product code on top of the template's inventory.
 The signal is Step 0's predicate read positively: a `.claude/skills/*/catalog.md`
 present, and `origin` not matching the `repo` field in
-`.claude/skills/sync-agent-infra/upstream.json`.
+`.claude/skills/sync-muthur/upstream.json`.
 
 **Nothing here is what routes a session — the frontmatter is**, this section
 being what gets read only once the description has sent someone to it. So the

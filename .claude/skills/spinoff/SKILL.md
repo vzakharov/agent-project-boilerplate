@@ -30,13 +30,13 @@ copyable command that opens the next session in the new repo.
 
 **Not from the boilerplate, and not from an unpruned fork of it.** If the caller
 has a catalog — glob `.claude/skills/*/catalog.md`, don't test the canonical
-`.claude/skills/sync-agent-infra/catalog.md`, since an adopter renames that
+`.claude/skills/sync-muthur/catalog.md`, since an adopter renames that
 directory after *its* own source — **stop**. A spinoff is the wrong operation
 either way, but the two cases want different answers, so read `origin` before
 replying:
 
 - **`origin` matches the `repo` field in
-  `.claude/skills/sync-agent-infra/upstream.json`** → this *is* the boilerplate:
+  `.claude/skills/sync-muthur/upstream.json`** → this *is* the boilerplate:
   the shipped watermark names the repo itself, having no source above it. Point
   at its `README.md` § "Create a new project from this template": what the
   caller wants is a fork, not a sibling. Compare the full `owner/repo`, since
@@ -76,10 +76,10 @@ which of the two answers to give. Otherwise two things come out of the tree:
 
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by its watermark
-  file, not by its name.** `@.claude/skills/sync-agent-infra/SKILL.md` prescribes
+  file, not by its name.** `@.claude/skills/sync-muthur/SKILL.md` prescribes
   that an adopter renames the skill after *its* source, so a real adopter's copy
   is plausibly `.claude/skills/sync-agent-boilerplate/source.json`; hunting for
-  `sync-agent-infra/upstream.json` finds nothing and silently seeds an unlinked
+  `sync-muthur/upstream.json` finds nothing and silently seeds an unlinked
   repo. Glob `.claude/skills/*/*.json` and take the one whose object carries
   `repo` and `lastSyncedSha`.
 
@@ -199,7 +199,7 @@ The cost is accepted rather than argued away: improvements the caller makes to
 its *own* adaptations never reach the new repo. **Once you've raised your kids,
 it's their own life to grow.**
 
-`@.claude/skills/sync-agent-infra/SKILL.md` § "The watermark" owns the file's
+`@.claude/skills/sync-muthur/SKILL.md` § "The watermark" owns the file's
 field-by-field contract. Three things are this skill's own, and getting any of
 them wrong is silent:
 
@@ -234,7 +234,7 @@ already sorted every travelling path into a copy or a rewrite:
 
 - **Copies → `main`.** Reviewed where they came from, travelling unchanged:
   `.claude/skills/**` except
-  [`sync-agent-infra/catalog.md`](../sync-agent-infra/catalog.md), the
+  [`sync-muthur/catalog.md`](../sync-muthur/catalog.md), the
   `.claude/rules/` that survived the triage, the `scripts/` the loop's own skills
   call, the editor config. That exception is redundant with § "Two invariants" —
   a well-formed caller has no catalog at all — and is kept so a leaked copy

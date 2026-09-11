@@ -1,9 +1,9 @@
 ---
-description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/sync-agent-infra/upstream.json` — the procedure below is usable as written. Use when the user says \"sync agent infra\", \"sync the boilerplate\", or \"/sync-agent-infra\"."
+description: "STUB — not yet hydrated for this project. Pull the agent infrastructure forward from the repo you adopted it from: diff since the watermark, triage commit by commit, port what applies. Hydration is the watermark at `.claude/skills/sync-muthur/upstream.json` — the procedure below is usable as written. Use when the user says \"sync muthur\", \"sync agent infra\", \"sync the source\", or \"/sync-muthur\"."
 ---
 
 > ⚠️ **STUB.** This skill has no watermark to run on. Before it can be invoked,
-> fill in `.claude/skills/sync-agent-infra/upstream.json`: `lastSyncedSha` (the
+> fill in `.claude/skills/sync-muthur/upstream.json`: `lastSyncedSha` (the
 > source's HEAD when you cloned it), `lastSyncedAt`, and the real
 > `adopted`/`declined` sets for your repo. `repo` already names the boilerplate,
 > and needs changing only if you adopted from a repo that itself adopted from it.
@@ -26,9 +26,15 @@ This is a path-scoped diff, not a fork merge. It never tries to reconcile whole
 histories — it reads a bounded set of paths, commit by commit, and re-expresses
 what applies.
 
+**The name is the infrastructure's, not your source's.** `muthur` is where this
+skill and everything it syncs came from; the repo it actually pulls from is
+whatever `repo` says in the watermark below, which for a spun-off sibling is its
+parent rather than the root. So `/sync-muthur` in a repo two hops down still
+syncs from one hop up.
+
 ## The watermark
 
-`.claude/skills/sync-agent-infra/upstream.json` is the state this skill runs on:
+`.claude/skills/sync-muthur/upstream.json` is the state this skill runs on:
 
 ```json
 {
@@ -182,22 +188,6 @@ matters, and wrong here.)
 **Bash `cwd` resets between calls in this harness** — chain `cd <clone> && …` in
 every command that needs to be inside it.
 
-**A source that was renamed still clones, and the watermark still names the old
-path.** GitHub redirects the old `owner/repo` permanently, so the clone succeeds
-and nothing here fails — which is precisely why the stale name would survive
-every future sync unnoticed. Read the source's canonical name once the clone is
-down, and carry it to Step 7 if it differs:
-
-```bash
-cd <clone> && git ls-remote origin 2>&1 >/dev/null |
-  sed -n 's|.*redirecting to https://github.com/\(.*\)\.git/*$|\1|p'
-```
-
-Git announces the redirect on **stderr** and says nothing when there is none, so
-empty output means the watermark is current. Read it from git rather than from
-`gh api repos/<repo>`: that call 403s across owners, which is the same reason
-Step 2 clones over git transport in the first place.
-
 ### Step 3 — Build the candidate set
 
 ```bash
@@ -248,7 +238,7 @@ A commit that adds a skill in neither `adopted` nor `declined` is an open
 question, and the answer belongs in the watermark so it is asked exactly once.
 
 Read the new skill's row in the source's
-`.claude/skills/sync-agent-infra/catalog.md` — that file is the source's
+`.claude/skills/sync-muthur/catalog.md` — that file is the source's
 inventory, read from the clone and never vendored, so it is current by
 construction — and surface the decision **with its criteria attached** rather than
 as a bare "upstream added `/foo`, want it?".
@@ -281,11 +271,6 @@ every prose site is correct.
 Set `lastSyncedSha` to the HEAD recorded in Step 3 and `lastSyncedAt` to today,
 along with any `adopted`/`declined` edits from Step 4a, as the final commit of
 the sync.
-
-**Where Step 2 found the source renamed, `repo` moves to its canonical name in
-that same commit**, as does every `lineage` entry naming the old path — the
-ancestry describes the same repositories, whatever they are called now. Say so in
-the commit message — the diff cannot show that the old name was still working.
 
 ### Step 8 — Report and hand off
 
