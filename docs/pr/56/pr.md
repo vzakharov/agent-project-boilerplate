@@ -7,7 +7,7 @@
 - **Draft:** yes
 - **Merged:** _not merged_
 - **Created:** 2026-09-10T21:11:54Z
-- **Updated:** 2026-09-10T21:16:24Z
+- **Updated:** 2026-09-11T00:23:12Z
 - **Closed:** _not closed_
 - **Labels:** _none_
 
@@ -17,27 +17,34 @@
 
 ## Summary
 
-- **Plan only — no implementation yet.** This PR carries the issue export (`docs/issue/55/`) and the plan (`docs/plans/55-label-agent-comments.draft.do-not-implement.md`) so the approach can be reviewed as a diff before any code is written.
-- **The work:** move the agent-vs-operator discrimination out of `/handle`'s prose and into `scripts/export-github-item.py` — detect the Claude Code attribution footer on a comment body, label the comment in the export, strip the matched footer, and cut the string-test paragraph from `.claude/skills/handle/SKILL.md` § "Step 2".
-- **The plan corrects the issue's proposed seam.** #55 suggests hanging the label off `markdown.py`'s `login_of()`; that function receives the nested *user* object, not the comment, so it cannot see the body the footer lives in. The label hangs off a new body-level helper (`gh_export/authorship.py`) instead, called at the sites that actually hold a body — which is also why the timeline needs no change (its events carry no bodies).
-- **Two decisions worth a reviewer's attention:** the label reads `(agent)` / `(human)` rather than the issue's literal `(agent)` / `(operator)`, because `(operator)` is a false claim on a third-party reviewer's comment; and the repo has no Python test hook today, so the plan adds a stdlib `unittest` suite plus a `vet.sh` line to assert the acceptance criteria.
-- **Rider folded in:** a bare `<issue title> #<N>` session prompt routes to `/issue`, the same as a literal invocation. Sectioned separately in the plan so it can be rejected independently.
+- **The export decides agent-vs-human now, instead of `/handle` reading for the footer by eye.** `scripts/gh_export/authorship.py` holds `split_agent_footer` — matching a Claude Code attribution footer only at the end of a body — and `attribution`, which renders `@login (agent)` / `@login (human)` beside the raw login. Every body-bearing renderer takes it: the item header, conversation comments, review bodies, and inline review comments. The timeline takes none; its events carry no bodies.
+- **The issue's proposed seam doesn't work, so the label hangs elsewhere.** #55 asked for the label on `markdown.py`'s `login_of()` as "the one place all three renderers get an author from" — but that function receives the nested *user* object, not the comment, so it cannot see the body the footer lives in. `login_of` **moves into `authorship.py`** rather than staying put as the plan first said: `markdown.py` importing the label while `authorship` imported `login_of` from `markdown.py` would be a circular import. The result is one module answering "who wrote this" and a `markdown.py` that only renders sections.
+- **`(human)`, not the `(operator)` the issue's acceptance criterion names.** The issue also requires that a third-party reviewer "still read as themselves", and `(operator)` on a third party is a false claim in the one field a reader is being told to trust.
+- **The repo gets its first Python test hook.** `scripts/test_authorship.py` (12 stdlib `unittest` cases) covers the footer forms and the mid-body anchor, and `scripts/vet.sh` runs it **by path** — never through `unittest discover`, which reports `Ran 0 tests ... OK` and exits 0 over a namespace package on Python 3.11. That false green is the exact failure `vet.sh`'s own ADOPTERS note exists to warn about, so the by-path invocation is load-bearing, not stylistic.
+- **`/handle` § "Step 2" cites the label** instead of explaining the string test, and `scripts/gh_export/authorship.py` is the single home for why the footer stays mandatory.
+- **Rider, sectioned separately in the plan so it could be rejected on its own:** a launch prompt that is an issue title ending in `#<N>` is an `/issue` invocation. CLAUDE.md's session-entry routing bullets say so, and `/issue`'s frontmatter description mirrors it.
+
+Implemented against the plan with all three open questions unanswered, so each recommendation stood: `(agent)`/`(human)`, one stdlib `unittest` file run by path, and the rider folded in here.
 
 ## QA Checklist
 
-- [ ] `plan-approach` — read `docs/plans/55-label-agent-comments.draft.do-not-implement.md` and confirm the module seam (`authorship.py` holding a body-level footer test, `login_of` left alone) is the one you want.
-- [ ] `label-vocabulary` — decide open question 1: `(agent)`/`(human)` as planned, `(agent)`/`(operator)` per the issue's literal acceptance criterion, or `(agent)`-only with absence meaning human.
-- [ ] `test-hook` — decide open question 2: whether the exporter gets the repo's first `unittest` suite plus a `vet.sh` line, or the criteria are verified by hand and nothing is committed.
-- [ ] `rider-scope` — decide open question 3: whether the `<title> #<N>` routing rule ships here or separately.
-- [ ] `dry-notes` — confirm the `## DRY notes` section's calls, in particular that the four call sites interpolate a shared `@login (label)` fragment rather than a shared header builder.
+- [ ] `export-labels` — re-run `python3 scripts/export-github-item.py 56` and read `docs/pr/56/pr.md`: the PR body and the squash-proposal comment both read `@vzakharov (agent)` with no footer left in the rendered text.
+- [ ] `human-comment` — post a comment on any PR **without** a footer, re-export, and confirm it renders `@<login> (human)` with the body untouched.
+- [ ] `mid-body-footer` — a comment that quotes the footer mid-body exports as `(human)`, body intact.
+- [ ] `footer-variants` — both link targets (`claude.ai/code`, `claude.com/claude-code`) and both verbs (`Generated by`, `🤖 Generated with`, the latter with its trailing session link) are stripped and labelled `(agent)`.
+- [ ] `vet-fails-loud` — break an assertion in `scripts/test_authorship.py` and confirm `bash scripts/vet.sh` exits non-zero rather than reporting `Ran 0 tests ... OK`.
+- [ ] `handle-tail-test` — `/handle` on a PR whose newest comment is operator guidance picks the review lane off the `(human)` label.
+- [ ] `issue-title-routing` — open a session whose whole prompt is an issue title ending in `#<N>` and confirm it exports the issue rather than planning from the title.
 
 | Item | Automatable | Covered? | Notes |
 |------|-------------|----------|-------|
-| `plan-approach` | No | n/a | Design review; the point of publishing the plan as a diff. |
-| `label-vocabulary` | No | n/a | Operator decision. Plan is written with `(agent)`/`(human)` in force, so silence resolves it. |
-| `test-hook` | No | n/a | Operator decision. Recommendation in force; declining leaves the issue's "nothing asserts the footer survives" complaint standing. |
-| `rider-scope` | No | n/a | Operator decision; rejecting it leaves the rest of the plan unchanged. |
-| `dry-notes` | No | n/a | Required by CLAUDE.md; reviewable as prose only. |
+| `export-labels` | integration | ❌ | Would need a fixture item + rendered-Markdown assertion; the unit tests cover the helper, not the four render sites. |
+| `human-comment` | unit | ✅ | `test_the_same_body_without_the_footer_is_a_human_s` |
+| `mid-body-footer` | unit | ✅ | `test_a_footer_shaped_line_mid_body_is_prose`, plus `test_only_the_trailing_footer_is_stripped_when_one_is_also_quoted` |
+| `footer-variants` | unit | ✅ | `test_both_link_targets_are_recognized`, `test_both_verbs_are_recognized`, `test_the_harness_form_with_its_session_link_is_recognized` |
+| `vet-fails-loud` | integration | ❌ | Verified by hand this session (vet exits 1 on a broken assertion). Asserting it in-repo means a test that runs `vet.sh`, which would recurse. |
+| `handle-tail-test` | manual-only | — | Agent behaviour reading a skill, not code under test. |
+| `issue-title-routing` | manual-only | — | Session-entry routing; only observable by launching a session. |
 
 Closes #55
 
@@ -65,24 +72,28 @@ instructing the agent to notice a string. That fails in the expensive
 direction either way: a missed footer re-works an answered thread, an
 imagined one skips guidance addressed to the agent.
 
-The export now decides it. A body-level footer test labels every
-rendered comment `(agent)` or `(human)` beside its raw login, strips
-the matched footer, and matches only a trailing one, so a quoted
-footer mid-body reads as human. The label sits on a new
-`gh_export/authorship.py` rather than on `login_of()`, which receives
-a nested user object and so cannot see the body the footer lives in;
-the timeline needs no label, its events carrying no bodies. `(human)`
-rather than `(operator)` because a third-party reviewer is neither the
-agent nor the operator. The footer stays mandatory on every
-agent-authored post, now as the machine-read signal rather than a
-courtesy, and `authorship.py` is where that is written down.
+The export decides it now. `gh_export/authorship.py` matches a footer
+only at the end of a body and labels every rendered author `@login
+(agent)` or `@login (human)`, stripping what it matched — so a footer
+quoted mid-body stays prose. It could not hang off `login_of()` as #55
+proposed, that receiving a nested user object and never the body;
+`login_of` moves into the new module instead, since importing it back
+from `markdown.py` would be a cycle, leaving one module answering who
+wrote a post and `markdown.py` only rendering sections. The timeline
+gets no label, its events carrying no bodies, and `(human)` rather
+than `(operator)` because a third-party reviewer is neither. The
+footer stays mandatory on every agent-authored post, now as the
+machine-read signal rather than a courtesy, and `authorship.py` is
+where that is written down.
 
 `/handle` § "Step 2" cites the label instead of explaining the test.
 Asserting any of this needed a Python test hook the repo did not have,
-so the exporter gets a stdlib `unittest` file and `scripts/vet.sh`
-gains the line that runs it. A session prompt that is a bare
-issue title ending in `#<N>` now invokes `/issue`, which is what the
-operator means by it.
+so the exporter gets a stdlib `unittest` file, run by path from
+`scripts/vet.sh` — not through `unittest discover`, which reports
+`Ran 0 tests ... OK` over a namespace package on Python 3.11 and would
+have certified a run that executed nothing. A session prompt that is a
+bare issue title ending in `#<N>` now invokes `/issue`, which is what
+the operator means by it.
 
 Closes #55
 
@@ -91,3 +102,32 @@ Co-authored-by: Claude <noreply@anthropic.com>
 
 ---
 
+## Review threads
+
+### `CLAUDE.md`:67 — unresolved
+
+```diff
+@@ -64,6 +64,7 @@ Claude Code's **web/remote** sessions have a bug in the plan-mode approval UI an
+ 
+ - **The plan file's name gates implementation.** A plan is written as `docs/plans/<slug>.draft.do-not-implement.md` and stays that way until the operator gives an explicit go-ahead; only then is it `git mv`'d to `<slug>.in-progress.md` (quoting the go-ahead in the commit) — and to `<slug>.completed.md` when done. The `do-not-implement` token is a deliberate tripwire: if you're about to edit source while the plan still carries it, you have not been cleared. `<slug>.in-progress.md` is the mirrored tripwire: it says a session holds this plan **right now**, so the state a later session resumes from is `<slug>.paused.md` — written by a session told to stop partway, recording where it got to. `/plan` writes and flips-on-approval, `/go` flips draft→in-progress→(paused→in-progress→)completed, `/finalize` sweeps the whole tree at squash so no plan reaches the trunk. Every state still matches `docs/plans/*.md`, so directory-glob consumers are unaffected. Because implementation normally starts in a **new** session, a `/plan` turn ends by handing over a copyable `/go <branch>` command rather than asking whether to proceed — the block's exact format lives in the skill.
+ - **If you are in a web/remote session** (the cloud execution environment described in your system prompt), **use the `plan` skill for new sessions instead of native plan mode / `AskUserQuestion`.** Whatever permission mode you were launched in, **treat a new session as a planning session** and invoke the skill — UNLESS the operator's initial prompt explicitly says "no plan" (or equivalent), or **the session is launched via `/from-branch` or `/handle`** (both attach to an existing branch/PR and so are continued work, not a new session — see the next bullet).
++- **A launch prompt that is an issue title ending in `#<N>` is an `/issue` invocation.** Pasting the title with its number is how the operator hands over an issue; the missing slash command is a copy artifact, not a different request. So `@.claude/skills/issue/SKILL.md` runs from its Step 1 rather than the title being planned as the whole task — a title is a label, and planning from it skips the body, comments and attachments that say what the work is.
+```
+
+**@vzakharov (human)** — 2026-09-11T00:19:29Z
+
+the agent won't know it's an issue title though, it's more like "looks like an issue title" 
+
+also, after editing & replying here, re-export the pr to dogfood the attribution working
+
+**@vzakharov (agent)** — 2026-09-11T00:23:25Z
+
+Right — the agent hasn't read the issue when the prompt arrives, so "is the title" was a test it can't run. Fixed in f0f9259: the rule now triggers on the shape (a summary line ending in `#<N>`, no slash command) and says why the uncertainty costs nothing — `/issue` Step 1 exports `#<N>`, which settles what the work is whether or not the line was verbatim the title. `/issue`'s frontmatter description carries the same wording.
+
+Re-exported the PR after this reply to dogfood the labelling; the result is in the next push.
+
+---
+
+## Timeline (status, references, and other events)
+
+- **2026-09-11T00:19:34Z** @vzakharov reviewed (COMMENTED): https://github.com/vzakharov/agent-project-boilerplate/pull/56#pullrequestreview-5173639987.
