@@ -256,15 +256,6 @@ your team reads. The rest of that section is stated rather than asked and holds
 whatever you answer, which is why it stays in your tree even when the answer is
 "English".
 
-**If your answer puts a non-Latin script into commit or PR text**, know the gap
-you will hit first: `scripts/check-squash-message.sh` measures line length with
-`${#line}`, which counts bytes, so the 80-column title and 72-column body caps
-roughly halve for Cyrillic or CJK and the vet run rejects a correctly wrapped
-message. Tracked at
-[#53](https://github.com/vzakharov/agent-project-boilerplate/issues/53) — a link
-out of your repo into this one on the same terms as [Known gaps](#known-gaps),
-since it is the thread that says whether the gap is still open.
-
 ### Implement `scripts/vet.sh`
 
 Point it at lint/type-check/test commands your repo already has:
