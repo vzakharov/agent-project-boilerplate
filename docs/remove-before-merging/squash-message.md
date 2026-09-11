@@ -7,18 +7,19 @@ feat: state how an agent explains things, and let operators tune it (pr #64)
 ```
 An agent that reports what a system printed has not finished the
 work. An incident report took three operator turns to reach its
-cause — first the quoted validation error, then the same facts
-renumbered as steps, and only then the actual chain: the gallery
-already held its maximum, the edits attached more photos, and the
-prompt never said to start a second gallery. Nothing in that third
-answer needed the first two; the page history and the prompt were
-readable from the start.
+cause — the quoted error, then the same facts renumbered as steps,
+and only then the chain that explained them. Nothing in that third
+answer needed the first two: everything it rested on was readable
+from the start.
 
 The rule states a shape rather than a mood, and lives in its own
-file beside the skill that expands it, imported into CLAUDE.md so
-it loads every session. It governs chat replies and the GitHub
-prose a person reads to decide something, which is where the
-complaint came from. The first sentence is the cause, in the
+file beside the skill that expands it. CLAUDE.md imports that file
+and the operator entries directly — an import inside an imported
+file loads nothing — and leaves both references unbackticked,
+since the parser skips code spans; both slips fail silently, so
+both sites say why. The rule governs every reply: chat, and the
+GitHub prose a person reads to decide something, which is where
+the complaint came from. The first sentence is the cause, in the
 nouns of the person affected, and evidence follows the conclusion
 it supports. Each step says why the next one followed. An unknown
 cause is unfinished investigation. A frustration marker — repeated
