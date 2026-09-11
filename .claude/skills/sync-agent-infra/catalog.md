@@ -302,7 +302,7 @@ means you are looking at working state, not the product.
 
 A skill copied without the siblings it `@`-references leaves a pointer to a file
 that isn't there, and **that failure is silent**: the agent reads the surviving
-prose and skips the step it could not load. Resolve each group's **Pulls in**
+prose and skips the step they could not load. Resolve each group's **Pulls in**
 column before copying, then run `bash scripts/check-skill-catalog.sh` in your
 repo to prove nothing dangles.
 
