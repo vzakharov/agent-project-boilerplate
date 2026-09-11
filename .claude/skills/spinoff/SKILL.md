@@ -30,13 +30,13 @@ copyable command that opens the next session in the new repo.
 
 **Not from the template, and not from an unpruned fork of it.** If the caller
 has a catalog — glob `.claude/skills/*/catalog.md`, don't test the canonical
-`.claude/skills/sync-muthur/catalog.md`, since that directory's name is not
+`.claude/skills/update-muthur/catalog.md`, since that directory's name is not
 stable downstream — **stop**. A spinoff is the wrong operation
 either way, but the two cases want different answers, so read `origin` before
 replying:
 
 - **`origin` matches the `repo` field in
-  `.claude/skills/sync-muthur/watermark.json`** → this *is* the template:
+  `.claude/skills/update-muthur/watermark.json`** → this *is* the template:
   the shipped watermark names the repo itself, having no source above it. Point
   at its `README.md` § "Create a new project from this template": what the
   caller wants is a fork, not a sibling. Compare the full `owner/repo`, since
@@ -77,10 +77,11 @@ which of the two answers to give. Otherwise two things come out of the tree:
 - **The tree**, as the input to Step 2's triage.
 - **The caller's own sync skill and watermark.** **Locate it by what the file
   contains, not by where it sits.** Neither half of that path is stable and no
-  rename is pushed downstream: a caller that adopted before `/sync-muthur`
-  carries `.claude/skills/sync-agent-infra/upstream.json` — both segments as
-  they were then — and one free to rename any skill may have picked its own.
-  Hunting for `sync-muthur/watermark.json` finds nothing and silently seeds an
+  rename is pushed downstream: a caller that adopted before `/update-muthur`
+  carries whatever both segments were then — `.claude/skills/sync-muthur/watermark.json`,
+  or `.claude/skills/sync-agent-infra/upstream.json` further back — and one free
+  to rename any skill may have picked its own.
+  Hunting for `update-muthur/watermark.json` finds nothing and silently seeds an
   unlinked repo. Glob `.claude/skills/*/*.json` and take the one whose object
   carries `repo` and `lastSyncedSha`.
 
@@ -200,7 +201,7 @@ The cost is accepted rather than argued away: improvements the caller makes to
 its *own* adaptations never reach the new repo. **Once you've raised your kids,
 it's their own life to grow.**
 
-`@.claude/skills/sync-muthur/SKILL.md` § "The watermark" owns the file's
+`@.claude/skills/update-muthur/SKILL.md` § "The watermark" owns the file's
 field-by-field contract. Three things are this skill's own, and getting any of
 them wrong is silent:
 
@@ -235,7 +236,7 @@ already sorted every travelling path into a copy or a rewrite:
 
 - **Copies → `main`.** Reviewed where they came from, travelling unchanged:
   `.claude/skills/**` except
-  [`sync-muthur/catalog.md`](../sync-muthur/catalog.md), the
+  [`update-muthur/catalog.md`](../update-muthur/catalog.md), the
   `.claude/rules/` that survived the triage, the `scripts/` the loop's own skills
   call, the editor config. That exception is redundant with § "Two invariants" —
   a well-formed caller has no catalog at all — and is kept so a leaked copy

@@ -2,7 +2,7 @@
 # Assert that this repo's own `owner/repo` lives in one place.
 #
 # The canonical name is the `repo` field of
-# `.claude/skills/sync-muthur/watermark.json`. That field means "the repo I
+# `.claude/skills/update-muthur/watermark.json`. That field means "the repo I
 # took this from", so in a tree with no source above it the shipped watermark
 # names itself — which is exactly the predicate `/detemplate`, `/spinoff` and
 # `CLAUDE.md`'s opening stub compare `origin` against instead of carrying the
@@ -28,8 +28,8 @@ set -uo pipefail
 
 cd "$(dirname "$0")/.." || exit 1
 
-WATERMARK=".claude/skills/sync-muthur/watermark.json"
-CATALOG=".claude/skills/sync-muthur/catalog.md"
+WATERMARK=".claude/skills/update-muthur/watermark.json"
+CATALOG=".claude/skills/update-muthur/catalog.md"
 failures=0
 
 fail() {

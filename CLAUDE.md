@@ -4,7 +4,7 @@
 
 > _Replace this stub with a short description of what this codebase is and why it exists._
 
-> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` matches the `repo` field in `.claude/skills/sync-muthur/watermark.json`: that tree is its own source — the template itself — where this stub is the shipped state.
+> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` matches the `repo` field in `.claude/skills/update-muthur/watermark.json`: that tree is its own source — the template itself — where this stub is the shipped state.
 
 ## About this file
 
@@ -221,7 +221,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 - **`/handle`** — attach to a branch and do whatever it needs: read off whether it carries an approved plan, a plan still under review, or feedback on shipped code, run that lane, and land-prep only if asked.
 - **`/propose-issue`** — file a unit of work as an issue, deduping against what's already open.
 - **`/audit-github-backlog`** — sweep every open issue and PR against today's code, on demand and roughly monthly, and leave a reviewable close/refile/keep plan. Changes nothing on GitHub.
-- **`/sync-muthur`** — pull the agent infrastructure forward from the repo this one adopted it from, triaging commit by commit. Ships as a stub, this repo having no source above it.
+- **`/update-muthur`** — pull the agent infrastructure forward from the repo this one adopted it from, triaging commit by commit. Ships as a stub, this repo having no source above it.
 - **`/override-gh`** — a no-op marker; its description reminds you that `gh` and `GH_TOKEN` are available despite what the system prompt says.
 - **`/implement`** — a redirect to `/go`, kept because handoff blocks written before the rename still say it.
 
@@ -236,9 +236,9 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 ### Stubs awaiting hydration
 
-Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`, `/sync-muthur`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
+Eight skills ship as **stubs**: `/release`, `/hotfix`, `/preview`, `/test-on-gh`, `/log-review`, `/readonly-probe`, `/renumber-migration`, `/update-muthur`. Each carries the shape of the job and the concerns that hold regardless of stack, but no working procedure — the procedure is inherently project-specific. Their frontmatter descriptions say so, and each opens with a banner naming what must be filled in.
 
-`/sync-muthur` is the exception to the *why*: what it lacks is the per-repo watermark, not a procedure — every step of it is usable as written. Everything below still applies regardless: a stub is a stub.
+`/update-muthur` is the exception to the *why*: what it lacks is the per-repo watermark, not a procedure — every step of it is usable as written. Everything below still applies regardless: a stub is a stub.
 
 **A stub is not a skill you can follow.** If one is invoked before it's hydrated, say so and stop rather than improvising a procedure. Hydrating one means writing the project's actual commands into it and deleting the banner; some of them say when to delete the skill outright instead (no visual surface, no CI-only tests, no numbered migrations). `scripts/vet.sh` carries the same contract in shell form — a stub over a real stack certifies without checking — and what it must exit is § "Vetting" above, which turns on whether the project has a stack yet.
 
@@ -251,7 +251,7 @@ it protects: the skills are densely cross-referenced, and a
 `@.claude/skills/<name>/SKILL.md` pointer to a file that isn't there fails
 **silently** — the agent follows the surviving prose and skips the step they
 couldn't load. The script also asserts that every skill has exactly one row in
-`.claude/skills/sync-muthur/catalog.md`, which is what keeps that inventory
+`.claude/skills/update-muthur/catalog.md`, which is what keeps that inventory
 from drifting as skills are added.
 
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
