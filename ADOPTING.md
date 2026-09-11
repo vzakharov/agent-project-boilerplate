@@ -44,7 +44,7 @@ through a skill rather than by reading on — see that section below.
 ### Step 1 — Clone this repo somewhere temporary
 
 ```bash
-git clone --depth 1 https://github.com/vzakharov/agent-project-boilerplate \
+git clone --depth 1 https://github.com/vzakharov/muthur \
   <scratchpad>/boilerplate
 ```
 
@@ -313,10 +313,10 @@ delete the skill rather than carrying it unhydrated.
 
 ```json
 {
-  "repo": "vzakharov/agent-project-boilerplate",
+  "repo": "vzakharov/muthur",
   "lastSyncedSha": "<this repo's HEAD at the moment you cloned it>",
   "lastSyncedAt": "<YYYY-MM-DD>",
-  "lineage": [{ "repo": "vzakharov/agent-project-boilerplate", "atSha": "<the same sha>" }],
+  "lineage": [{ "repo": "vzakharov/muthur", "atSha": "<the same sha>" }],
   "adopted": ["CLAUDE.md", ".claude/skills/pr/", "scripts/check-merge.sh"],
   "declined": { ".claude/skills/issue/": "we track work in Linear, not GitHub issues" }
 }
@@ -343,7 +343,7 @@ commit at or before it:
 
 ```bash
 gh api repos/<owner>/<fork> --jq .created_at
-gh api repos/vzakharov/agent-project-boilerplate/commits --paginate \
+gh api repos/vzakharov/muthur/commits --paginate \
   --jq '.[] | [.sha, .commit.committer.date] | @tsv'
 ```
 
@@ -524,7 +524,7 @@ reasonably refuse — but it touches roughly ten skills and changes behavior at 
 source as much as downstream, so it is judged on its own merits rather than as a
 rider on this entry point.
 
-Tracked at [#6](https://github.com/vzakharov/agent-project-boilerplate/issues/6).
+Tracked at [#6](https://github.com/vzakharov/muthur/issues/6).
 That link points **out of your repo, into this one on purpose**: it is the one
 thread that will say whether the gap is still open. If it has closed by the time
 you read this, the shim is no longer load-bearing and the G4 decision above is

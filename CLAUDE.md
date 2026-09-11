@@ -4,7 +4,7 @@
 
 > _Replace this stub with a short description of what this codebase is and why it exists._
 
-> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` *is* `vzakharov/agent-project-boilerplate`: that is the boilerplate itself, where this stub is the shipped state.
+> **While this stub is unfilled and a catalog (`.claude/skills/*/catalog.md`) is still in the tree, this is an undetemplated fork and the first task is `/detemplate <what we're building>` — whatever was asked.** The catalog is the template's inventory, so product code written beside it is built on someone else's description of someone else's repo. The exception is a tree whose `origin` matches the `repo` field in `.claude/skills/sync-agent-infra/upstream.json`: that tree is its own source — the boilerplate itself — where this stub is the shipped state.
 
 ## About this file
 

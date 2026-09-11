@@ -1,6 +1,13 @@
-# agent-project-boilerplate
+# muthur
 
-Boilerplate for projects where Claude Code is a first-class collaborator.
+> _"The option to ignore agentic development expires in T minus five minutes."_
+>
+> — Alien (well, almost)
+
+Agent-first infrastructure that survives being adapted.
+
+Fork it into any project, change it to fit that project, and keep pulling
+later improvements forward — the part a copied skill directory can't do.
 Stack-agnostic.
 
 What it is: a `CLAUDE.md` seed carrying only conventions that hold regardless of
@@ -55,7 +62,7 @@ Click **"Use this template" → "Create a new repository"** in the GitHub UI, or
 
 ```bash
 gh repo create <owner>/<your-new-repo> \
-  --template vzakharov/agent-project-boilerplate \
+  --template vzakharov/muthur \
   --public \
   --clone
 ```
@@ -78,7 +85,7 @@ before forking.
 Paste this into an agent session in the target repo:
 
 ```
-Adopt the agent infrastructure from https://github.com/vzakharov/agent-project-boilerplate
+Adopt the agent infrastructure from https://github.com/vzakharov/muthur
 into this repo: clone it somewhere temporary, read ADOPTING.md, and follow it.
 ```
 

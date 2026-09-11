@@ -35,11 +35,13 @@ directory after *its* own source — **stop**. A spinoff is the wrong operation
 either way, but the two cases want different answers, so read `origin` before
 replying:
 
-- **`origin` is `vzakharov/agent-project-boilerplate`** → this *is* the
-  boilerplate. Point at its `README.md` § "Create a new project from this
-  template": what the caller wants is a fork, not a sibling. Match the full
-  `owner/repo` — an adopter may legitimately be called `acme-boilerplate`, and a
-  substring test would refuse it.
+- **`origin` matches the `repo` field in
+  `.claude/skills/sync-agent-infra/upstream.json`** → this *is* the boilerplate:
+  the shipped watermark names the repo itself, having no source above it. Point
+  at its `README.md` § "Create a new project from this template": what the
+  caller wants is a fork, not a sibling. Compare the full `owner/repo`, since
+  that is what both sides of the comparison are — a looser match on either half
+  hits a tree that merely shares an owner or a name.
 - **`origin` is anything else** → an unpruned fork, carrying the template's
   own inventory and no project yet. Point at `/detemplate <what you're
   building>`, the skill that fork ships to convert itself.
