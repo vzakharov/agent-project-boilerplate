@@ -7,10 +7,9 @@ feat: state how an agent explains things, and let operators tune it (pr #64)
 ```
 An agent that reports what a system printed has not finished the
 work. An incident report took three operator turns to reach its
-cause — the quoted error, then the same facts renumbered as steps,
-and only then the chain that explained them. Nothing in that third
-answer needed the first two: everything it rested on was readable
-from the start.
+cause: the quoted error, the same facts renumbered as steps, and
+only then the chain. Nothing in that third answer needed the
+first two — all of it was readable from the start.
 
 The rule states a shape rather than a mood, and lives in its own
 file beside the skill that expands it. CLAUDE.md imports that file
@@ -28,15 +27,18 @@ answer did not land, and the wrong reply to it is more detail.
 
 The long version lives in /plainly, the way /tend-prose is the
 long version of § "Writing things down": six named defects, so a
-bad report can be called out in a word, and a worked pair of
-answers that teaches what the table only labels. The last of the
-six is the only one investigation cannot fix — a reply about what
-someone said, where what they said wanted an answer.
+bad report can be called out in a word. Each is a tell to look
+again rather than a verdict — a literal answer to a literal
+question can still be the wrong one, and which reading was owed
+is not always decidable. The last of the six is the only one
+investigation cannot fix: a reply about what someone said, where
+what they said wanted an answer.
 
 Preferences that vary by person get their own file, one short
-entry each, resolved once against the session's operator rather
-than guessed at per reply. An entry tunes manner and never
-substance: it cannot drop a cause, skip a check, or quiet a
+entry each under a GitHub handle, resolved once against the
+session's operator rather than guessed at per reply and written
+down when stated rather than offered. An entry tunes manner and
+never substance: it cannot drop a cause, skip a check, or quiet a
 failure. Anything that would is a change to the house rule, where
 everyone can see it. The entry decides whether a joke comes back;
 handing over a receipt instead of a reply is ruled out either way.
