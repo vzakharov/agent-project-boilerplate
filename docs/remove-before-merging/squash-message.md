@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-feat: #48 add a /tighten-docs lens for negated-removal prose (pr #57)
+feat: #48 add a negation lens and rename the pass /tend-prose (pr #57)
 ```
 
 ```
@@ -14,11 +14,10 @@ a sentence about what the code does not contain passes cleanly, and
 Lens B's tells are change verbs that a clean present-tense negation
 never trips.
 
-/tighten-docs gains a fourth lens, `negation` (alias `polar-bear`),
-carrying its own tell, test, fix and report group; the four now spell
-TEND, which is a memory aid and not the run order. It is the only lens
-that reads the removed side of the diff: Step 1 collects the nouns the
-change deleted and greps them against the post-change tree, and a name
+The pass gains a fourth lens, `negation` (alias `polar-bear`), with its
+own tell, test, fix and report group. It is the only lens that reads
+the removed side of the diff: Step 1 collects the nouns the change
+deleted and greps them against the post-change tree, and a name
 surviving only inside prose is the candidate. The fix is deletion
 rather than rewriting, except where a mention carries a live fact
 alongside the denial — then the fact stays, phrased as what is there.
@@ -26,15 +25,16 @@ A constraint-vs-residue discriminator keeps the lens off legitimate
 negative rules: a constraint answers a temptation that exists
 independently of the removal.
 
-The idiom is load-bearing rather than decorative. It sits in the
-skill's frontmatter description, which every session loads, so an
-agent that has not opened the skill still resolves a bare "polar bear
-here" on a PR comment to the pass that handles it. CLAUDE.md's
-"writing things down" section gains the matching line, covering the
-case its repointing rule does not: when the right move is to stop
-stating the convention at all. The three places that state how many
-lenses the skill has — /go, /squash-message and the skill catalog —
-are repointed with it.
+`/tighten-docs` becomes `/tend-prose`, whose four lenses spell TEND —
+Tightness, Existence, Negation, Durability — as a memory aid, not the
+run order. The old name was wrong twice over: "tighten" named Lens C
+specifically, though two of the four lenses produce nothing but
+deletions, and "docs" was never the word the skill or CLAUDE.md used
+for what it reads. A redirect stub holds the old name, on the
+`/implement` precedent. The polar-bear idiom sits in the frontmatter
+description, which every session loads, so an agent that has not opened
+the skill still resolves a bare "polar bear here" on a PR comment to
+the pass that handles it.
 
 Closes #48
 
