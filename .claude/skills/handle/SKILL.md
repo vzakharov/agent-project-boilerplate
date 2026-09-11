@@ -1,5 +1,5 @@
 ---
-description: Pick up an existing branch or PR and do whatever it needs — attach to it, read off which lane applies (an approved plan to implement, review of a plan still in draft, or feedback on shipped code), and run that lane. Invoke as `/handle <branch|#PR|PR-url> [and finalize] [extra guidance]`. Use when the operator says "/handle", "handle <branch>", "handle and finalize <branch>", "pick up <branch>", or hands over a branch without saying what it needs.
+description: Pick up an existing branch or PR and do whatever it needs — attach to it, read off which lane applies (an approved plan to implement, review of a plan still in draft, or feedback on shipped code), and run that lane. Invoke as `/handle <branch|#PR|PR-url> [and finalize [and merge]] [extra guidance]`. Use when the operator says "/handle", "handle <branch>", "handle and finalize <branch>", "handle and merge <branch>", "pick up <branch>", or hands over a branch without saying what it needs.
 ---
 
 End state of this skill: the branch is attached, the one lane the branch called for has run and pushed, every review comment addressed has been replied to on GitHub, and land-prep has run **iff** the invocation asked for it.
@@ -10,6 +10,7 @@ Three parts, order-free:
 
 - **Target** (**required**, first token by convention): a branch name, `#NNN`, or any PR URL — the grammar `@.claude/skills/from-branch/SKILL.md` § "Argument shape" defines, used as-is. With no target, **stop and ask which branch**: a bare `/handle` has nothing to attach to.
 - **`and finalize`** (flag; bare `finalize` counts too): recognized **anywhere** in the argument, since the operator writes it before the target as often as after (`/handle and finalize <branch>`).
+- **`and merge`** (flag; bare `merge` counts too): also recognized anywhere, and it **implies `and finalize`** — merging is finalize's last step, so naming it asks for the land-prep that precedes it. Step 5 passes it through; the gate that decides whether the merge actually happens is `@.claude/skills/finalize/SKILL.md` step 8's, not this skill's.
 - **Extra guidance** (optional): any remaining prose. Not a lane of its own — it directs whichever lane runs, and when no lane is discovered it _is_ the work (Step 4).
 
 ## A `/handle` session is continued work
@@ -57,12 +58,12 @@ With extra guidance in the argument, that guidance is the task → `/go` § "Pla
 
 ## Step 5 — `and finalize`
 
-Load and follow `@.claude/skills/finalize/SKILL.md` (no target token — the branch is already attached). It runs only after a lane actually did something, since land-prepping a branch you just declined to touch is exactly the unasked-for finalize the flag exists to prevent. Two turns cancel it: a Step-4 stop, and a plan-review turn, which ends with the plan still awaiting a go-ahead and nothing implemented to land.
+Load and follow `@.claude/skills/finalize/SKILL.md` (no target token — the branch is already attached, and `and merge` forwarded when the invocation carried it). It runs only after a lane actually did something, since land-prepping a branch you just declined to touch is exactly the unasked-for finalize the flag exists to prevent. Two turns cancel it: a Step-4 stop, and a plan-review turn, which ends with the plan still awaiting a go-ahead and nothing implemented to land.
 
 Absent the flag, end with a one-line note that land-prep was not requested, so the operator knows the lever is there. It is opt-in because `/finalize` is the one lane whose consequences an unaware operator wouldn't want: it ends with the PR reading as merge-ready to anyone who looks at it.
 
 ## Do NOT
 
 - Act on a referenced skill from memory, or from the one-line summary this file gives it. Every "load and follow" above means literally read that file: its steps are its own and change without this one being touched.
-- Finalize unasked, or merge anything — the base branch into this one included, however the PR's merge state reads.
+- Finalize unasked, or merge anything the invocation did not ask for — the base branch into this one included, however the PR's merge state reads. `and merge` is the one thing that authorizes the PR merge, and it authorizes it only through `/finalize`'s own gate.
 - Open a plan cycle.

@@ -191,7 +191,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 - **`/plan`** — write the plan to `docs/plans/<slug>.draft.do-not-implement.md`, publish it as a draft PR so it can be reviewed as a diff, and ask questions as numbered prose. Ends by handing over a `/go <branch>` command for a fresh session.
 - **`/go`** — the go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it.
-- **`/finalize`** — land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest.
+- **`/finalize`** — land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest. On `and merge`, also merge the PR — but only when the run turned up nothing to decide.
 
 **Entry points and support:**
 
