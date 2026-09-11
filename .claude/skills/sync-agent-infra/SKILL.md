@@ -182,6 +182,22 @@ matters, and wrong here.)
 **Bash `cwd` resets between calls in this harness** — chain `cd <clone> && …` in
 every command that needs to be inside it.
 
+**A source that was renamed still clones, and the watermark still names the old
+path.** GitHub redirects the old `owner/repo` permanently, so the clone succeeds
+and nothing here fails — which is precisely why the stale name would survive
+every future sync unnoticed. Read the source's canonical name once the clone is
+down, and carry it to Step 7 if it differs:
+
+```bash
+cd <clone> && git ls-remote origin 2>&1 >/dev/null |
+  sed -n 's|.*redirecting to https://github.com/\(.*\)\.git/*$|\1|p'
+```
+
+Git announces the redirect on **stderr** and says nothing when there is none, so
+empty output means the watermark is current. Read it from git rather than from
+`gh api repos/<repo>`: that call 403s across owners, which is the same reason
+Step 2 clones over git transport in the first place.
+
 ### Step 3 — Build the candidate set
 
 ```bash
@@ -265,6 +281,12 @@ every prose site is correct.
 Set `lastSyncedSha` to the HEAD recorded in Step 3 and `lastSyncedAt` to today,
 along with any `adopted`/`declined` edits from Step 4a, as the final commit of
 the sync.
+
+**Where Step 2 found the source renamed, `repo` moves to its canonical name in
+that same commit**, as does every `lineage` entry naming the old path — the
+ancestry describes the same repositories, whatever they are called now. Say so in
+the commit message: a redirect is what kept the stale name working, and the one
+thing a reader cannot tell from the diff is that nothing was broken.
 
 ### Step 8 — Report and hand off
 
