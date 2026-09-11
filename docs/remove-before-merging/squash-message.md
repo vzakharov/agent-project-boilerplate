@@ -16,14 +16,16 @@ readable from the start.
 
 The rule states a shape rather than a mood, and lives in its own
 file beside the skill that expands it, imported into CLAUDE.md so
-it loads every session. The first sentence is the cause, in the
+it loads every session. It governs chat replies and the GitHub
+prose a person reads to decide something, which is where the
+complaint came from. The first sentence is the cause, in the
 nouns of the person affected, and evidence follows the conclusion
 it supports. Each step says why the next one followed. An unknown
 cause is unfinished investigation. A frustration marker — repeated
 punctuation, a re-asked question — is a report that the last
 answer did not land, and the wrong reply to it is more detail.
 
-The long version lives in the skill, the way /tend-prose is the
+The long version lives in /plainly, the way /tend-prose is the
 long version of § "Writing things down": six named defects, so a
 bad report can be called out in a word, and a worked pair of
 answers that teaches what the table only labels. The last of the
