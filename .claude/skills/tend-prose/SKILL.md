@@ -36,8 +36,10 @@ Markdown (skill bodies, `docs/`, READMEs) — for four defects that carry
   "Comments describe the code's lasting contract, not the change that produced
   it."
 
-They are listed in the order that spells **TEND** — a memory aid, not the run
-order: Step 2 walks them A–D and Step 3 resolves them existence-first.
+They are listed in the order that spells **TEND**, which is a memory aid only.
+Step 2 has no order — it applies all four to each line in one pass — and Step 3
+fixes in the opposite direction from this list: deletions before rewrites before
+trims, so you never shorten a sentence you are about to cut.
 
 The output is **edits, not a report**. Fix the clear cases in place; only ask
 about genuinely ambiguous ones.
@@ -296,10 +298,10 @@ draft did, which no longer threatens anyone.
   discriminator. A rule against a temptation the reader has anyway is a
   constraint, and cutting it is the false positive this lens must not produce.
 
-**Resolve the lenses existence-first** — A, then D, then B, then C. Deciding a
-line shouldn't exist saves you rewording it; deciding it describes nothing that
-exists saves you shortening a sentence you are about to delete. (This is the run
-order; TEND is only the mnemonic.)
+**Resolve in this order** — existence, negation, durability, tightness (A, D, B,
+C). The two deletion verdicts come first: deciding a line shouldn't exist saves
+you rewording it, and deciding it describes nothing that exists saves you
+shortening a sentence you are about to delete.
 
 ## Step 4: Do NOT touch
 
