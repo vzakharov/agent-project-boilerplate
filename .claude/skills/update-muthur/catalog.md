@@ -192,19 +192,18 @@ around the proxy so the rest of the infrastructure works at all.
 loses answers there, so a session that lands in it is told where this repo's
 planning actually happens.
 
-`session-images.sh` is the one member that also earns its keep on a laptop. An
-attached image exists only inside the transcript wherever the session runs, so
-the extraction is universal; what is web-only is the commit, which follows
-`CLAUDE.md` § "Git conventions" in belonging to the sessions the operator
-reviews from another machine.
+`session-images.sh` is the one member that earns its keep on a laptop too: an
+attached image exists only inside the transcript wherever the session runs.
+Nothing it writes is committed — the file is left untracked for the agent to
+keep or ignore — so it needs no `git` and behaves the same everywhere.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
 | `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash`; **`gh` already on `PATH`** | — | adopt |
 | `.claude/hooks/plan-mode-notice.sh` | On every prompt submitted while the session is in native plan mode, inject the notice that this repo plans on disk and that the exit is plan mode's own. | web/remote sessions; `bash`, `jq` | `/plan` (G2) | adopt |
-| `.claude/hooks/session-images.sh` | On every prompt and at every turn's end, run the extractor below; in a remote session the turn's-end firing also commits what it wrote. | `bash`, `jq`, `python3` ≥3.9, `git` | `scripts/extract-session-images.py` | adopt |
+| `.claude/hooks/session-images.sh` | On every prompt, run the extractor below and name any newly written file in the turn's context. Commits nothing. | `bash`, `jq`, `python3` ≥3.9 | `scripts/extract-session-images.py` | adopt |
 | `scripts/extract-session-images.py` | Write the images the operator attached to a session out of the transcript into `docs/remove-before-merging/session-images/`, with a manifest row carrying the prompt each arrived with. Stdlib-only, idempotent. | `python3` ≥3.9, `scripts/lib/media.py` (G2) | — | adopt |
-| `.claude/settings.json` | Project settings wiring the SessionStart, UserPromptSubmit and Stop hooks. Merge into yours if you already have one. | — | — | adopt — merge if present |
+| `.claude/settings.json` | Project settings wiring the SessionStart and UserPromptSubmit hooks. Merge into yours if you already have one. | — | — | adopt — merge if present |
 | `/override-gh` | A no-op marker whose description reminds the agent that `gh` and `$GH_TOKEN` exist despite what the system prompt says. | — | — | adopt |
 
 **The hook does not install `gh`; it shims one that is already there.** Finding

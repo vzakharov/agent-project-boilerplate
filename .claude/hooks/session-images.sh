@@ -1,25 +1,24 @@
 #!/bin/bash
-# UserPromptSubmit + Stop hook: copy operator-attached images out of the session
-# transcript onto the branch, and in a remote session commit what was copied.
+# UserPromptSubmit hook: copy operator-attached images out of the session
+# transcript into the working tree, and name the new ones in the turn's context.
 #
 # An attached image exists only as base64 inside the transcript on this machine,
 # so it dies with the session. Extraction is a hook rather than an instruction
 # because the agent forgetting is the failure it exists to remove.
 #
-# The two events split the job, and measurement rather than assumption puts the
-# split where it is: when UserPromptSubmit fires the prompt being submitted is
-# not in the transcript yet — the last record is the `queue-operation` carrying
-# its text and never its image data. So Stop is what persists an image, at the
-# end of the turn it arrived in, and UserPromptSubmit is what names the ones
-# already on disk at the start of the next.
+# Nothing here commits, and the extracted file is untracked: an image worth
+# keeping rides the next commit the agent makes anyway, which is the decision
+# CLAUDE.md § "Writing things down" states. A hook that committed on its own
+# would commit to whatever branch HEAD happened to be on, and would restore the
+# tree `/finalize` had just swept — the manifest it dedupes against is inside
+# that tree, so a sweep is indistinguishable from a first run.
 #
-# The commit is remote-only, matching CLAUDE.md § "Git conventions", which scopes
-# proactive committing to the sessions where the operator reviews from another
-# machine. Locally they are looking at the tree itself, so the file in
-# `git status` is the whole signal. It never pushes: a push publishes whatever
-# else the branch has committed, at a moment nobody chose. And it carries no
-# session trailer — the payload names the transcript's session uuid, not the
-# `session_01…` id the attribution link needs, and a fabricated link is worse.
+# One event carries this, and measurement rather than assumption says which:
+# when UserPromptSubmit fires the prompt being submitted is not in the
+# transcript yet — the last record is the `queue-operation` carrying its text
+# and never its image data. So an image lands at the start of the following
+# turn, ahead of anything that could act on the file or commit it. A `Stop`
+# firing would write it one moment sooner, with nothing in between to read it.
 #
 # Never fails the turn: a hook that breaks a session over a screenshot is worse
 # than a lost screenshot, so every failure path is stderr plus exit 0.
@@ -42,7 +41,6 @@ fi
 field() { jq -r --arg k "$1" '.[$k] // empty' <<<"$payload"; }
 
 transcript="$(field transcript_path)"
-event="$(field hook_event_name)"
 project="${CLAUDE_PROJECT_DIR:-$(field cwd)}"
 
 [ -n "$transcript" ] && [ -f "$transcript" ] || exit 0
@@ -56,40 +54,12 @@ if ! written="$(python3 "$project/scripts/extract-session-images.py" "$transcrip
   exit 0
 fi
 
-if [ "$event" = "UserPromptSubmit" ]; then
-  [ -n "$written" ] || exit 0
-  names="$(sed "s|^$out/|$rel_dir/|" <<<"$written")"
-  jq -n --arg names "$names" '{
-    hookSpecificOutput: {
-      hookEventName: "UserPromptSubmit",
-      additionalContext: ("Images the operator attached earlier in this session are on the branch as files:\n" + $names + "\nThey are working artifacts under a tree /finalize sweeps; `git mv` one worth keeping to a permanent home.")
-    }
-  }'
-  exit 0
-fi
+[ -n "$written" ] || exit 0
 
-# Stop: commit, in a remote session only.
-[ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
-
-git_dir="$(git -C "$project" rev-parse --git-dir 2>/dev/null)" || exit 0
-case "$git_dir" in /*) ;; *) git_dir="$project/$git_dir" ;; esac
-
-if [ "$(git -C "$project" rev-parse --abbrev-ref HEAD 2>/dev/null)" = "HEAD" ]; then
-  say "HEAD is detached; leaving $rel_dir uncommitted."
-  exit 0
-fi
-if [ -e "$git_dir/MERGE_HEAD" ] || [ -d "$git_dir/rebase-merge" ] || [ -d "$git_dir/rebase-apply" ]; then
-  say "a merge or rebase is in progress; leaving $rel_dir uncommitted."
-  exit 0
-fi
-
-git -C "$project" add -- "$rel_dir" 2>/dev/null || { say "git add failed."; exit 0; }
-files="$(git -C "$project" diff --cached --name-only -- "$rel_dir")"
-[ -n "$files" ] || exit 0
-
-if ! git -C "$project" commit --quiet --only \
-  -m "chore: capture operator-attached session images" -m "$files" \
-  -- "$rel_dir" 2>/dev/null; then
-  say "commit failed; $rel_dir is staged and left for the agent."
-fi
-exit 0
+names="$(sed "s|^$out/|$rel_dir/|" <<<"$written")"
+jq -n --arg names "$names" '{
+  hookSpecificOutput: {
+    hookEventName: "UserPromptSubmit",
+    additionalContext: ("Images the operator attached earlier in this session are on disk as untracked files:\n" + $names + "\nThey sit under a tree `/finalize` sweeps, so one worth keeping moves to a permanent home with `git mv` and is committed with the work that references it. Leave the rest where they are.")
+  }
+}'
