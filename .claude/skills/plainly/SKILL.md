@@ -10,9 +10,9 @@ description: >-
   operator entry from then on.
 ---
 
-The short version of this rule is `voice.md` beside this file, and `CLAUDE.md`
-imports it, so it is already in context — it is not restated here. This file is
-the long version: the defects, the invocations, and the pass itself.
+`voice.md` beside this file is the short version, and `CLAUDE.md` imports it, so
+the rule itself is already in context — state it there, once. This file is the
+long version: the defects, the invocations, and the pass.
 
 ## Two invocations
 
