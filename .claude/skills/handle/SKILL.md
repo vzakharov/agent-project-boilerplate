@@ -6,11 +6,11 @@ End state of this skill: the branch is attached, the one lane the branch called 
 
 ## Argument shape
 
-Three parts, order-free:
+Four parts, order-free:
 
 - **Target** (**required**, first token by convention): a branch name, `#NNN`, or any PR URL — the grammar `@.claude/skills/from-branch/SKILL.md` § "Argument shape" defines, used as-is. With no target, **stop and ask which branch**: a bare `/handle` has nothing to attach to.
 - **`and finalize`** (flag; bare `finalize` counts too): recognized **anywhere** in the argument, since the operator writes it before the target as often as after (`/handle and finalize <branch>`).
-- **`and merge`** (`@.claude/skills/finalize/SKILL.md`'s flag): read as `and finalize`, and **not forwarded**. A lane produces work in this turn, so the operator wrote `and merge` before the thing it would merge existed — the one case where their instruction cannot be about the diff it lands. Land-prep as asked, then say plainly in the report that the merge was held and that `/finalize <branch> and merge` is one command away once they have looked: an operator who skips the diff should be skipping it knowingly.
+- **`and merge`** (`@.claude/skills/finalize/SKILL.md`'s flag): read as `and finalize`, and **not forwarded** — a lane produces its diff in this same turn, so the flag was typed before the thing it would merge existed. Land-prep as asked, then report that the merge was held and that `/finalize <branch> and merge` lands it once the operator has looked.
 - **Extra guidance** (optional): any remaining prose. Not a lane of its own — it directs whichever lane runs, and when no lane is discovered it _is_ the work (Step 4).
 
 ## A `/handle` session is continued work
