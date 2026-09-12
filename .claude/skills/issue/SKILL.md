@@ -129,7 +129,7 @@ The usual case. Say so in a line, and go straight to Step 4 — there is nothing
 
 Load and follow `@.claude/skills/task/SKILL.md`, passing what the issue asks in **one line** plus the export path (`docs/issue/<n>/issue.md`), and `<issue>` = the number the eventual PR must close: the chosen child when you split, otherwise the issue itself, **never** the parent. The handover happens in this session, so the outcome it picks runs with the thread you just read still in context and the export on the branch. Don't paraphrase the issue back at yourself.
 
-That skill's two questions decide whether this issue gets a plan, and nothing about them is restated here — including how to weigh work that arrives with an issue number behind it, which sits beside its Question 1.
+That skill's two questions decide whether this issue gets a plan, and nothing about them is restated here.
 
 **A split issue is the one case that skips the call and plans.** Step 3 splits only when the work is obviously beyond a single PR, which is Question 1's first clause already satisfied, so a split hands straight to `@.claude/skills/plan/SKILL.md` rather than re-asking a judgement that is made.
 
