@@ -261,10 +261,11 @@ whatever you answer, which is why it stays in your tree even when the answer is
 The house rule for explaining things to a person is adopt-as-is; what you write
 is `.claude/skills/plainly/operators/`, which ships carrying this repo's operator
 as the worked shape — delete that file. Add your own people only where you know a
-preference they have stated, one `<handle>.md` each; otherwise leave the directory
-holding just its `README.md`, the rule being complete with no entries at all.
-Entries accumulate from sessions rather than from setup: a person states a
-standing preference, and the session they state it in writes the file.
+preference they have stated, one `<handle>.md` each; otherwise leave none, the
+rule being complete with no entries at all. Entries accumulate from
+sessions rather than from setup: a person states a standing preference, and the
+session they state it in writes the file. A manner rule that holds for your whole
+team is not an entry — it is an edit to `voice.md` beside them.
 
 Copying the section is the step with a trap in it. The [G1 catalog
 rows](.claude/skills/update-muthur/catalog.md#g1--prose--principles) state it.

@@ -182,9 +182,8 @@ Ordering is load-bearing at exactly one point, and it is the first step:
    shipped. **Delete `.claude/skills/plainly/operators/`'s shipped entry** and
    write one for whoever ran the detemplate, at `<their handle>.md`, if they
    stated a standing preference about how you talk to them during the run —
-   otherwise leave the directory holding just its `README.md`. The rule is
-   complete with no entries, and inventing one for a person who never asked is
-   worse than an empty directory.
+   otherwise leave none. The rule is complete with no entries at all, and
+   inventing one for a person who never asked is worse than an empty directory.
 5. **File the project's first issue** through `/propose-issue`, carrying the
    brief, any spec the operator attached, and any answer they gave for the
    prune's sake that also describes the product. A scarce brief makes a scarce

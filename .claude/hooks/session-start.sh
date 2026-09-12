@@ -28,10 +28,10 @@
 #
 # Until the install line is implemented, job 2 no-ops cleanly; job 1 works as-is.
 #
-# 3. Print the operator's GitHub handle into the session context, so the agent
-#    starts the session already knowing who it is talking to instead of spending
-#    a turn resolving it. See `.claude/skills/plainly/voice.md`, which keys its
-#    operator entries on that handle.
+# 3. Print who the operator is — their name, their handle, and their entry from
+#    `.claude/skills/plainly/operators/` — into the session context, so the agent
+#    starts out knowing who it is talking to instead of spending a turn resolving
+#    it. `.claude/skills/plainly/voice.md` is what reads this.
 
 set -euo pipefail
 
@@ -87,59 +87,54 @@ if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
 fi
 
 # --- 3. Name the operator ------------------------------------------------
-# Outside the remote gate: the agent needs the handle wherever it runs, and `gh`
-# reaches the API through the proxy as well as around it, so this works whether
-# or not job 1 installed the shim.
+# Outside the remote gate: the agent needs this wherever it runs, and `gh` reaches
+# the API through the proxy as well as around it.
 #
-# `.type` is the load-bearing field: a token minted for a human names that human
-# (`User`), one of the agent's own names the agent (`Bot`), and only the first
-# answers "who am I talking to". Hence two messages rather than a bare login,
-# which would be trusted in exactly the case where it is wrong.
+# `.type` is the load-bearing field. A token minted for a human names that human
+# (`User`); one of the agent's own names the agent (`Bot`). A bare login would be
+# trusted in exactly the case where it names the wrong party.
 #
-# The handle then names that person's entry file and the hook prints the entry
-# itself, which is why `CLAUDE.md` imports none of them: one session applies one
-# entry, so importing the set spends context on everyone else's, every session.
-#
-# The filename is the whole lookup — no parse, so no syntax an entry can get
-# wrong. `default.md` is the one reserved name, printed for everyone. Handles are
-# lowercased because GitHub treats them case-insensitively and the filesystem
-# does not.
+# The lowercased login is both what the message prints and what names the entry
+# file, so the one spelling an agent ever sees is the one the lookup uses. The
+# filename is the whole lookup: no parse, so nothing an entry can malform.
 OPERATORS_DIR="$(dirname "$0")/../skills/plainly/operators"
-
-# `|| true` because both files are optional and `set -e` would otherwise take the
-# whole hook down on a missing one — silently, since the caller assigns from a
-# command substitution.
-operator_entry() {
-  local handle
-  handle="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
-  cat "$OPERATORS_DIR/default.md" "$OPERATORS_DIR/$handle.md" 2>/dev/null || true
-}
 
 name_the_operator() {
   local identity
-  identity="$(gh api user --jq '[.login, .type] | @tsv' 2>/dev/null || true)"
+  identity="$(gh api user --jq '[.login, .type, .name] | @tsv' 2>/dev/null || true)"
 
   if [ -z "$identity" ]; then
-    echo "session-start: the operator's GitHub handle is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for it, then read their entry under .claude/skills/plainly/operators/."
+    echo "session-start: the operator is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for their GitHub handle, then read .claude/skills/plainly/operators/<handle>.md yourself."
     return 0
   fi
 
-  local login="${identity%%	*}" type="${identity##*	}"
+  local login type name
+  IFS=$'\t' read -r login type name <<<"$identity"
 
   if [ "$type" != "User" ]; then
-    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle, then read their entry under .claude/skills/plainly/operators/."
+    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle, then read .claude/skills/plainly/operators/<handle>.md yourself."
     return 0
   fi
 
+  local handle who
+  handle="$(printf '%s' "$login" | tr '[:upper:]' '[:lower:]')"
+  who="@${handle}"
+  if [ -n "$name" ]; then
+    who="${name} (@${handle})"
+  fi
+
+  # `|| true` because the entry is optional and `set -e` would otherwise take the
+  # whole hook down on a missing one — silently, this being a command
+  # substitution in an assignment.
   local entry
-  entry="$(operator_entry "$login")"
+  entry="$(cat "$OPERATORS_DIR/${handle}.md" 2>/dev/null || true)"
 
   if [ -z "$entry" ]; then
-    echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. They have no entry under .claude/skills/plainly/operators/."
+    echo "session-start: the operator is ${who} — the GitHub token in this session is that user's own. They have no entry under .claude/skills/plainly/operators/."
     return 0
   fi
 
-  echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. How they want to be talked to, from .claude/skills/plainly/operators/, applying to every reply:"
+  echo "session-start: the operator is ${who} — the GitHub token in this session is that user's own. How they want to be talked to, from .claude/skills/plainly/operators/${handle}.md, applying to every reply:"
   echo
   echo "$entry"
 }
