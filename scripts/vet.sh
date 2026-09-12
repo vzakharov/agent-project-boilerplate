@@ -28,6 +28,11 @@
 #     `/squash-message` states, passing quietly when a branch has no proposal.
 #     Dropping it leaves nothing catching a proposal edited by hand or outgrown
 #     by a later base merge.
+#   check-operator-entries.sh — holds `operators.md` to the heading shape
+#     `.claude/hooks/session-start.sh` selects entries by. Nothing imports that
+#     file, so a malformed heading fails silently: the entry reaches no session
+#     and the person is answered under the house default. Passes quietly where
+#     the file is absent, so a project that keeps no entries can keep the line.
 #   check-repo-identity.sh — holds the repo's own `owner/repo` to one home, the
 #     watermark's `repo` field, plus the handful of clone lines and recipes a
 #     human copies. It is the one line here that is *this* repo's alone: it
@@ -44,6 +49,7 @@ set -euo pipefail
 
 "$(dirname "$0")/check-skill-catalog.sh"
 "$(dirname "$0")/check-squash-message.sh"
+"$(dirname "$0")/check-operator-entries.sh"
 "$(dirname "$0")/check-repo-identity.sh"
 "$(dirname "$0")/test_authorship.py"
 

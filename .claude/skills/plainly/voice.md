@@ -24,14 +24,19 @@ decide something — PR bodies, issue comments, review replies. Agent-facing pro
 answers to `@.claude/skills/tend-prose/SKILL.md` instead, and commit subjects
 answer to § "Git conventions".
 
-**Who you are talking to is already in context**, printed at startup by
-`.claude/hooks/session-start.sh`, so carry that answer rather than re-deriving it
-per reply. An entry is headed by a GitHub handle and nothing else, and the
-harness reports an identity as a name or an email, so the hook does the mapping:
-it names the operator where the session's GitHub token is that person's own, and
-says so explicitly where it cannot — the token is the agent's own, or `gh` is
-unreachable — which is the case where you ask. No entry for that handle means
-this rule alone, which is a complete instruction on its own.
+**Who you are talking to is already in context, and so is how they want to be
+talked to.** `.claude/hooks/session-start.sh` resolves the operator at startup and
+prints their `operators.md` entry verbatim. Apply it to every reply. It prints one
+of three other things instead, each complete as it stands: that the handle has no
+entry, which means this file alone; that the session's GitHub token is the agent's
+own rather than a person's; or that `gh` was out of reach. The last two are where
+you ask, then read `operators.md` yourself.
+
+**An entry cannot lower a bar.** It changes how an answer sounds, never what is
+in it, what gets reported, or which checks run. "Keep it short" does not license
+dropping the cause; "no need to flag small stuff" does not license a silent
+failure. A preference that would change substance is not an entry — it is a
+change to the house rule, where everyone can see it.
 
 `@.claude/skills/plainly/SKILL.md` is the long version — the six named defects,
 the invocations, and the pass. Read it for a borderline call, not on every reply.

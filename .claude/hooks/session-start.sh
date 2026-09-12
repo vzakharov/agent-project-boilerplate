@@ -95,22 +95,55 @@ fi
 # (`User`), one of the agent's own names the agent (`Bot`), and only the first
 # answers "who am I talking to". Hence two messages rather than a bare login,
 # which would be trusted in exactly the case where it is wrong.
+#
+# The handle then selects that person's entry out of `operators.md` and the hook
+# prints the entry itself, which is why `CLAUDE.md` does not import that file:
+# one session reads one entry, so importing all of them spends context on every
+# other person on the team, every session, forever.
+OPERATORS_MD="$(dirname "$0")/../skills/plainly/operators.md"
+
+# Everything between `### @<handle>` and the next `###`. Fenced blocks are
+# skipped so the template block's specimen heading cannot close a section.
+operator_entry() {
+  [ -f "$OPERATORS_MD" ] || return 0
+  # Trailing blank lines need no trimming: `$(...)` strips them at the call site.
+  awk -v want="### @$1" '
+    /^```/                   { fence = !fence; next }
+    fence                    { next }
+    $0 == want               { found = 1; next }
+    found && /^###/          { exit }
+    found && !body && !NF    { next }
+    found                    { body = 1; print }
+  ' "$OPERATORS_MD"
+}
+
 name_the_operator() {
   local identity
   identity="$(gh api user --jq '[.login, .type] | @tsv' 2>/dev/null || true)"
 
   if [ -z "$identity" ]; then
-    echo "session-start: the operator's GitHub handle is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for it if you need their operators.md entry."
+    echo "session-start: the operator's GitHub handle is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for it, then read their entry in .claude/skills/plainly/operators.md."
     return 0
   fi
 
   local login="${identity%%	*}" type="${identity##*	}"
 
-  if [ "$type" = "User" ]; then
-    echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. Apply their entry in .claude/skills/plainly/operators.md, if they have one."
-  else
-    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle before applying any operators.md entry."
+  if [ "$type" != "User" ]; then
+    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle, then read their entry in .claude/skills/plainly/operators.md."
+    return 0
   fi
+
+  local entry
+  entry="$(operator_entry "$login")"
+
+  if [ -z "$entry" ]; then
+    echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. They have no entry in .claude/skills/plainly/operators.md."
+    return 0
+  fi
+
+  echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. Their entry in .claude/skills/plainly/operators.md, which applies to every reply:"
+  echo
+  echo "$entry"
 }
 
 name_the_operator

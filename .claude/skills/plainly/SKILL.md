@@ -42,8 +42,8 @@ Either way the output is an answer, not a plan to produce one.
 3. **Run the six defects below over that draft, then write it out again.** Each
    has a tell you can see in your own text without knowing the subject — but only
    in text you actually put down first.
-4. **Apply the operator's entry** from `operators.md`, which tunes manner and
-   never substance.
+4. **Apply the operator's entry**, which the session-start hook has already
+   printed into context. `voice.md` carries what an entry may do to a draft.
 
 ## The six defects
 
