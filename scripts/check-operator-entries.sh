@@ -1,25 +1,24 @@
 #!/bin/bash
-# Assert that `.claude/skills/plainly/operators.md` stays machine-readable.
+# Assert that every file in `.claude/skills/plainly/operators/` is reachable.
 #
-# `.claude/hooks/session-start.sh` selects one entry out of this file by exact
-# heading match and prints it into the session. Nothing imports the file, so a
-# malformed heading does not degrade — the entry reaches nobody, silently, and
-# the operator is talked to under the house default while their stated
-# preference sits in the repo. That is the failure this script exists to make
-# loud.
+# `.claude/hooks/session-start.sh` looks an entry up by filename — the resolved
+# login, lowercased, plus `.md`. Nothing imports the directory, so a file the
+# lookup cannot name does not degrade: it reaches no session, silently, while the
+# preference it holds sits in the repo looking done. That is the failure this
+# script exists to make loud.
 #
-#   1. Every `###` line outside a fenced block is `### @<handle>` — `###`, one
-#      space, `@`, then a GitHub handle and nothing else. This is also what
-#      catches a stray `###` inside an entry body, which would end that entry
-#      early and take the rest of it with it.
-#   2. No handle appears twice. The hook prints the first match and stops, so a
-#      second entry for the same person is dead text.
-#   3. No fenced block opens below the first entry. The hook skips fences, so
-#      one inside an entry swallows the rest of it. The template block sits
-#      above the entries, which is why "below the first entry" is the test.
+# So every `*.md` here is either `default.md` (printed for everyone), `README.md`
+# (the format, read by people rather than the hook), or `<handle>.md` where the
+# handle is lowercase and otherwise a legal GitHub handle. Uppercase is the one
+# that bites without looking wrong, GitHub being case-insensitive about handles
+# where the filesystem is not.
 #
-# Passes quietly when the file is absent: an adopting project that keeps no
-# operator entries has nothing to check.
+# There is nothing else to check. An entry's content is its whole file, so it has
+# no syntax to violate — which is why this script is short and why the directory
+# is shaped this way.
+#
+# Passes quietly when the directory is absent: a project that keeps no operator
+# entries has nothing to check.
 #
 # Reports every failure rather than stopping at the first.
 
@@ -27,7 +26,7 @@ set -uo pipefail
 
 cd "$(dirname "$0")/.." || exit 1
 
-OPERATORS=".claude/skills/plainly/operators.md"
+OPERATORS=".claude/skills/plainly/operators"
 failures=0
 
 fail() {
@@ -35,49 +34,36 @@ fail() {
   failures=$((failures + 1))
 }
 
-if [ ! -f "$OPERATORS" ]; then
-  echo "check-operator-entries: no $OPERATORS — nothing to check."
+if [ ! -d "$OPERATORS" ]; then
+  echo "check-operator-entries: no $OPERATORS/ — nothing to check."
   exit 0
 fi
 
-echo "1. Entry headings are \`### @<handle>\`"
-echo "2. No handle has two entries"
-echo "3. No fenced block inside an entry"
+echo "1. Every entry filename is a handle the hook can look up"
 
-# Structural `###` lines only, mirroring the hook's fence handling so that a
-# specimen heading in the template block is skipped here exactly as there.
-headings="$(awk '
-  /^```/ { fence = !fence; next }
-  fence  { next }
-  /^###/ { print NR "\t" $0 }
-' "$OPERATORS")"
+shopt -s nullglob
+for path in "$OPERATORS"/*; do
+  name="$(basename "$path")"
 
-seen=""
-while IFS=$'\t' read -r lineno text; do
-  [ -n "$lineno" ] || continue
+  case "$name" in
+    README.md|default.md) continue ;;
+  esac
 
-  if [[ ! "$text" =~ ^###\ @[A-Za-z0-9](-?[A-Za-z0-9])*$ ]]; then
-    fail "$OPERATORS:$lineno: heading is not \`### @<handle>\`: $text"
+  if [ -d "$path" ]; then
+    fail "$path: a directory; entries are flat files, and the hook will not find this"
     continue
   fi
 
-  handle="${text#\#\#\# @}"
-  case " $seen " in
-    *" $handle "*) fail "$OPERATORS:$lineno: @$handle has more than one entry; the hook prints only the first" ;;
-    *)             seen="$seen $handle" ;;
+  case "$name" in
+    *.md) ;;
+    *) fail "$path: not a \`.md\` file, so no login will ever name it"; continue ;;
   esac
-done <<< "$headings"
 
-# From the fence-aware pass, not a raw grep: the template block's specimen
-# heading is also `### @…`, so a grep would anchor on it and call the block's
-# own closing fence a violation.
-first_entry="$(printf '%s' "$headings" | head -1 | cut -f1)"
-if [ -n "$first_entry" ]; then
-  while IFS=: read -r lineno _; do
-    [ -n "$lineno" ] && [ "$lineno" -gt "$first_entry" ] &&
-      fail "$OPERATORS:$lineno: fenced block inside an entry; the hook stops reading there"
-  done < <(grep -n '^```' "$OPERATORS")
-fi
+  handle="${name%.md}"
+  if [[ ! "$handle" =~ ^[a-z0-9](-?[a-z0-9])*$ ]]; then
+    fail "$path: \`$handle\` is not a lowercase GitHub handle, so the hook's lookup misses it"
+  fi
+done
 
 echo
 if [ "$failures" -gt 0 ]; then

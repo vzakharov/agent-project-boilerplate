@@ -259,10 +259,12 @@ whatever you answer, which is why it stays in your tree even when the answer is
 ### Fill in the operator entries
 
 The house rule for explaining things to a person is adopt-as-is; what you write
-is `.claude/skills/plainly/operators.md`, which ships carrying this repo's
-operator as the worked shape. Replace them with your own people, one short entry
-each, or leave only the template until someone states a preference — the rule is
-complete without any entries at all.
+is `.claude/skills/plainly/operators/`, which ships carrying this repo's operator
+as the worked shape — delete that file. Add your own people only where you know a
+preference they have stated, one `<handle>.md` each; otherwise leave the directory
+holding just its `README.md`, the rule being complete with no entries at all.
+Entries accumulate from sessions rather than from setup: a person states a
+standing preference, and the session they state it in writes the file.
 
 Copying the section is the step with a trap in it. The [G1 catalog
 rows](.claude/skills/update-muthur/catalog.md#g1--prose--principles) state it.

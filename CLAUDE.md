@@ -199,8 +199,8 @@ governs every reply regardless.
      other @-reference in this file is backticked because it is a pointer the
      agent opens on demand.
 
-     `operators.md` beside it is deliberately not imported. A session applies
-     one person's entry, so importing the file spends context on everyone
+     `operators/` beside it is deliberately not imported. A session applies one
+     person's entry, so importing the directory spends context on everyone
      else's, every session — `.claude/hooks/session-start.sh` resolves the
      operator at startup and prints that one entry instead. -->
 

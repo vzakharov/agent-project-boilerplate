@@ -115,9 +115,9 @@ there is no condition under which it fails to apply.
 | `/tend-prose` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say, delete what survives only to deny a thing the change removed. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
 | `/plainly` | Explain something to a person cause-first and in their nouns: re-explain an answer that did not land, or answer a question under the rule from the start. Names six defects so a bad report can be called out in one word. The long version of `voice.md`. | — | `/tend-prose` (this group) | adopt |
 | `.claude/skills/plainly/voice.md` | The resident short version of that rule — the shape an explanation takes, and what an operator entry may and may not do. CLAUDE.md § "Explaining things to people" imports it. | — | — | adopt |
-| `.claude/skills/plainly/operators.md` | Per-person entries tuning how each operator wants to be talked to. Deliberately *not* imported: the session-start hook reads the current operator's entry out of it and prints that one, so the headings are machine-read and `scripts/check-operator-entries.sh` holds them to shape. Ships carrying this repo's own operator as the worked shape. | — | `.claude/hooks/session-start.sh` (G4), `scripts/check-operator-entries.sh` | **rewrite** |
+| `.claude/skills/plainly/operators/` | Per-person entries tuning how each operator wants to be talked to, one file per handle plus a `README.md` and an optional `default.md` for everyone. Deliberately *not* imported: the session-start hook prints the current operator's entry and no one else's, so the filenames are machine-read and `scripts/check-operator-entries.sh` holds them to shape. Ships carrying this repo's own operator as the worked shape. | — | `.claude/hooks/session-start.sh` (G4), `scripts/check-operator-entries.sh` | **rewrite** |
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
-| `scripts/check-operator-entries.sh` | Assert that `operators.md` keeps the heading shape the session-start hook selects entries by. A malformed heading fails silently — the entry reaches no session — which is what makes it worth a check. Passes quietly where the file is absent. | `bash` | — | adopt |
+| `scripts/check-operator-entries.sh` | Assert that every file in `plainly/operators/` is named something the session-start hook's lookup can reach — lowercase handle, `.md`, flat. A file it cannot name fails silently, the entry reaching no session, which is what makes it worth a check. Passes quietly where the directory is absent. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
 `CLAUDE.md` is a **donor, not a replacement** — overwriting it is the one way to
@@ -126,15 +126,18 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 Its § "Language" is hydrated rather than merged: one line naming the language
 your team reads, the rest of the section holding whatever the project.
 
-**§ "Explaining things to people" travels with both its import lines, and those
-lines are the half that is easy to drop.** `voice.md` and `operators.md` reach
-context only because CLAUDE.md imports each with an unbackticked `@` reference —
-the import parser skips code spans, so a copy that backticks them for
-consistency with their neighbours loads nothing and fails silently. Both are
-imported from CLAUDE.md directly, because an import inside an imported file does
-not load; keep them that way rather than tidying the second into the first.
-`operators.md` is **rewrite** rather than adopt: it ships with this repo's own
-operator as the worked shape, and yours are different people.
+**§ "Explaining things to people" travels with its import line, and that line is
+the half that is easy to drop.** `voice.md` reaches context only because CLAUDE.md
+imports it with an unbackticked `@` reference — the import parser skips code
+spans, so a copy that backticks it for consistency with its neighbours loads
+nothing and fails silently. It is imported from CLAUDE.md directly rather than
+from another imported file, an import inside one not loading at any depth.
+
+`operators/` is imported by nothing, and that is the design rather than an
+omission: `.claude/hooks/session-start.sh` (G4) prints the session operator's
+entry and no one else's. A copy that adds an import line undoes it. The directory
+is **rewrite** because it ships with this repo's own operator as the worked shape,
+and yours are different people.
 
 ### G2 — The PR loop
 
@@ -200,7 +203,7 @@ the working tree clean, and behaves the same everywhere.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied, and print the operator's handle plus their `operators.md` entry into the session. Dependency install is a stub you fill in for your stack. The shim and the install are web/remote-only; the operator lookup runs everywhere. | `bash`; **`gh` already on `PATH`**; web/remote sessions for the shim and the install | `.claude/skills/plainly/operators.md` (G1) | adopt |
+| `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied, and print the operator's handle plus their `plainly/operators/` entry into the session. Dependency install is a stub you fill in for your stack. The shim and the install are web/remote-only; the operator lookup runs everywhere. | `bash`; **`gh` already on `PATH`**; web/remote sessions for the shim and the install | `.claude/skills/plainly/operators/` (G1) | adopt |
 | `.claude/hooks/plan-mode-notice.sh` | On every prompt submitted while the session is in native plan mode, inject the notice that this repo plans on disk and that the exit is plan mode's own. | web/remote sessions; `bash`, `jq` | `/plan` (G2) | adopt |
 | `.claude/hooks/session-images.sh` | On every prompt, run the extractor below and name any newly written file in the turn's context. Commits nothing. | `bash`, `jq`, `python3` ≥3.9 | `scripts/extract-session-images.py` | adopt |
 | `scripts/extract-session-images.py` | Write the images the operator attached to a session out of the transcript into gitignored `tmp/session-images/`, with a manifest row carrying the prompt each arrived with. Stdlib-only, idempotent. | `python3` ≥3.9, `scripts/lib/media.py` (G2) | — | adopt |

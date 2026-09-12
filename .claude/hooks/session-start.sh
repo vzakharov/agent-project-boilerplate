@@ -96,25 +96,23 @@ fi
 # answers "who am I talking to". Hence two messages rather than a bare login,
 # which would be trusted in exactly the case where it is wrong.
 #
-# The handle then selects that person's entry out of `operators.md` and the hook
-# prints the entry itself, which is why `CLAUDE.md` does not import that file:
-# one session reads one entry, so importing all of them spends context on every
-# other person on the team, every session, forever.
-OPERATORS_MD="$(dirname "$0")/../skills/plainly/operators.md"
+# The handle then names that person's entry file and the hook prints the entry
+# itself, which is why `CLAUDE.md` imports none of them: one session applies one
+# entry, so importing the set spends context on everyone else's, every session.
+#
+# The filename is the whole lookup — no parse, so no syntax an entry can get
+# wrong. `default.md` is the one reserved name, printed for everyone. Handles are
+# lowercased because GitHub treats them case-insensitively and the filesystem
+# does not.
+OPERATORS_DIR="$(dirname "$0")/../skills/plainly/operators"
 
-# Everything between `### @<handle>` and the next `###`. Fenced blocks are
-# skipped so the template block's specimen heading cannot close a section.
+# `|| true` because both files are optional and `set -e` would otherwise take the
+# whole hook down on a missing one — silently, since the caller assigns from a
+# command substitution.
 operator_entry() {
-  [ -f "$OPERATORS_MD" ] || return 0
-  # Trailing blank lines need no trimming: `$(...)` strips them at the call site.
-  awk -v want="### @$1" '
-    /^```/                   { fence = !fence; next }
-    fence                    { next }
-    $0 == want               { found = 1; next }
-    found && /^###/          { exit }
-    found && !body && !NF    { next }
-    found                    { body = 1; print }
-  ' "$OPERATORS_MD"
+  local handle
+  handle="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  cat "$OPERATORS_DIR/default.md" "$OPERATORS_DIR/$handle.md" 2>/dev/null || true
 }
 
 name_the_operator() {
@@ -122,14 +120,14 @@ name_the_operator() {
   identity="$(gh api user --jq '[.login, .type] | @tsv' 2>/dev/null || true)"
 
   if [ -z "$identity" ]; then
-    echo "session-start: the operator's GitHub handle is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for it, then read their entry in .claude/skills/plainly/operators.md."
+    echo "session-start: the operator's GitHub handle is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for it, then read their entry under .claude/skills/plainly/operators/."
     return 0
   fi
 
   local login="${identity%%	*}" type="${identity##*	}"
 
   if [ "$type" != "User" ]; then
-    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle, then read their entry in .claude/skills/plainly/operators.md."
+    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle, then read their entry under .claude/skills/plainly/operators/."
     return 0
   fi
 
@@ -137,11 +135,11 @@ name_the_operator() {
   entry="$(operator_entry "$login")"
 
   if [ -z "$entry" ]; then
-    echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. They have no entry in .claude/skills/plainly/operators.md."
+    echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. They have no entry under .claude/skills/plainly/operators/."
     return 0
   fi
 
-  echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. Their entry in .claude/skills/plainly/operators.md, which applies to every reply:"
+  echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. How they want to be talked to, from .claude/skills/plainly/operators/, applying to every reply:"
   echo
   echo "$entry"
 }

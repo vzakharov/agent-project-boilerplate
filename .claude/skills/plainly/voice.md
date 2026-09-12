@@ -26,11 +26,11 @@ answer to § "Git conventions".
 
 **Who you are talking to is already in context, and so is how they want to be
 talked to.** `.claude/hooks/session-start.sh` resolves the operator at startup and
-prints their `operators.md` entry verbatim. Apply it to every reply. It prints one
-of three other things instead, each complete as it stands: that the handle has no
-entry, which means this file alone; that the session's GitHub token is the agent's
-own rather than a person's; or that `gh` was out of reach. The last two are where
-you ask, then read `operators.md` yourself.
+prints their entry from `operators/` verbatim. Apply it to every reply. It prints
+one of three other things instead, each complete as it stands: that the handle has
+no entry, which means this file alone; that the session's GitHub token is the
+agent's own rather than a person's; or that `gh` was out of reach. The last two
+are where you ask, then read `operators/<handle>.md` yourself.
 
 **An entry cannot lower a bar.** It changes how an answer sounds, never what is
 in it, what gets reported, or which checks run. "Keep it short" does not license
