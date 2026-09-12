@@ -11,7 +11,9 @@ The decision this skill makes, before any other: **does this task get a plan, an
 
 **The prompt is a conditional go-ahead.** It authorizes implementation *on condition that* the agent judges the operator's gate unnecessary, scoped to the task in that message and to that message alone.
 
-`/task <what to do>` is the invocation, and so is the prose it stands in for — `plan or go: <task>`, "plan this or just do it". It is the untracked-work sibling of `/issue`: same handover, a task in place of an issue number.
+`/task <what to do>` is the invocation, and so is the prose it stands in for — `plan or go: <task>`, "plan this or just do it". `/issue` is the other way in: it reads the thread first and then hands the work here, so the call is made once, in one place, whether or not the work is tracked. The mention stays bare rather than an `@`-reference: nothing here needs that file read, and this skill ships to adopters who track no issues at all.
+
+**Anything a caller passes beyond the task — an `<issue>`, an export path — rides through unchanged to whichever outcome runs, and is never read here.** This skill knows what a task is and nothing else; what the extras mean belongs to the skills that sent and receive them.
 
 ## Question 1 — does the operator need to decide before the work exists?
 
@@ -23,6 +25,8 @@ Any one of these is a yes:
 - **The scope is itself the question** — you would be deciding *what* the task is, not just how to do it.
 
 None of these asks how important the change is. Importance is why the operator reviews the diff; the gate is for what reviewing a diff cannot undo.
+
+Nor does any of them ask how the task arrived. **A task that came in through `/issue` carries evidence that it is worth tracking, which is not evidence that it is large** — a two-row docs correction gets filed so it survives the review it surfaced in. Weigh the work described, not the formality of the thread describing it, or every issue plans and the call is decorative.
 
 ## Question 2 — would writing it down change what you build?
 

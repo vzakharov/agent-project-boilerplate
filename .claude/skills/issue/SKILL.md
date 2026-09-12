@@ -1,10 +1,10 @@
 ---
-description: Take a GitHub issue — export and read the thread, split it when the scope demands, then hand the work over to `/plan`. Invoke as `/issue <number|url>`; a prompt that reads like an issue title and ends in `#<N>`, with no slash command, is the same invocation.
+description: Take a GitHub issue — export and read the thread, split it when the scope demands, then hand the work over to `/task`, which decides whether it gets a plan. Invoke as `/issue <number|url>`; a prompt that reads like an issue title and ends in `#<N>`, with no slash command, is the same invocation.
 ---
 
-End state of this skill: the issue is exported and committed on the branch, any split is filed on GitHub as sub-issues, and the work has been handed to `@.claude/skills/plan/SKILL.md` — which in an ordinary web session means a plan file published as a draft PR and a copyable `/go <branch>` handoff. Not code — that belongs to `/go`.
+End state of this skill: the issue is exported and committed on the branch, any split is filed on GitHub as sub-issues, and the work has been handed to `@.claude/skills/task/SKILL.md` — which in an ordinary web session means either a plan file published as a draft PR with a copyable `/go <branch>` handoff, or the change itself under a PR when the call came back "no plan".
 
-The chain is `/issue` → `/plan` → draft PR → (review loop via `/handle`) → `/go` → `/finalize`. Everything past the handover is owned by the skill that runs it.
+The chain is `/issue` → `/task` → `/plan` → draft PR → (review loop via `/handle`) → `/go` → `/finalize`, with the `/plan` leg skipped on issues that don't need one. Everything past the handover is owned by the skill that runs it.
 
 ## Step 0 — Mode gate: native plan mode is not supported
 
@@ -125,16 +125,18 @@ A QA roundup of six small defects is usually **not** six sub-issues — it's one
 
 The usual case. Say so in a line, and go straight to Step 4 — there is nothing to approve.
 
-## Step 4 — Hand over to `/plan`
+## Step 4 — Hand over to `/task`
 
-Load and follow `@.claude/skills/plan/SKILL.md`, passing what the issue asks in **one line** plus the export path (`docs/issue/<n>/issue.md`), and `<issue>` = the number the eventual PR must close: the chosen child when you split, otherwise the issue itself, **never** the parent. The handover happens in this session, so `/plan` runs with the thread you just read still in context and the export on the branch. Don't paraphrase the issue back at yourself.
+Load and follow `@.claude/skills/task/SKILL.md`, passing what the issue asks in **one line** plus the export path (`docs/issue/<n>/issue.md`), and `<issue>` = the number the eventual PR must close: the chosen child when you split, otherwise the issue itself, **never** the parent. The handover happens in this session, so the outcome it picks runs with the thread you just read still in context and the export on the branch. Don't paraphrase the issue back at yourself.
 
-`/plan`'s deliverable is the plan file, published as a draft PR by its § "Publishing the plan", and the copyable `/go <branch>` block. **That is normally where this run ends.** Do not implement here: `/go` runs in a later session and hands the finished work back to `/pr` to refresh.
+That skill's two questions decide whether this issue gets a plan, and they are not restated here. An issue is not a thumb on the scale toward planning: filing one says the work is worth **tracking**, which comes apart from being worth **deliberating** — a two-row docs correction gets filed so it isn't lost, not because anyone needs a page about it first.
 
-The **only** waiver is the operator explicitly saying no plan is needed, which routes to `@.claude/skills/go/SKILL.md` § "Planless entry". It is not this skill's to grant on its own judgement — the plan-or-not call `@.claude/skills/task/SKILL.md` makes for untracked work is already answered here by the issue existing. Filing one costs something, so work that was worth filing cleared the bar the call tests for.
+**A split issue is the one case that skips the call and plans.** Step 3 splits only when the work is obviously beyond a single PR, which is Question 1's first clause already satisfied, so a split hands straight to `@.claude/skills/plan/SKILL.md` rather than re-asking a judgement that is made.
 
-**Branch name:** `@.claude/skills/branch-rename/SKILL.md` owns the form, and the rename lands before `/plan` writes the plan file, whose name derives from the slug. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`.
+Where the call lands on a plan, its deliverable is the plan file, published as a draft PR by `/plan` § "Publishing the plan", and the copyable `/go <branch>` block — **and that is where the run ends**, with `/go` implementing in a later session. Where the call lands on implementing, the work happens in this session and ends at the PR `/go` opens over it.
 
-**Reporting:** `/plan` and `/pr` report their own results. Add only what this skill alone knows — which issue you took, whether you split it, and links to the children.
+**Branch name:** `@.claude/skills/branch-rename/SKILL.md` owns the form, and the rename lands before `/plan` writes the plan file, whose name derives from the slug. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`. It is load-bearing rather than cosmetic — `@.claude/skills/pr/SKILL.md` Step 4 reads that number back off the branch to close the issue, which is what lets the no-plan outcome reach a correct `Closes #N` with nothing threaded through to it.
+
+**Reporting:** whichever skill ran the outcome reports its own results. Add only what this skill alone knows — which issue you took, whether you split it, and links to the children.
 
 **Split-only session:** if the operator says the run's deliverable is the sub-issues themselves, with no code to be written in it, stop after Step 3 and report — there is nothing to hand over.

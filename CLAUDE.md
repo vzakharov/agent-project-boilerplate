@@ -218,7 +218,7 @@ This project ships a set of Claude Code skills under `.claude/skills/`. Invoke t
 
 **Entry points and support:**
 
-- **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/plan`.
+- **`/issue`** — export and read a GitHub issue, split it when the scope demands, then hand the work to `/task`, which makes the plan-or-not call on it like any other task.
 - **`/from-branch`** — attach the session to an existing branch or PR, abandoning the auto-created session branch.
 - **`/detemplate`** — turn a fresh "Use this template" fork into a project: prune what doesn't apply, hydrate what does. Routes through `/plan`, so the pruning is reviewed as a diff, and deletes itself last. **Forks only**: it refuses from this repo, where the route to a new project is the README's template button.
 - **`/spinoff`** — seed a new sibling repo out of the project you are standing in, and hand over a session rooted in it. **Adopters only**: same refusal, same signal — the two are complements, one converting a fork into a project and the other pushing a sibling out of one.
