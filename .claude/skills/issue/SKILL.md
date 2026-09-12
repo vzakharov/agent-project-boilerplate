@@ -135,7 +135,7 @@ That skill's two questions decide whether this issue gets a plan, and nothing ab
 
 Where the call lands on a plan, its deliverable is the plan file, published as a draft PR by `/plan` § "Publishing the plan", and the copyable `/go <branch>` block — **and that is where the run ends**, with `/go` implementing in a later session. Where the call lands on implementing, the work happens in this session and ends at the PR `/go` opens over it.
 
-**Branch name:** `@.claude/skills/branch-rename/SKILL.md` owns the form, and the rename lands before `/plan` writes the plan file, whose name derives from the slug. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`. It is load-bearing rather than cosmetic — `@.claude/skills/pr/SKILL.md` Step 4 reads that number back off the branch to close the issue, which is what lets the no-plan outcome reach a correct `Closes #N` with nothing threaded through to it.
+**Branch name:** `@.claude/skills/branch-rename/SKILL.md` owns the form, and the rename lands before `/plan` writes the plan file, whose name derives from the slug. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`. `@.claude/skills/pr/SKILL.md` Step 4 reads that number back off the branch, so a slug without it costs the PR its `Closes #N`.
 
 **Reporting:** whichever skill ran the outcome reports its own results. Add only what this skill alone knows — which issue you took, whether you split it, and links to the children.
 

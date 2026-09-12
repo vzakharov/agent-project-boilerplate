@@ -23,7 +23,7 @@ Refresh exists because the body written at plan time is a **forecast**. Step 4 w
 An outer skill may pass these; a bare `/pr` takes the defaults, so the ordinary path reads as if they weren't there.
 
 - **`<base>`** — the branch the PR merges into, and the left side of every diff range below (`origin/<base>..HEAD`). Defaults to the repo default branch (`main` in most projects). When a PR already exists, its `baseRefName` wins over what the caller said.
-- **`<issue>`** — the issue number this PR closes, where the caller has one in hand. Absent, Step 4's inference stands, and on any branch `/issue` opened it resolves to that same number off the slug — including the child of a split, which is what the slug carries. So the parameter is a convenience, not the thing that keeps a stray reference to the parent in a commit body from closing the umbrella; reading the branch before the commits is.
+- **`<issue>`** — the issue number this PR closes, where the caller has one in hand. Absent, Step 4's inference stands, and on a branch `/issue` opened it lands on the same number: the slug carries the chosen child of a split, never the parent, which is what keeps a stray reference in a commit body from closing the umbrella.
 - **The plan** — passed by `/plan`'s publish step, and the input Step 4 composes from in plan-open mode.
 
 ## Environment note (read this before running gh)
