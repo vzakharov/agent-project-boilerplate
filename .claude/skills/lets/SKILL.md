@@ -1,15 +1,28 @@
-# The `plan or go` entry
+---
+description: >-
+  Decide whether a task needs a plan before the work exists, then run that call
+  end to end — plan and hand off, plan and then implement, or implement with no
+  plan at all. Invoke as `/lets <task>`; the prose forms `plan or go: <task>`
+  and "plan this or just do it" are the same invocation. The prompt is a
+  conditional go-ahead scoped to that one task.
+---
 
-The decision `@.claude/skills/plan/SKILL.md` § "The `plan or go` entry" routes here to make, before any other: **does this task get a plan, and does the plan block on the operator?**
+The decision this skill makes, before any other: **does this task get a plan, and does the plan block on the operator?** Two questions pick between three outcomes.
 
 **The prompt is a conditional go-ahead.** It authorizes implementation *on condition that* the agent judges the operator's gate unnecessary, scoped to the task in that message and to that message alone.
+
+## What reaches this skill
+
+The trigger is a **shape**, not a word: a task handed over at the top of a session for the agent to start on, with the plan-or-not call handed over alongside it. `/lets <task>` is that shape, and so is the prose it stands in for — `plan or go: <task>`, "plan this or just do it".
+
+A bare "let's …" inside a running conversation is not, however close the wording lands. `@.claude/skills/plan/SKILL.md` § "The approval gate" already reads those: "let's implement" is a go-ahead token there, "let's use B instead" is a plan revision. This skill settles whether that gate applies to a task at all, which is a question a session past it has already answered.
 
 ## Question 1 — does the operator need to decide before the work exists?
 
 Any one of these is a yes:
 
 - **The work costs far more to produce than to describe.** The plan is a page, the work is a day, and a wrong direction is caught for the price of the page.
-- **A fork carries no recommendation** — the exception in the skill's Part 2. Guess wrong and most of the work is wasted; the plan is what makes the choice the operator's.
+- **A fork carries no recommendation** — the exception in `@.claude/skills/plan/SKILL.md` Part 2. Guess wrong and most of the work is wasted; the plan is what makes the choice the operator's.
 - **A review round comes too late.** The step is irreversible or outward-facing, or later work builds on it before the PR is read.
 - **The scope is itself the question** — you would be deciding *what* the task is, not just how to do it.
 
@@ -27,9 +40,9 @@ The test: if you can hold the whole change in your head and name every file it t
 
 ## The three outcomes
 
-1. **Plan and hand off** — Question 1 said yes. The skill's Parts 1–3 run unchanged, ending at the handoff block.
+1. **Plan and hand off** — Question 1 said yes. `@.claude/skills/plan/SKILL.md` runs unchanged from its Part 1, ending at the handoff block.
 2. **Go** — both said no, so the diff is the plan. Enter `@.claude/skills/go/SKILL.md` § "Planless entry" with the task.
-3. **Plan, then go** — Question 1 no, Question 2 yes. Write the plan straight to `docs/plans/<slug>.in-progress.md`, no draft banner, in a commit quoting the `plan or go` prompt and naming the call; publish it through `@.claude/skills/pr/SKILL.md` so the operator has a surface to interrupt on; then run `/go` from its Step 2. The draft state is skipped rather than flipped, because nothing here awaits approval — writing the file was the agent's own call and the conditional go-ahead already cleared the work.
+3. **Plan, then go** — Question 1 no, Question 2 yes. Write the plan straight to `docs/plans/<slug>.in-progress.md`, no draft banner, in a commit quoting the `/lets` prompt and naming the call; publish it through `@.claude/skills/pr/SKILL.md` so the operator has a surface to interrupt on; then run `/go` from its Step 2. The draft state is skipped rather than flipped, because nothing here awaits approval — writing the file was the agent's own call and the conditional go-ahead already cleared the work.
 
 **Report the call in the first sentence of the turn, with its reason and the override**: "Doing this directly rather than planning it — *reason*. Say `plan` and I'll write one instead." That costs the operator one word to reverse, and puts the judgment on the record in the turn that acted on it.
 
