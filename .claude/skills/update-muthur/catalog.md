@@ -139,8 +139,9 @@ operator as the worked shape, and yours are different people.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/plan` | Write the plan to a `docs/plans/` file whose name is the approval gate, publish it as a draft PR so it is reviewed as a diff, and ask questions as numbered prose. Invoked as `plan or go`, judge for itself whether the task needs the operator's gate, a plan for the agent's own sake, or neither. | `gh` | `/finalize`, `/go`, `/pr` | adopt |
-| `/go` | The go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it. | — | `/dry`, `/tend-prose` (G1); `/from-branch`, `/plan`, `/pr` | adopt |
+| `/task` | Judge for itself whether a task needs the operator's gate, a plan for the agent's own sake, or neither, and run that call: `/task <what to do>` is a conditional go-ahead scoped to that task. The single home of that call — `/issue` (G3) hands every issue here too. | — | `/go`, `/plan`, `/pr` | adopt |
+| `/plan` | Write the plan to a `docs/plans/` file whose name is the approval gate, publish it as a draft PR so it is reviewed as a diff, and ask questions as numbered prose. | `gh` | `/finalize`, `/go`, `/pr` | adopt |
+| `/go` | The go-ahead: flip the plan file, do the work, run the quality passes, hand the PR back to `/pr`. Also takes a branch to attach to, or a task with no plan behind it. | — | `/dry`, `/tend-prose` (G1); `/from-branch`, `/plan`, `/pr`, `/task` | adopt |
 | `/implement` | Redirect to `/go`, for handoff blocks written before the rename. | — | `/go` | conditional — see below |
 | `/pr` | Own the PR object: rename the auto-branch, push, then open the draft PR or refresh the one that exists. | `gh` | `/branch-rename`, `/qa-checklist`, `/squash-message` | adopt |
 | `/finalize` | Land prep: vet, merge the base, sweep working artifacts, flip to ready, reconcile the squash message, attest — and, on `and merge`, merge the PR when the run turned up nothing to decide. | `gh`, `scripts/vet.sh` | `/check-merge`, `/from-branch`, `/plan`, `/squash-message`; **conditionally** `/issue` (G3), `/watch-ci` (G5) | adopt |
@@ -176,7 +177,7 @@ the project's first issue on the way through.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `/issue` | Export and read a GitHub issue, split it into natively-linked sub-issues when the scope demands, then hand the work to `/pr`. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr`, `/plan` (G2) | adopt |
+| `/issue` | Export and read a GitHub issue, split it into natively-linked sub-issues when the scope demands, then hand the work to `/task`, which makes the plan-or-not call on it — except a split, which always plans. | G2, `gh`, `scripts/export-github-item.py` | `/finalize`, `/pr`, `/plan`, `/task` (G2) | adopt |
 | `/propose-issue` | File a unit of work as an issue, deduping against what's already open. | G2, `gh`, `jq` | `/plan` (G2) | adopt |
 | `/audit-github-backlog` | Sweep every open issue and PR against today's code and leave a reviewable close/refile/keep plan, prioritising `P0`–`P3` everything it keeps. Mutates nothing on GitHub. | G2, `gh` | `/go`, `/plan` (G2); `/propose-issue`; `/override-gh` (G4) | adopt |
 | `scripts/export-github-item.py` | Download an issue — body, comments, timeline, attachments — into `docs/issue/<n>/`, or a PR (plus review threads, each one's resolved/unresolved state, and diff hunks) into `docs/pr/<n>/`. Stdlib-only. | `python3` ≥3.9, `$GH_TOKEN` or `gh auth token`, `scripts/lib/github.py` (G2), `scripts/gh_export/` | — | adopt |

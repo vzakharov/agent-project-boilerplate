@@ -23,7 +23,7 @@ Refresh exists because the body written at plan time is a **forecast**. Step 4 w
 An outer skill may pass these; a bare `/pr` takes the defaults, so the ordinary path reads as if they weren't there.
 
 - **`<base>`** — the branch the PR merges into, and the left side of every diff range below (`origin/<base>..HEAD`). Defaults to the repo default branch (`main` in most projects). When a PR already exists, its `baseRefName` wins over what the caller said.
-- **`<issue>`** — the issue number this PR closes, passed by `@.claude/skills/issue/SKILL.md`. Absent, Step 4's inference from the commits stands. Explicit beats inference for a split issue, where a stray reference to the parent in a commit body would otherwise close the umbrella.
+- **`<issue>`** — the issue number this PR closes, where the caller has one in hand. Absent, Step 4's inference stands, and on a branch `/issue` opened it lands on the same number: the slug carries the chosen child of a split, never the parent, which is what keeps a stray reference in a commit body from closing the umbrella.
 - **The plan** — passed by `/plan`'s publish step, and the input Step 4 composes from in plan-open mode.
 
 ## Environment note (read this before running gh)
@@ -76,7 +76,7 @@ git diff --stat origin/<base>..HEAD
 - **Summary** — 2-4 bullets explaining _what_ changed and _why_. Pull from commit bodies, not just subjects.
 - **QA Checklist** — a `## QA Checklist` markdown checklist of how to verify the change end-to-end. For how to derive it, follow the "Derive the checklist" guidance in `@.claude/skills/qa-checklist/SKILL.md`, over whichever input this mode composes from.
 
-End the body with `Closes #N` (for `feat`/`refactor`/etc.) or `Fixes #N` (for `fix`), where `N` is the caller's `<issue>` when one was passed, and otherwise any issue the PR or a commit references.
+End the body with `Closes #N` (for `feat`/`refactor`/etc.) or `Fixes #N` (for `fix`). `N` is the caller's `<issue>` when one was passed. Absent that, read it off the **branch slug** where the slug leads with an issue number (`claude/847-fix-sidebar-scroll-<hash>` — the form `/issue` § "Branch name" mandates for every branch it opens), and only then fall back to any issue the PR or a commit references. The branch comes first because that number was put there by the skill that knew which issue the work closes, whereas a commit that happens to mention one may be citing it rather than closing it.
 
 Append the session attribution line: `https://claude.ai/code/session_<id>` (the actual session id from the system prompt).
 
