@@ -113,9 +113,7 @@ there is no condition under which it fails to apply.
 | `.claude/rules/` | The path-scoped convention mechanism: a rule file loads only when a session touches the paths it declares. Ships with a README and no rules. | — | — | adopt |
 | `/dry` | Review the session's diff for DRY opportunities; apply the obvious wins, surface the ambiguous ones. | — | — | adopt |
 | `/tend-prose` | Cut prose that shouldn't exist, rewrite what narrates a change into present-tense contracts, trim what names and types already say, delete what survives only to deny a thing the change removed. The long version of CLAUDE.md § "Writing things down". | — | — | adopt |
-| `/plainly` | Explain something to a person cause-first and in their nouns: re-explain an answer that did not land, or answer a question under the rule from the start. Names six defects so a bad report can be called out in one word. The long version of `voice.md`. | — | `/tend-prose` (this group) | adopt |
-| `.claude/skills/plainly/voice.md` | The resident short version of that rule — the shape an explanation takes, and the instruction to resolve the session's operator once. CLAUDE.md § "Explaining things to people" imports it. | — | — | adopt |
-| `.claude/skills/plainly/operators.md` | Per-person entries tuning how each operator wants to be talked to, imported by CLAUDE.md alongside `voice.md`. Ships carrying this repo's own operator as the worked shape; an entry tunes manner only and can never lower a bar. | — | — | **rewrite** |
+| `/plainly` | Explain something to a person cause-first and in their nouns: re-explain an answer that did not land, or answer a question under the rule from the start. Names six defects so a bad report can be called out in one word. Its `voice.md` is the resident short version, imported by CLAUDE.md § "Explaining things to people", and the place a team edits if it wants a house manner of its own; its `operators/` holds one file per person and ships carrying this repo's operator. | — | `/tend-prose` (this group); `.claude/hooks/session-start.sh` (G4) | adopt — **rewrite its `operators/` entries** |
 | `scripts/check-skill-catalog.sh` | Assert that no skill `@`-reference dangles. Downstream, that first assertion is the whole value: it is how you find out a subset copy was incomplete. | `bash` | — | adopt |
 | `.gitignore` | Take the `tmp/` entry and keep the rest of yours. `CLAUDE.md`'s "dev artifacts go under `tmp/`" principle depends on that path being ignored. | — | — | adopt — merge one line |
 
@@ -125,15 +123,10 @@ make adoption a regression. `ADOPTING.md`'s shared tail owns the merge itself.
 Its § "Language" is hydrated rather than merged: one line naming the language
 your team reads, the rest of the section holding whatever the project.
 
-**§ "Explaining things to people" travels with both its import lines, and those
-lines are the half that is easy to drop.** `voice.md` and `operators.md` reach
-context only because CLAUDE.md imports each with an unbackticked `@` reference —
-the import parser skips code spans, so a copy that backticks them for
-consistency with their neighbours loads nothing and fails silently. Both are
-imported from CLAUDE.md directly, because an import inside an imported file does
-not load; keep them that way rather than tidying the second into the first.
-`operators.md` is **rewrite** rather than adopt: it ships with this repo's own
-operator as the worked shape, and yours are different people.
+Its § "Explaining things to people" ends in an **unbackticked** `@` reference,
+which is the one line in this file a tidy-up breaks: the import parser skips code
+spans, so backticking it for consistency with its neighbours loads nothing and
+says nothing.
 
 ### G2 — The PR loop
 
@@ -157,7 +150,7 @@ operator as the worked shape, and yours are different people.
 | `scripts/lib/github.py` | Shared GitHub plumbing for the stdlib-only Python scripts: the proxy-then-direct `fetch` ladder every request goes through, token resolution, `origin` repo detection, and the `die` they report through. | `python3` ≥3.9 | — | adopt |
 | `scripts/lib/media.py` | Map a content type — or, when it is missing or generic, the leading magic bytes — to a file extension. Shared by the attachment download in G3 and the session-image extraction in G4, which is why it sits here rather than inside either. | `python3` ≥3.9 | — | adopt |
 | `scripts/check-squash-message.sh` | Measure the squash proposal against the size caps `/squash-message` states, locating it in the worktree or in history once `/finalize` has swept it. POSIX `sh`. | `sh`; `git` for the history rungs | — | adopt |
-| `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | `scripts/check-skill-catalog.sh` (G1), `scripts/check-squash-message.sh`, `scripts/check-repo-identity.sh` (never) | **rewrite** |
+| `scripts/vet.sh` | The vet run: the fast lint/type-check/test pass before pushing review-ready work. | your stack's own commands | `scripts/check-skill-catalog.sh` (G1), `scripts/check-operator-entries.sh` (G1), `scripts/check-squash-message.sh`, `scripts/check-repo-identity.sh` (never) | **rewrite** |
 | `scripts/run-parallel.sh` | Optional helper for `scripts/vet.sh`: run the checks concurrently, print output only for the ones that failed, and name files an autofix step rewrote. POSIX `sh`. | `sh`; `git` for the autofix check only | — | adopt |
 
 Two things in this group are less optional than they look — see
@@ -199,7 +192,7 @@ the working tree clean, and behaves the same everywhere.
 
 | Item | What it does | Requires | Pulls in | Disposition |
 | --- | --- | --- | --- | --- |
-| `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied. Dependency install is a stub you fill in for your stack. | web/remote sessions; `bash`; **`gh` already on `PATH`** | — | adopt |
+| `.claude/hooks/session-start.sh` | On session start, install a `gh` shim at `$HOME/.local/bin/gh` that runs the real binary unproxied, and name the operator — their GitHub name and handle, plus their `/plainly` entry — into the session. Dependency install is a stub you fill in for your stack. The shim and the install are web/remote-only; the operator lookup runs everywhere. | `bash`; **`gh` already on `PATH`**; web/remote sessions for the shim and the install | `/plainly` (G1) | adopt |
 | `.claude/hooks/plan-mode-notice.sh` | On every prompt submitted while the session is in native plan mode, inject the notice that this repo plans on disk and that the exit is plan mode's own. | web/remote sessions; `bash`, `jq` | `/plan` (G2) | adopt |
 | `.claude/hooks/session-images.sh` | On every prompt, run the extractor below and name any newly written file in the turn's context. Commits nothing. | `bash`, `jq`, `python3` ≥3.9 | `scripts/extract-session-images.py` | adopt |
 | `scripts/extract-session-images.py` | Write the images the operator attached to a session out of the transcript into gitignored `tmp/session-images/`, with a manifest row carrying the prompt each arrived with. Stdlib-only, idempotent. | `python3` ≥3.9, `scripts/lib/media.py` (G2) | — | adopt |

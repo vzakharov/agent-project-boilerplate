@@ -1,9 +1,9 @@
 #!/bin/bash
-# SessionStart hook for Claude Code remote sessions.
+# SessionStart hook for Claude Code sessions.
 #
-# Two jobs, both remote-only (the hook no-ops when $CLAUDE_CODE_REMOTE is unset,
-# so local dev sessions are unaffected and running `claude` against your working
-# tree won't reinstall on every launch):
+# Jobs 1 and 2 are remote-only (they no-op when $CLAUDE_CODE_REMOTE is unset, so
+# local dev sessions are unaffected and running `claude` against your working
+# tree won't reinstall on every launch). Job 3 runs everywhere.
 #
 # 1. Install a `gh` shim that routes the GitHub CLI around the outbound HTTPS
 #    proxy. The agent egress proxy (HTTPS_PROXY) enforces a policy that blocks
@@ -27,15 +27,25 @@
 #   go mod download                    # Go
 #
 # Until the install line is implemented, job 2 no-ops cleanly; job 1 works as-is.
+#
+# 3. Print who the operator is — their name, their handle, and their entry from
+#    `.claude/skills/plainly/operators/` — into the session context, so the agent
+#    starts out knowing who it is talking to instead of spending a turn resolving
+#    it. `.claude/skills/plainly/voice.md` is what reads this.
 
 set -euo pipefail
-
-[ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
 
 # --- 1. Install the proxy-stripping gh shim -------------------------------
 # $HOME/.local/bin is first on PATH, so a `gh` here shadows the real binary for
 # every Bash tool shell this session spawns. The VM is ephemeral and the hook
 # runs on every startup|resume, so recreating the shim each session is correct.
+#
+# Both of those cut the other way when the hook is what you are testing: the shim
+# is written from whatever `gh` the running PATH resolves, and it outlives the
+# run. So invoking this hook under a stubbed PATH repoints the session's own `gh`
+# at the stub, and every later `gh` call fails once the stub is cleaned up.
+# `env -u CLAUDE_CODE_REMOTE` skips jobs 1 and 2, which is how to exercise job 3
+# without that.
 install_gh_shim() {
   local shim_dir="${HOME}/.local/bin"
   # Resolve the real gh, ignoring any shim a previous run left in shim_dir, so
@@ -74,9 +84,66 @@ EOF
   chmod +x "${shim_dir}/gh"
 }
 
-install_gh_shim
+if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
+  install_gh_shim
 
-# --- 2. Keep dependencies in sync with the lockfile -----------------------
-cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
+  # --- 2. Keep dependencies in sync with the lockfile ---------------------
+  cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-# TODO: install dependencies for your stack
+  # TODO: install dependencies for your stack
+fi
+
+# --- 3. Name the operator ------------------------------------------------
+# Outside the remote gate: the agent needs this wherever it runs, and `gh` reaches
+# the API through the proxy as well as around it.
+#
+# `.type` is the load-bearing field. A token minted for a human names that human
+# (`User`); one of the agent's own names the agent (`Bot`). A bare login would be
+# trusted in exactly the case where it names the wrong party.
+#
+# The lowercased login is both what the message prints and what names the entry
+# file, so the one spelling an agent ever sees is the one the lookup uses. The
+# filename is the whole lookup: no parse, so nothing an entry can malform.
+OPERATORS_DIR="$(dirname "$0")/../skills/plainly/operators"
+
+name_the_operator() {
+  local identity
+  identity="$(gh api user --jq '[.login, .type, .name] | @tsv' 2>/dev/null || true)"
+
+  if [ -z "$identity" ]; then
+    echo "session-start: the operator is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for their GitHub handle, then read .claude/skills/plainly/operators/<handle>.md yourself."
+    return 0
+  fi
+
+  local login type name
+  IFS=$'\t' read -r login type name <<<"$identity"
+
+  if [ "$type" != "User" ]; then
+    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle, then read .claude/skills/plainly/operators/<handle>.md yourself."
+    return 0
+  fi
+
+  local handle who
+  handle="$(printf '%s' "$login" | tr '[:upper:]' '[:lower:]')"
+  who="@${handle}"
+  if [ -n "$name" ]; then
+    who="${name} (@${handle})"
+  fi
+
+  # `|| true` because the entry is optional and `set -e` would otherwise take the
+  # whole hook down on a missing one — silently, this being a command
+  # substitution in an assignment.
+  local entry
+  entry="$(cat "$OPERATORS_DIR/${handle}.md" 2>/dev/null || true)"
+
+  if [ -z "$entry" ]; then
+    echo "session-start: the operator is ${who} — the GitHub token in this session is that user's own. They have no entry under .claude/skills/plainly/operators/."
+    return 0
+  fi
+
+  echo "session-start: the operator is ${who} — the GitHub token in this session is that user's own. How they want to be talked to, from .claude/skills/plainly/operators/${handle}.md, applying to every reply:"
+  echo
+  echo "$entry"
+}
+
+name_the_operator

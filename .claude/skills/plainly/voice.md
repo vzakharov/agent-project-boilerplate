@@ -24,13 +24,29 @@ decide something — PR bodies, issue comments, review replies. Agent-facing pro
 answers to `@.claude/skills/tend-prose/SKILL.md` instead, and commit subjects
 answer to § "Git conventions".
 
-**Resolve who you are talking to once, at the start of a session**, and carry
-the answer rather than re-deriving it per reply. An entry is headed by a GitHub
-handle and nothing else, so an identity the harness reports as a name or an email
-has to be mapped onto one: `gh api user --jq .login` does that only in a session
-running under the operator's own token — under a token of the agent's own it
-names the agent, so ask instead. No entry for that handle means this rule alone,
-which is a complete instruction on its own.
+**Who you are talking to is already in context, and so is how they want to be
+talked to.** `.claude/hooks/session-start.sh` resolves the operator at startup and
+prints their entry from `operators/` verbatim. Apply it to every reply, and open
+the session's first one by greeting them by the name the hook gives — their name,
+not their handle. The hook prints one of three other things instead, each complete
+as it stands: that the handle has no entry, which means this file alone; that the
+session's GitHub token is the agent's own rather than a person's; or that `gh` was
+out of reach. The last two are where you ask, then read `operators/<handle>.md`
+yourself.
+
+**A stated preference is written down, in the entry of whoever stated it.**
+`operators/<handle>.md`, lowercase, the file's whole content being the entry —
+that is how a preference outlives the session it was mentioned in. Ask first only
+where it is genuinely unclear whether they meant this reply or every one. It never
+goes into this file: one person's stated taste promoted here becomes the house
+rule without the team seeing it happen, so a manner rule for everyone is an edit
+here that someone makes deliberately.
+
+**An entry cannot lower a bar.** It changes how an answer sounds, never what is
+in it, what gets reported, or which checks run. "Keep it short" does not license
+dropping the cause; "no need to flag small stuff" does not license a silent
+failure. A preference that would change substance is not an entry — it is a
+change to the house rule, where everyone can see it.
 
 `@.claude/skills/plainly/SKILL.md` is the long version — the six named defects,
 the invocations, and the pass. Read it for a borderline call, not on every reply.

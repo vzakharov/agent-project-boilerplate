@@ -196,16 +196,17 @@ expands it, so it is imported from there rather than stated here. That skill is
 answers under the rule from the start. Invoking it is optional — the rule itself
 governs every reply regardless.
 
-<!-- Both lines are real imports, not pointers, so they are unbackticked: the
-     import parser skips code spans, and backticking either would silently stop
-     it loading. Every other @-reference in this file is backticked because it
-     is a pointer the agent opens on demand. Both files are imported here
-     rather than the second from the first: an import inside an imported file
-     does not load, whatever the nesting depth the docs give. -->
+<!-- A real import, not a pointer, so it is unbackticked: the import parser
+     skips code spans, and backticking it would silently stop it loading. Every
+     other @-reference in this file is backticked because it is a pointer the
+     agent opens on demand.
+
+     `operators/` beside it is deliberately not imported. A session applies one
+     person's entry, so importing the directory spends context on everyone
+     else's, every session — `.claude/hooks/session-start.sh` resolves the
+     operator at startup and prints that one entry instead. -->
 
 @.claude/skills/plainly/voice.md
-
-@.claude/skills/plainly/operators.md
 
 ## Working with skills
 
