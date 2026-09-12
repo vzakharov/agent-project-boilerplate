@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-feat: name the session's operator and their entry at startup (pr #73)
+feat: name and greet the session's operator at startup (pr #73)
 ```
 
 ```
@@ -12,25 +12,27 @@ tool call the session had to think to make — and mostly did not, leaving
 stated preferences unapplied.
 
 The session-start hook now resolves the operator and prints their entry
-into the session before the first reply. It reports the token's account
-type alongside the login, since a token minted for a human names that
-human and one of the agent's own names the agent, so a bare login would
-be trusted in exactly the case where it names the wrong party; where the
-hook cannot answer at all, it says which of the three ways it failed.
-CLAUDE.md in turn stops importing the entries — a session applies one,
-so importing the set spent context on everyone else's, every session.
+into the session before the first reply, naming them by the name on
+their GitHub profile so a session opens by greeting a person rather than
+a handle. It reports the token's account type alongside the login, since
+a token minted for a human names that human and one of the agent's own
+names the agent, so a bare login would be trusted in exactly the case
+where it names the wrong party; where the hook cannot answer at all, it
+says which of the three ways it failed. CLAUDE.md in turn stops
+importing the entries — a session applies one, so importing the set
+spent context on everyone else's, every session.
 
 Entries move from headings inside a single file to one file per handle,
-the file's whole content being the entry. A heading was a thing an entry
-could get wrong, and a wrong one failed silently, reaching no session
-while the preference sat in the repo looking done. A filename has no
-syntax to violate, so the lookup is `cat` and what is left to check is
-that the name is one the lookup can reach: check-operator-entries.sh
-holds the directory to a lowercase handle, GitHub being case-insensitive
-about those where the filesystem is not. Two rules moved to stay true of
-where they sit — what an entry may do is now in the still-imported
-voice.md, and ADOPTING.md no longer frames entries as setup filled in by
-hand.
+the file's whole content being the entry, and the directory holds
+nothing else. A heading was a thing an entry could get wrong, and a
+wrong one failed silently, reaching no session while the preference sat
+in the repo looking done. A filename has no syntax to violate, so the
+lookup is `cat`; the login is lowercased once and printed in that same
+form, so the spelling an agent writes an entry under is the spelling the
+lookup uses and there is nothing left to validate. A manner rule meant
+for everyone is an edit to voice.md rather than an entry promoted out of
+one person's file behind their back — voice.md carrying that, and what
+an entry may do, which had been riding on the import that went away.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
