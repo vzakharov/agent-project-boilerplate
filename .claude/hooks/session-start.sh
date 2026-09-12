@@ -1,9 +1,9 @@
 #!/bin/bash
-# SessionStart hook for Claude Code remote sessions.
+# SessionStart hook for Claude Code sessions.
 #
-# Two jobs, both remote-only (the hook no-ops when $CLAUDE_CODE_REMOTE is unset,
-# so local dev sessions are unaffected and running `claude` against your working
-# tree won't reinstall on every launch):
+# Jobs 1 and 2 are remote-only (they no-op when $CLAUDE_CODE_REMOTE is unset, so
+# local dev sessions are unaffected and running `claude` against your working
+# tree won't reinstall on every launch). Job 3 runs everywhere.
 #
 # 1. Install a `gh` shim that routes the GitHub CLI around the outbound HTTPS
 #    proxy. The agent egress proxy (HTTPS_PROXY) enforces a policy that blocks
@@ -27,10 +27,13 @@
 #   go mod download                    # Go
 #
 # Until the install line is implemented, job 2 no-ops cleanly; job 1 works as-is.
+#
+# 3. Print the operator's GitHub handle into the session context, so the agent
+#    starts the session already knowing who it is talking to instead of spending
+#    a turn resolving it. See `.claude/skills/plainly/voice.md`, which keys its
+#    operator entries on that handle.
 
 set -euo pipefail
-
-[ "${CLAUDE_CODE_REMOTE:-}" = "true" ] || exit 0
 
 # --- 1. Install the proxy-stripping gh shim -------------------------------
 # $HOME/.local/bin is first on PATH, so a `gh` here shadows the real binary for
@@ -74,9 +77,40 @@ EOF
   chmod +x "${shim_dir}/gh"
 }
 
-install_gh_shim
+if [ "${CLAUDE_CODE_REMOTE:-}" = "true" ]; then
+  install_gh_shim
 
-# --- 2. Keep dependencies in sync with the lockfile -----------------------
-cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
+  # --- 2. Keep dependencies in sync with the lockfile ---------------------
+  cd "${CLAUDE_PROJECT_DIR:-$(pwd)}"
 
-# TODO: install dependencies for your stack
+  # TODO: install dependencies for your stack
+fi
+
+# --- 3. Name the operator ------------------------------------------------
+# Outside the remote gate: the agent needs the handle wherever it runs, and `gh`
+# reaches the API through the proxy as well as around it, so this works whether
+# or not job 1 installed the shim.
+#
+# `.type` is the load-bearing field: a token minted for a human names that human
+# (`User`), one of the agent's own names the agent (`Bot`), and only the first
+# answers "who am I talking to". Hence two messages rather than a bare login,
+# which would be trusted in exactly the case where it is wrong.
+name_the_operator() {
+  local identity
+  identity="$(gh api user --jq '[.login, .type] | @tsv' 2>/dev/null || true)"
+
+  if [ -z "$identity" ]; then
+    echo "session-start: the operator's GitHub handle is unresolved (\`gh\` is unavailable or could not reach the API). Ask them for it if you need their operators.md entry."
+    return 0
+  fi
+
+  local login="${identity%%	*}" type="${identity##*	}"
+
+  if [ "$type" = "User" ]; then
+    echo "session-start: the operator is @${login} — the GitHub token in this session is that user's own. Apply their entry in .claude/skills/plainly/operators.md, if they have one."
+  else
+    echo "session-start: the GitHub token in this session belongs to ${login}, a ${type} account — that is the agent's own identity, not the operator's. Ask the operator for their handle before applying any operators.md entry."
+  fi
+}
+
+name_the_operator
