@@ -1,7 +1,7 @@
 Proposed squash title/body:
 
 ```
-feat: give the plan-or-not call its own skill, /task (pr #71)
+feat: give the plan-or-not call one home, and route /issue to it (pr #71)
 ```
 
 ```
@@ -11,20 +11,31 @@ plan for the agent's own sake, or neither? — reached the agent only as
 prose routed through a section of /plan. As its own skill it is a
 typeable slash command, it appears in the skills list where an operator
 can find it, and it loads on invocation instead of on every planning
-session.
+session. /task <what to do> runs the call it makes: plan and hand off,
+plan and then implement, or implement with no plan at all.
 
-/task <what to do> takes the task and runs the call it makes: plan and
-hand off, plan and then implement, or implement with no plan at all. It
-is the untracked-work sibling of /issue — same handover, a task in place
-of an issue number — and the prose forms it stands in for reach it too.
-Its two questions and three outcomes are unchanged from where they sat
-before, and /plan is shorter by the section that routed to them.
+/issue makes that same call now instead of planning unconditionally. It
+had handed every issue to /plan on the reasoning that filing an issue
+answers the call by itself, but filing one is evidence the work is
+worth tracking, which comes apart from worth deliberating: a two-row
+docs correction gets filed so a review doesn't lose it, not because
+anyone needs a page about it first. A split issue is the exception and
+still plans, splitting being the case where the work is already known
+to be beyond one PR.
+
+No parameter is threaded through the new route to carry the issue
+number. The only thing downstream that wants it is /pr's Closes #N,
+which already infers one when no caller passed it; what that inference
+did not read is the branch, and /issue is the one caller that
+guarantees the number leads the slug. /pr reads the branch before the
+commits, which also settles the split case: the slug carries the chosen
+child, never the parent umbrella.
 
 Skills trigger on description matching before their body loads, so a
 skill named after a word the loop already uses as a go-ahead fires on
-prose that meant the token. CLAUDE.md § "Adding or renaming a skill"
-now rules those names out and points at naming a skill after its
-argument instead, which is what /issue, /task and /pr do.
+prose that meant the token. CLAUDE.md now rules those names out and
+points at naming a skill after its argument, which is what /issue,
+/task and /pr do.
 
 Co-authored-by: Claude <noreply@anthropic.com>
 ```
