@@ -39,6 +39,13 @@ set -euo pipefail
 # $HOME/.local/bin is first on PATH, so a `gh` here shadows the real binary for
 # every Bash tool shell this session spawns. The VM is ephemeral and the hook
 # runs on every startup|resume, so recreating the shim each session is correct.
+#
+# Both of those cut the other way when the hook is what you are testing: the shim
+# is written from whatever `gh` the running PATH resolves, and it outlives the
+# run. So invoking this hook under a stubbed PATH repoints the session's own `gh`
+# at the stub, and every later `gh` call fails once the stub is cleaned up.
+# `env -u CLAUDE_CODE_REMOTE` skips jobs 1 and 2, which is how to exercise job 3
+# without that.
 install_gh_shim() {
   local shim_dir="${HOME}/.local/bin"
   # Resolve the real gh, ignoring any shim a previous run left in shim_dir, so
