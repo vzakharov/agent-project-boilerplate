@@ -131,7 +131,7 @@ Load and follow `@.claude/skills/plan/SKILL.md`, passing what the issue asks in 
 
 `/plan`'s deliverable is the plan file, published as a draft PR by its § "Publishing the plan", and the copyable `/go <branch>` block. **That is normally where this run ends.** Do not implement here: `/go` runs in a later session and hands the finished work back to `/pr` to refresh.
 
-The **only** waiver is the operator explicitly saying no plan is needed, which routes to `@.claude/skills/go/SKILL.md` § "Planless entry". It is not this skill's to grant on its own judgement.
+The **only** waiver is the operator explicitly saying no plan is needed, which routes to `@.claude/skills/go/SKILL.md` § "Planless entry". It is not this skill's to grant on its own judgement — the plan-or-not call `@.claude/skills/task/SKILL.md` makes for untracked work is already answered here by the issue existing. Filing one costs something, so work that was worth filing cleared the bar the call tests for.
 
 **Branch name:** `@.claude/skills/branch-rename/SKILL.md` owns the form, and the rename lands before `/plan` writes the plan file, whose name derives from the slug. This skill contributes one requirement: the slug leads with the issue number, e.g. `claude/847-fix-sidebar-scroll-<hash>`.
 
