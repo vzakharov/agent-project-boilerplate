@@ -258,4 +258,6 @@ couldn't load. The script also asserts that every skill has exactly one row in
 `.claude/skills/update-muthur/catalog.md`, which is what keeps that inventory
 from drifting as skills are added.
 
+**Don't name a skill with a word the loop already uses as an instruction token.** Skills trigger on description matching before their body loads, so a name that doubles as a go-ahead ("implement", "proceed", "ship it", "let's …" — `@.claude/skills/plan/SKILL.md` § "The approval gate" holds the list) fires on prose that meant the token, not the skill. Where the skill takes an argument, naming it after the argument — `/issue`, `/task`, `/pr` — puts it out of reach of that reading entirely.
+
 Add new skills as repeated workflows emerge — each as a directory under `.claude/skills/<name>/SKILL.md`. Skills checked into the repo are picked up automatically when Claude Code opens the project. Path-scoped conventions go in `.claude/rules/` instead (see its README) so they load only when the relevant files are touched.
